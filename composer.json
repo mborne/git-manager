@@ -1,0 +1,25 @@
+{
+    "name": "mborne/git-manager",
+    "type": "project",
+    "description": "Command line helpers to manage hosted git repositories",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "MBorne",
+            "email": "mborne@users.noreply.github.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"": "src/"}
+    },
+    "bin": [
+        "bin/satis-gitlab"
+    ],
+    "require": {
+        "mborne/remote-git": "~0.1",
+        "symfony/console": "^3.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5|^7"
+    }
+}
