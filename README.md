@@ -13,13 +13,13 @@ CLI helpers to manage hosted git repositories.
 ```bash
 git clone https://github.com/mborne/git-manager
 cd git-manager
-# PHP 7.x
+# PHP 7.x
 composer install
-# PHP 5.6 (downgrading versions refered in composer.lock is required)
+# PHP 5.6 (downgrading versions refered in composer.lock is required)
 composer update
 ```
 
-### Create local data directory
+### Create local data directory
 
 Default local data dir is "$PWD/data". You may change with using `--data` option.
 
