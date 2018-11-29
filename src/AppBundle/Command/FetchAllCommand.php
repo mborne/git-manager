@@ -21,6 +21,7 @@ use MBO\RemoteGit\FindOptions;
 use MBO\RemoteGit\ProjectInterface;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
+use AppBundle\Filesystem\LocalFilesystem;
 
 
 /**
@@ -29,6 +30,19 @@ use MBO\RemoteGit\Filter\FilterCollection;
  * @author mborne
  */
 class FetchAllCommand extends Command {
+
+    /**
+     * @var LocalFilesystem
+     */
+    private $localFilesystem ;
+
+    public function __construct(LocalFilesystem $localFilesystem)
+    {
+        parent::__construct();
+
+        $this->localFilesystem = $localFilesystem;
+    }
+
 
     protected function configure() {
         $this
@@ -45,8 +59,6 @@ class FetchAllCommand extends Command {
 
             ->addOption('orgs', 'o', InputOption::VALUE_REQUIRED, 'Find projects according to given organization names')
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
-
-            ->addOption('data',null,InputOption::VALUE_REQUIRED, "Data directory", getcwd().'/data' )
         ;
     }
 
@@ -56,7 +68,7 @@ class FetchAllCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $logger = $this->createLogger($output);
 
-        $dataDir = $input->getOption('data');
+        $dataDir = $this->localFilesystem->getRootPath();
         if ( ! file_exists($dataDir) ){
             throw new \Exception("$dataDir not found");
         }
@@ -95,21 +107,29 @@ class FetchAllCommand extends Command {
          */
         $projects = $client->find($findOptions);
 
-
-        $gitWrapper = new GitWrapper();
         foreach ( $projects as $project ){
             $logger->info(sprintf(
                 '[%s] %s ...',
                 $project->getName(),
                 $project->getHttpUrl()
             ));
-            $localPath = $dataDir.'/'.$project->getName();
-            // TODO switch with fetch if already exists
-            $command = sprintf(
-                'git clone %s %s',
-                escapeshellarg($project->getHttpUrl()),
-                escapeshellarg($localPath)
-            );
+
+            $host = parse_url($project->getHttpUrl(), PHP_URL_HOST);
+            $localPath = $dataDir.'/'.$host.'/'.$project->getName();
+            if ( file_exists($localPath) ){
+                $command = sprintf(
+                    'cd %s && git fetch origin -p && git pull',
+                    escapeshellarg($localPath),
+                    escapeshellarg($project->getHttpUrl()),
+                    escapeshellarg($localPath)
+                );
+            }else{
+                $command = sprintf(
+                    'git clone %s %s',
+                    escapeshellarg($project->getHttpUrl()),
+                    escapeshellarg($localPath)
+                );
+            }
             system($command);
         }
     }

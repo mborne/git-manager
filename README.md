@@ -19,18 +19,10 @@ composer install
 composer update
 ```
 
-### Create local data directory
-
-Default local data dir is "$PWD/data". You may change with using `--data` option.
-
-```bash
-mkdir data
-```
-
 ### Fetch repositories
 
 ```bash
-bin/git-manager git:fetch-all https://github.com --users=mborne $SATIS_GITHUB_TOKEN
+bin/console git:fetch-all https://github.com --users=mborne $SATIS_GITHUB_TOKEN
 ```
 
 ## License
