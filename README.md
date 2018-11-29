@@ -25,6 +25,12 @@ composer update
 bin/console git:fetch-all https://github.com --users=mborne $SATIS_GITHUB_TOKEN
 ```
 
+### Compute stats about repositories
+
+```bash
+bin/console git:stats -O stats.json
+```
+
 ## License
 
 mborne/git-manager is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
