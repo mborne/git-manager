@@ -51,8 +51,8 @@ class FetchAllCommand extends Command {
 
             // the short description shown while running "php bin/console list"
             ->setDescription('Fetch all repositories to local directory')
-            /* 
-             * Git client options 
+            /*
+             * Git client options
              */
             ->addArgument('url', InputArgument::REQUIRED)
             ->addArgument('token')

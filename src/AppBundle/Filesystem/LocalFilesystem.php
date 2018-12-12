@@ -58,7 +58,7 @@ class LocalFilesystem extends LeagueFilesystem {
      */
     private function findRepositories(array & $repositories, $directory){
         $this->logger->debug(sprintf("[LocalFilesystem] findRepositories(%s)... ",$directory));
-        
+
         try {
             $items = $this->listContents($directory);
         }catch(\Exception $e){

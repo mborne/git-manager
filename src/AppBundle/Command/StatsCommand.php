@@ -21,8 +21,8 @@ use MBO\RemoteGit\FindOptions;
 use MBO\RemoteGit\ProjectInterface;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
+use AppBundle\Git\Analyzer;
 use AppBundle\Filesystem\LocalFilesystem;
-
 use Gitonomy\Git\Repository as GitRepository;
 
 /**
@@ -37,11 +37,20 @@ class StatsCommand extends Command {
      */
     private $localFilesystem ;
 
-    public function __construct(LocalFilesystem $localFilesystem)
+    /**
+     * @var Analyzer
+     */
+    private $analyzer;
+
+    public function __construct(
+        LocalFilesystem $localFilesystem,
+        Analyzer $analyzer
+    )
     {
         parent::__construct();
 
         $this->localFilesystem = $localFilesystem;
+        $this->analyzer = $analyzer;
     }
 
 
@@ -49,8 +58,6 @@ class StatsCommand extends Command {
         $this
             ->setName('git:stats')
             ->setDescription('Compute stats on local repositories')
-
-            ->addOption('output', 'O', InputOption::VALUE_REQUIRED, 'Output file', 'php://output')
         ;
     }
 
@@ -61,22 +68,18 @@ class StatsCommand extends Command {
         $logger = $this->createLogger($output);
 
         $repositories = $this->localFilesystem->getRepositories();
-        
+
         $results = array();
         foreach ( $repositories as $repository ){
+            $logger->info(sprintf("%s ...",$repository));
             $gitRepository = new GitRepository(
                 $this->localFilesystem->getRootPath().'/'.$repository
             );
-            $metadata = array(
-                'name' => $repository,
-                'size' => $gitRepository->getSize()
-            );
-            $logger->info(json_encode($metadata));
-            $results[] = $metadata;
+            $results[$repository] = $this->analyzer->getMetadata($gitRepository);
         }
 
-        file_put_contents(
-            $input->getOption('output'),
+        $this->localFilesystem->put(
+            'repositories.json',
             json_encode($results,JSON_PRETTY_PRINT)
         );
     }

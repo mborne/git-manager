@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "753592f6d8127e9f6de18d1092634fe0",
+    "content-hash": "3999649dc2d2b78251a66ed3dfb1b05b",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -889,16 +889,16 @@
         },
         {
             "name": "mborne/remote-git",
-            "version": "v0.1.1",
+            "version": "v0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mborne/remote-git.git",
-                "reference": "0fae98b614ea9f7c1ae4d00478839b749ca797e8"
+                "reference": "5c3db45da05e2739311795e08ed11e925b40906a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mborne/remote-git/zipball/0fae98b614ea9f7c1ae4d00478839b749ca797e8",
-                "reference": "0fae98b614ea9f7c1ae4d00478839b749ca797e8",
+                "url": "https://api.github.com/repos/mborne/remote-git/zipball/5c3db45da05e2739311795e08ed11e925b40906a",
+                "reference": "5c3db45da05e2739311795e08ed11e925b40906a",
                 "shasum": ""
             },
             "require": {
@@ -925,7 +925,7 @@
                 }
             ],
             "description": "A lightweight PHP client providing a consistent way to find hosted and self-hosted git repositories (github, gitlab,...)",
-            "time": "2018-11-25T18:11:48+00:00"
+            "time": "2018-12-01T09:26:35+00:00"
         },
         {
             "name": "monolog/monolog",

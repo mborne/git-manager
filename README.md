@@ -1,10 +1,13 @@
 # git-manager
 
-**WARNING : WORK IN PROGRESS**
-
 ## Description
 
-CLI helpers to manage hosted git repositories. 
+CLI helpers to manage hosted git repositories.
+
+## Use cases
+
+* Backup remove and self-hosted repositories (gitlab, gogs, github)
+* Performs some basic checks (ex : README.md is available)
 
 ## Usage
 
@@ -29,6 +32,12 @@ bin/console git:fetch-all https://github.com --users=mborne $SATIS_GITHUB_TOKEN
 
 ```bash
 bin/console git:stats -O stats.json
+```
+
+### View stats
+
+```bash
+bin/console server:run
 ```
 
 ## License
