@@ -1,12 +1,8 @@
 # git-manager
 
-## Description
+CLI helpers to manage a set of git repositories :
 
-CLI helpers to manage hosted git repositories.
-
-## Use cases
-
-* Backup remove and self-hosted repositories (gitlab, gogs, github)
+* Retreive and backup hosted GIT repositories (gitlab, gogs, github)
 * Performs some basic checks (ex : README.md is available)
 
 ## Usage
@@ -18,15 +14,24 @@ git clone https://github.com/mborne/git-manager
 cd git-manager
 # PHP 7.x
 composer install
-# PHP 5.6 (downgrading versions refered in composer.lock is required)
-composer update
 ```
 
 ### Fetch repositories
 
+* From github :
+
 ```bash
-bin/console git:fetch-all https://github.com --users=mborne $SATIS_GITHUB_TOKEN
+bin/console git:fetch-all --orgs IGNF --users=mborne https://github.com $SATIS_GITHUB_TOKEN
 ```
+
+* From gogs :
+
+```bash
+bin/console git:fetch-all https://gogs.quadtreeworld.net $SATIS_GOGS_TOKEN
+```
+
+* ...
+
 
 ### Compute stats about repositories
 

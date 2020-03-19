@@ -8,19 +8,8 @@ use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 
-use MBO\SatisGitlab\Satis\ConfigBuilder;
-use GuzzleHttp\Client as GuzzleHttpClient;
-
-use MBO\RemoteGit\ClientFactory;
-use MBO\RemoteGit\ClientInterface;
-use MBO\RemoteGit\FindOptions;
-use MBO\RemoteGit\ProjectInterface;
-use MBO\RemoteGit\ClientOptions;
-use MBO\RemoteGit\Filter\FilterCollection;
 use AppBundle\Git\Analyzer;
 use AppBundle\Filesystem\LocalFilesystem;
 use Gitonomy\Git\Repository as GitRepository;
@@ -78,9 +67,10 @@ class StatsCommand extends Command {
             $results[$repository] = $this->analyzer->getMetadata($gitRepository);
         }
 
+        $logger->info(sprintf("save stats : %s", $this->localFilesystem->getRootPath().'/repositories.json' ));
         $this->localFilesystem->put(
             'repositories.json',
-            json_encode($results,JSON_PRETTY_PRINT)
+            json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
         );
     }
 

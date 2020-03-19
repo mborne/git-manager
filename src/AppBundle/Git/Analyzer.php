@@ -16,10 +16,11 @@ class Analyzer {
      * @return array
      */
     public function getMetadata(GitRepository $gitRepository){
-        $metadata = array(
-            'size' => $gitRepository->getSize()
-        );
         $workingDir = $gitRepository->getWorkingDir();
+
+        $metadata = array(
+            'size' => $gitRepository->getSize() * 1024
+        );
 
         $metadata['tags'] = $this->getTagNames($gitRepository);
         $metadata['branch'] = $this->getBranchNames($gitRepository);

@@ -3,33 +3,74 @@
 {% import 'helpers.html.twig' as helpers %}
 
 {% block body %}
-<h1>Repositories</h1>
+<div class="container">
 
-<table class="table table-striped">
-<thead>
-<tr>
-    <th>Name</th>
-    <th class="text-center">README</th>
-    <th class="text-center">PHP</th>
-    <th class="text-center">NodeJS</th>
-    <th class="text-center">Java</th>
-    <th class="text-right">Size</th>
-</tr>
-</thead>
-<tbody>
-{% for name,repository in repositories %}
-<tr>
-    <td>{{ helpers.repository_url(name) }}</td>
-    <td class="text-center">{{ helpers.yes_or_no(repository.readme) }}</td>
-    <td class="text-center">{{ helpers.yes_or_no(repository.php_composer) }}</td>
-    <td class="text-center">{{ helpers.yes_or_no(repository.npm_package) }}</td>
-    <td class="text-center">{{ helpers.yes_or_no(repository.maven) }}</td>
-    <td class="text-right">{{ helpers.bytesToSize(repository.size) }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+    <h1>Repositories</h1>
 
+    <table id="repositories" class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th class="text-center">README</th>
+        <th class="text-center">PHP</th>
+        <th class="text-center">NodeJS</th>
+        <th class="text-center">Java</th>
+        <th class="text-right">Size</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for name,repository in repositories %}
+    <tr>
+        <td>{{ helpers.repository_url(name) }}</td>
+        <td class="text-center">{{ helpers.yes_or_no(repository.readme) }}</td>
+        <td class="text-center">{{ helpers.yes_or_no(repository.php_composer) }}</td>
+        <td class="text-center">{{ helpers.yes_or_no(repository.npm_package) }}</td>
+        <td class="text-center">{{ helpers.yes_or_no(repository.maven) }}</td>
+        {# <td class="text-right">{{ helpers.bytesToSize(repository.size) }}</td> #}
+        <td class="text-right">{{ repository.size }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
 
+</div>
+{% endblock %}
 
+{% block javascripts %}
+<script type="text/javascript">
+
+function humanFileSize(bytes) {
+    const kilobyte = 1024 ;
+    const megabyte = kilobyte * 1024 ;
+    const gigabyte = megabyte * 1024 ;
+    const terabyte = gigabyte * 1024 ;
+
+    if ( bytes < kilobyte ){
+        return bytes + ' o' ;
+    }else if ( bytes < megabyte ){
+        return ( bytes / kilobyte ).toFixed(2) + ' Ko';
+    }else if ( bytes < gigabyte ){
+        return (bytes / megabyte).toFixed(2) + ' Mo' ;
+    }else if ( bytes < terabyte ){
+        return (bytes / gigabyte).toFixed(2) +' Go' ;
+    }else{
+        return (bytes / terabyte).toFixed(2) + ' To';
+    }
+}
+
+$('#repositories').DataTable({
+    "columnDefs": [{
+        "targets": 5,
+        //"data": "download_link",
+        "render": function ( data, type, row, meta ) {
+            console.log(type);
+            if( 'display' != type ){
+                return data;
+            }else{
+                return humanFileSize(data);
+            }
+        }
+    }]
+});
+</script>
 {% endblock %}
