@@ -1,7 +1,6 @@
 # Learn more about services, parameters and containers at
 # https://symfony.com/doc/current/service_container.html
 parameters:
-    #parameter_name: value
 
 services:
     # default configuration for services in *this* file
@@ -14,7 +13,7 @@ services:
         # if you need to do this, you can override this setting on individual services
         public: false
         bind:
-            $dataDir: '%data_dir%'
+            $dataDir: '%env(DATA_DIR)%'
 
     # makes classes in src/AppBundle available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

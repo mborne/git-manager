@@ -20,10 +20,8 @@ class AppKernel extends Kernel
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
-            $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();
 
             if ('dev' === $this->getEnvironment()) {
-                $bundles[] = new Sensio\Bundle\GeneratorBundle\SensioGeneratorBundle();
                 $bundles[] = new Symfony\Bundle\WebServerBundle\WebServerBundle();
             }
         }
@@ -36,14 +34,29 @@ class AppKernel extends Kernel
         return __DIR__;
     }
 
+    /**
+     * @return boolean
+     */
+    public static function isPhar() {
+        return strlen(Phar::running()) > 0 ? true : false;
+    }
+
+    public function getVarDir(){
+        if ( self::isPhar() ){
+            return getenv('HOME').'/.git-manager';
+        }else{
+            return dirname(__DIR__).'/../var/';
+        }
+    }
+
     public function getCacheDir()
     {
-        return dirname(__DIR__).'/var/cache/'.$this->getEnvironment();
+        return $this->getVarDir().'/cache/'.$this->getEnvironment();
     }
 
     public function getLogDir()
     {
-        return dirname(__DIR__).'/var/logs';
+        return $this->getVarDir().'/logs';
     }
 
     public function registerContainerConfiguration(LoaderInterface $loader)

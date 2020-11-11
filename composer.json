@@ -12,44 +12,26 @@
         "psr-4": { "Tests\\": "tests/" },
         "files": [ "vendor/symfony/symfony/src/Symfony/Component/VarDumper/Resources/functions/dump.php" ]
     },
+    "bin":["bin/console"],
     "require": {
         "php": ">=5.5.9",
         "gitonomy/gitlib": "^1.0",
         "incenteev/composer-parameter-handler": "^2.0",
         "league/flysystem": "^1.0",
         "mborne/remote-git": "dev-master",
-        "sensio/distribution-bundle": "^5.0.19",
         "sensio/framework-extra-bundle": "^5.0.0",
         "symfony/monolog-bundle": "^3.1.0",
         "symfony/polyfill-apcu": "^1.0",
-        "symfony/symfony": "3.4.*",
-        "twig/twig": "^1.0||^2.0"
+        "symfony/symfony": "4.4.*",
+        "twig/twig": "^2.0"
     },
     "require-dev": {
-        "sensio/generator-bundle": "^3.0",
-        "symfony/phpunit-bridge": "^3.0",
-        "phpunit/phpunit": "^5|^7"
+        "symfony/phpunit-bridge": "^4.0",
+        "phpunit/phpunit": "^7"
     },
     "scripts": {
-        "symfony-scripts": [
-            "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
-        ],
-        "post-install-cmd": [
-            "@symfony-scripts"
-        ],
-        "post-update-cmd": [
-            "@symfony-scripts"
-        ]
     },
     "config": {
-        "platform": {
-            "php": "5.6"
-        },
         "sort-packages": true
     },
     "extra": {
@@ -61,9 +43,6 @@
         "symfony-assets-install": "relative",
         "incenteev-parameters": {
             "file": "app/config/parameters.yml"
-        },
-        "branch-alias": {
-            "dev-master": "3.4-dev"
         }
     }
 }

@@ -5,19 +5,24 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Debug\Debug;
 
-// if you don't want to setup permissions the proper way, just uncomment the following PHP line
-// read https://symfony.com/doc/current/setup.html#checking-symfony-application-configuration-and-setup
-// for more information
-//umask(0000);
-
 set_time_limit(0);
 
-require __DIR__.'/../vendor/autoload.php';
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
+
+
+if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../../autoload.php'))) {
+    print('You must set up the project dependencies using Composer before you can use git-manager.');
+    exit(1);
+}
 
 $input = new ArgvInput();
 $env = $input->getParameterOption(['--env', '-e'], getenv('SYMFONY_ENV') ?: 'dev', true);
 $debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption('--no-debug', true) && $env !== 'prod';
-
 if ($debug) {
     Debug::enable();
 }

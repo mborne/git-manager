@@ -1,6 +1,0 @@
-# template configuration
-parameters:
-    # A secret key that's used to generate certain security-related tokens
-    secret: ThisTokenIsNotSoSecretChangeIt
-
-    data_dir: '%kernel.project_dir%/app/data'

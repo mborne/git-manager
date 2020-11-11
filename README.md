@@ -7,6 +7,12 @@ CLI helpers to manage a set of git repositories :
 
 ## Usage
 
+### Configuration
+
+| Name       | Description                           | Default            |
+| ---------- | ------------------------------------- | ------------------ |
+| `DATA_DIR` | Directory containing git repositories | `/var/git-manager` |
+
 ### Setup
 
 ```bash
