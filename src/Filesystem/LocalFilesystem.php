@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Filesystem;
+namespace MBO\GitManager\Filesystem;
 
 use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Adapter\Local as LocalAdapter;

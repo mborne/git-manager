@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Command;
+namespace MBO\GitManager\Command;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -21,7 +21,7 @@ use MBO\RemoteGit\FindOptions;
 use MBO\RemoteGit\ProjectInterface;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
-use AppBundle\Filesystem\LocalFilesystem;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 
 
 /**

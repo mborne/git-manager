@@ -1,12 +1,12 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace MBO\GitManager\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-use AppBundle\Filesystem\LocalFilesystem;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 
 class DefaultController extends Controller
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Git;
+namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
 

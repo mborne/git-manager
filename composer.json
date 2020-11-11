@@ -4,19 +4,18 @@
     "description": "Command line helpers to manage hosted git repositories",
     "autoload": {
         "psr-4": {
-            "AppBundle\\": "src/AppBundle"
+            "MBO\\GitManager\\": "src"
         },
         "classmap": [ "app/AppKernel.php", "app/AppCache.php" ]
     },
     "autoload-dev": {
-        "psr-4": { "Tests\\": "tests/" },
+        "psr-4": { "Tests\\MBO\\GitManagerBundle\\": "tests/" },
         "files": [ "vendor/symfony/symfony/src/Symfony/Component/VarDumper/Resources/functions/dump.php" ]
     },
     "bin":["bin/console"],
     "require": {
         "php": ">=5.5.9",
         "gitonomy/gitlib": "^1.0",
-        "incenteev/composer-parameter-handler": "^2.0",
         "league/flysystem": "^1.0",
         "mborne/remote-git": "dev-master",
         "sensio/framework-extra-bundle": "^5.0.0",
@@ -38,11 +37,9 @@
         "symfony-app-dir": "app",
         "symfony-bin-dir": "bin",
         "symfony-var-dir": "var",
-        "symfony-web-dir": "web",
+        "symfony-web-dir": "public",
+        "symfony-public-dir": "public",
         "symfony-tests-dir": "tests",
-        "symfony-assets-install": "relative",
-        "incenteev-parameters": {
-            "file": "app/config/parameters.yml"
-        }
+        "symfony-assets-install": "relative"
     }
 }

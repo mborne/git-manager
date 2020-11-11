@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Command;
+namespace MBO\GitManager\Command;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -10,8 +10,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 
-use AppBundle\Git\Analyzer;
-use AppBundle\Filesystem\LocalFilesystem;
+use MBO\GitManager\Git\Analyzer;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use Gitonomy\Git\Repository as GitRepository;
 
 /**

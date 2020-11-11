@@ -14,7 +14,7 @@ class AppKernel extends Kernel
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Symfony\Bundle\MonologBundle\MonologBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
-            new AppBundle\AppBundle(),
+            new MBO\GitManager\GitManagerBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
@@ -32,6 +32,14 @@ class AppKernel extends Kernel
     public function getRootDir()
     {
         return __DIR__;
+    }
+
+    public function getProjectDir(){
+        if ( self::isPhar() ){
+            return '.';
+        }else{
+            return parent::getProjectDir();
+        }
     }
 
     /**
