@@ -17,7 +17,7 @@
         "php": ">=5.5.9",
         "gitonomy/gitlib": "^1.0",
         "league/flysystem": "^1.0",
-        "mborne/remote-git": "dev-master",
+        "mborne/remote-git": "^0.2",
         "sensio/framework-extra-bundle": "^5.0.0",
         "symfony/monolog-bundle": "^3.1.0",
         "symfony/polyfill-apcu": "^1.0",

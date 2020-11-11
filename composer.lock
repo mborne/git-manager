@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4a6c86778d66003eb45203f0e9d9f4b7",
+    "content-hash": "20c128f5b34c73190969b9ee2b9b7938",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -780,61 +780,6 @@
             "time": "2020-09-30T07:37:11+00:00"
         },
         {
-            "name": "incenteev/composer-parameter-handler",
-            "version": "v2.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Incenteev/ParameterHandler.git",
-                "reference": "084befb11ec21faeadcddefb88b66132775ff59b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Incenteev/ParameterHandler/zipball/084befb11ec21faeadcddefb88b66132775ff59b",
-                "reference": "084befb11ec21faeadcddefb88b66132775ff59b",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.3",
-                "symfony/yaml": "^2.3 || ^3.0 || ^4.0 || ^5.0"
-            },
-            "require-dev": {
-                "composer/composer": "^1.0@dev",
-                "symfony/filesystem": "^2.3 || ^3 || ^4 || ^5",
-                "symfony/phpunit-bridge": "^4.0 || ^5.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Incenteev\\ParameterHandler\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Christophe Coevoet",
-                    "email": "stof@notk.org"
-                }
-            ],
-            "description": "Composer script handling your ignored parameter file",
-            "homepage": "https://github.com/Incenteev/ParameterHandler",
-            "keywords": [
-                "parameters management"
-            ],
-            "support": {
-                "issues": "https://github.com/Incenteev/ParameterHandler/issues",
-                "source": "https://github.com/Incenteev/ParameterHandler/tree/v2.1.4"
-            },
-            "time": "2020-03-17T21:10:00+00:00"
-        },
-        {
             "name": "league/flysystem",
             "version": "1.1.3",
             "source": {
@@ -986,16 +931,16 @@
         },
         {
             "name": "mborne/remote-git",
-            "version": "dev-master",
+            "version": "v0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mborne/remote-git.git",
-                "reference": "aee519cc873ff85df35bc92429cf8cb4469d2403"
+                "reference": "2d16478f96f89953b89f4b8d3e23776d8cedb83e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mborne/remote-git/zipball/aee519cc873ff85df35bc92429cf8cb4469d2403",
-                "reference": "aee519cc873ff85df35bc92429cf8cb4469d2403",
+                "url": "https://api.github.com/repos/mborne/remote-git/zipball/2d16478f96f89953b89f4b8d3e23776d8cedb83e",
+                "reference": "2d16478f96f89953b89f4b8d3e23776d8cedb83e",
                 "shasum": ""
             },
             "require": {
@@ -1003,12 +948,8 @@
                 "psr/log": "~1.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "phpmd/phpmd": "^2.8",
-                "phpunit/phpunit": "^5|^7",
-                "symfony/filesystem": "3.0.*"
+                "phpunit/phpunit": "^5|^7"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -1030,7 +971,7 @@
                 "issues": "https://github.com/mborne/remote-git/issues",
                 "source": "https://github.com/mborne/remote-git/tree/master"
             },
-            "time": "2020-03-19T23:21:29+00:00"
+            "time": "2019-06-30T16:57:13+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -4295,9 +4236,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "mborne/remote-git": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
