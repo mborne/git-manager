@@ -42,6 +42,10 @@ class Analyzer {
         $packagePath = $workingDir.DIRECTORY_SEPARATOR.'package.json';
         $metadata['npm_package'] = file_exists($packagePath);
 
+        /* test Jenkinsfile */
+        $packagePath = $workingDir.DIRECTORY_SEPARATOR.'Jenkinsfile';
+        $metadata['jenkinsfile'] = file_exists($packagePath);
+
         //TODO add facets
         return $metadata;
     }

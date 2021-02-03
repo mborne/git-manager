@@ -39,7 +39,7 @@ class AppKernel extends Kernel
         if ( self::isPhar() ){
             return getenv('HOME').'/.git-manager';
         }else{
-            return dirname(__DIR__).'/../var/';
+            return $this->getProjectDir().'/var/';
         }
     }
 
