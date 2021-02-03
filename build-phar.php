@@ -5,7 +5,7 @@ $phar = new Phar($buildRoot . '/dist/git-manager.phar', 0, 'git-manager.phar');
 
 $phar->startBuffering();
 
-$include = '/^(?=(.*src|.*app|.*public|.*templates|.*bin|.*vendor))(.*)$/i';
+$include = '/^(?=(.*src|.*app|.*bin|.*vendor))(.*)$/i';
 $phar->buildFromDirectory($buildRoot, $include);
 
 /* avoid first line display */
