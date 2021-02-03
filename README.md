@@ -18,7 +18,6 @@ CLI helpers to manage a set of git repositories :
 ```bash
 git clone https://github.com/mborne/git-manager
 cd git-manager
-# PHP 7.x
 composer install
 ```
 
