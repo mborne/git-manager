@@ -1,7 +1,3 @@
-# Learn more about services, parameters and containers at
-# https://symfony.com/doc/current/service_container.html
-parameters:
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -19,13 +15,3 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     MBO\GitManager\:
         resource: '../../src/*'
-        # you can exclude directories or files
-        # but if a service is unused, it's removed anyway
-        exclude: '../../src/{Entity,Repository,Tests}'
-
-    # controllers are imported separately to make sure they're public
-    # and have a tag that allows actions to type-hint services
-    MBO\GitManager\Controller\:
-        resource: '../../src/Controller'
-        public: true
-        tags: ['controller.service_arguments']

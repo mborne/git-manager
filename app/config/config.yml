@@ -1,46 +1,11 @@
 parameters:
-    locale: fr
-    # A secret key that's used to generate certain security-related tokens
     env(SECRET): ThisTokenIsNotSoSecretChangeIt
     env(DATA_DIR): '/var/git-manager'
 
 imports:
-    - { resource: security.yml }
     - { resource: services.yml }
 
 framework:
-    #esi: ~
-    translator: { fallbacks: ['%locale%'] }
     secret: '%env(SECRET)%'
-    router:
-        resource: '%kernel.project_dir%/app/config/routing.yml'
-        strict_requirements: ~
-    form: ~
-    csrf_protection: ~
-    validation: { enable_annotations: true }
-    #serializer: { enable_annotations: true }
-    default_locale: '%locale%'
-    trusted_hosts: ~
-    session:
-        # https://symfony.com/doc/current/reference/configuration/framework.html#handler-id
-        handler_id: session.handler.native_file
-        save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
-    fragments: ~
-    http_method_override: true
-    assets: ~
     php_errors:
         log: true
-
-# Twig Configuration
-twig:
-    debug: '%kernel.debug%'
-    strict_variables: '%kernel.debug%'
-    exception_controller: null
-
-sensio_framework_extra:
-   router:
-        annotations: false
-
-# web_server:
-#     extra:
-#         public-dir: web/

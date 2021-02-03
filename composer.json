@@ -6,40 +6,37 @@
         "psr-4": {
             "MBO\\GitManager\\": "src"
         },
-        "classmap": [ "app/AppKernel.php", "app/AppCache.php" ]
+        "classmap": [
+            "app/AppKernel.php"
+        ]
     },
-    "autoload-dev": {
-        "psr-4": { "Tests\\MBO\\GitManagerBundle\\": "tests/" },
-        "files": [ "vendor/symfony/symfony/src/Symfony/Component/VarDumper/Resources/functions/dump.php" ]
-    },
-    "bin":["bin/console"],
+    "bin": [
+        "bin/console"
+    ],
     "require": {
-        "php": ">=5.5.9",
         "gitonomy/gitlib": "^1.0",
         "league/flysystem": "^1.0",
         "mborne/remote-git": "^0.2",
-        "sensio/framework-extra-bundle": "^5.0.0",
-        "symfony/monolog-bundle": "^3.1.0",
         "symfony/polyfill-apcu": "^1.0",
-        "symfony/symfony": "4.4.*",
-        "twig/twig": "^2.0"
+        "symfony/framework-bundle": "4.4.*",
+        "symfony/http-kernel": "4.4.*",
+        "symfony/console": "4.4.*",
+        "symfony/yaml": "4.4.*"
     },
-    "require-dev": {
-        "symfony/phpunit-bridge": "^4.0",
-        "phpunit/phpunit": "^7"
-    },
-    "scripts": {
-    },
+    "scripts": {},
     "config": {
         "sort-packages": true
     },
     "extra": {
+        "conflict": {
+            "symfony/symfony": "*"
+        },
+        "symfony": {
+            "allow-contrib": false,
+            "require": "4.4.*"
+        },
         "symfony-app-dir": "app",
         "symfony-bin-dir": "bin",
-        "symfony-var-dir": "var",
-        "symfony-web-dir": "public",
-        "symfony-public-dir": "public",
-        "symfony-tests-dir": "tests",
-        "symfony-assets-install": "relative"
+        "symfony-var-dir": "var"
     }
 }

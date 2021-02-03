@@ -1,3 +1,0 @@
-app:
-    resource: '@GitManagerBundle/Controller/'
-    type: annotation
