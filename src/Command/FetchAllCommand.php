@@ -57,6 +57,8 @@ class FetchAllCommand extends Command {
             ->addArgument('url', InputArgument::REQUIRED)
             ->addArgument('token')
 
+            ->addOption('type', null, InputOption::VALUE_REQUIRED, 'Remote git type (gitlab-v4,github,gogs-v1,...)')
+
             ->addOption('orgs', 'o', InputOption::VALUE_REQUIRED, 'Find projects according to given organization names')
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
         ;
@@ -67,6 +69,8 @@ class FetchAllCommand extends Command {
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         $logger = $this->createLogger($output);
+
+        $logger->info('[git:fetch-all] started...');
 
         $dataDir = $this->localFilesystem->getRootPath();
         if ( ! file_exists($dataDir) ){
@@ -82,10 +86,16 @@ class FetchAllCommand extends Command {
         $clientOptions = new ClientOptions();
         $clientOptions->setUrl($input->getArgument('url'));
         $clientOptions->setToken($input->getArgument('token'));
+
+        $type = $input->getOption('type');
+        if ( ! empty($type) ){
+            $clientOptions->setType($type);
+        }
         $client = ClientFactory::createClient(
             $clientOptions,
             $logger
         );
+
 
         /*
          * Create repository listing filter (git level)
@@ -132,6 +142,10 @@ class FetchAllCommand extends Command {
             }
             system($command);
         }
+
+        $logger->info('[git:fetch-all] completed');
+
+        return 0;
     }
 
     /**
