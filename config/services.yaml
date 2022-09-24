@@ -1,0 +1,17 @@
+parameters:
+    env(GIT_MANAGER_DIR): '/var/git-manager'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $dataDir: '%env(GIT_MANAGER_DIR)%'
+
+    MBO\GitManager\:
+        resource: '../src/*'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
