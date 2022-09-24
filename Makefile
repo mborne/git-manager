@@ -13,3 +13,7 @@ test: vendor
 .PHONY: vendor
 vendor:
 	composer install
+
+.PHONY: clean
+clean:
+	rm -rf vendor dist/git-manager.phar
