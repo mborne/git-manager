@@ -2,39 +2,29 @@
 
 namespace MBO\GitManager\Command;
 
-use Psr\Log\LoggerInterface;
+use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\RemoteGit\ClientFactory;
+use MBO\RemoteGit\ClientOptions;
+use MBO\RemoteGit\FindOptions;
 use Psr\Log\LogLevel;
-
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
-
-use MBO\SatisGitlab\Satis\ConfigBuilder;
-use GuzzleHttp\Client as GuzzleHttpClient;
-
-use MBO\RemoteGit\ClientFactory;
-use MBO\RemoteGit\ClientInterface;
-use MBO\RemoteGit\FindOptions;
-use MBO\RemoteGit\ProjectInterface;
-use MBO\RemoteGit\ClientOptions;
-use MBO\RemoteGit\Filter\FilterCollection;
-use MBO\GitManager\Filesystem\LocalFilesystem;
-
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Clone remote git projects to local directory
+ * Clone remote git projects to local directory.
  *
  * @author mborne
  */
-class FetchAllCommand extends Command {
-
+class FetchAllCommand extends Command
+{
     /**
      * @var LocalFilesystem
      */
-    private $localFilesystem ;
+    private $localFilesystem;
 
     public function __construct(LocalFilesystem $localFilesystem)
     {
@@ -46,7 +36,8 @@ class FetchAllCommand extends Command {
     /**
      * {@inheritDoc}
      */
-    protected function configure() {
+    protected function configure()
+    {
         $this
             // the name of the command (the part after "bin/console")
             ->setName('git:fetch-all')
@@ -69,16 +60,17 @@ class FetchAllCommand extends Command {
     /**
      * {@inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $logger = $this->createLogger($output);
 
         $logger->info('[git:fetch-all] started...');
 
         $dataDir = $this->localFilesystem->getRootPath();
-        if ( ! file_exists($dataDir) ){
+        if (!file_exists($dataDir)) {
             throw new \Exception("$dataDir not found");
         }
-        if ( ! is_dir($dataDir) ){
+        if (!is_dir($dataDir)) {
             throw new \Exception("$dataDir is not a directory");
         }
 
@@ -90,7 +82,7 @@ class FetchAllCommand extends Command {
         $clientOptions->setToken($input->getArgument('token'));
 
         $type = $input->getOption('type');
-        if ( ! empty($type) ){
+        if (!empty($type)) {
             $clientOptions->setType($type);
         }
         $client = ClientFactory::createClient(
@@ -98,20 +90,19 @@ class FetchAllCommand extends Command {
             $logger
         );
 
-
         /*
          * Create repository listing filter (git level)
          */
         $findOptions = new FindOptions();
         /* orgs option */
         $orgs = $input->getOption('orgs');
-        if ( ! empty($orgs) ){
-            $findOptions->setOrganizations(explode(',',$orgs));
+        if (!empty($orgs)) {
+            $findOptions->setOrganizations(explode(',', $orgs));
         }
         /* users option */
         $users = $input->getOption('users');
-        if ( ! empty($users) ){
-            $findOptions->setUsers(explode(',',$users));
+        if (!empty($users)) {
+            $findOptions->setUsers(explode(',', $users));
         }
 
         /*
@@ -119,7 +110,7 @@ class FetchAllCommand extends Command {
          */
         $projects = $client->find($findOptions);
 
-        foreach ( $projects as $project ){
+        foreach ($projects as $project) {
             $logger->info(sprintf(
                 '[%s] %s ...',
                 $project->getName(),
@@ -128,14 +119,14 @@ class FetchAllCommand extends Command {
 
             $host = parse_url($project->getHttpUrl(), PHP_URL_HOST);
             $localPath = $dataDir.'/'.$host.'/'.$project->getName();
-            if ( file_exists($localPath) ){
+            if (file_exists($localPath)) {
                 $command = sprintf(
                     'cd %s && git fetch origin -p && git pull',
                     escapeshellarg($localPath),
                     escapeshellarg($project->getHttpUrl()),
                     escapeshellarg($localPath)
                 );
-            }else{
+            } else {
                 $command = sprintf(
                     'git clone %s %s',
                     escapeshellarg($project->getHttpUrl()),
@@ -151,16 +142,17 @@ class FetchAllCommand extends Command {
     }
 
     /**
-     * Create console logger
-     * @param OutputInterface $output
+     * Create console logger.
+     *
      * @return ConsoleLogger
      */
-    protected function createLogger(OutputInterface $output){
-        $verbosityLevelMap = array(
+    protected function createLogger(OutputInterface $output)
+    {
+        $verbosityLevelMap = [
             LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,
-            LogLevel::INFO   => OutputInterface::VERBOSITY_NORMAL,
-        );
-        return new ConsoleLogger($output,$verbosityLevelMap);
-    }
+            LogLevel::INFO => OutputInterface::VERBOSITY_NORMAL,
+        ];
 
+        return new ConsoleLogger($output, $verbosityLevelMap);
+    }
 }

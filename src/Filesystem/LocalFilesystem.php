@@ -2,16 +2,15 @@
 
 namespace MBO\GitManager\Filesystem;
 
-use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Adapter\Local as LocalAdapter;
+use League\Flysystem\Filesystem as LeagueFilesystem;
 use Psr\Log\LoggerInterface;
 
-
 /**
- * Local data directory
+ * Local data directory.
  */
-class LocalFilesystem extends LeagueFilesystem {
-
+class LocalFilesystem extends LeagueFilesystem
+{
     /**
      * @var string
      */
@@ -25,68 +24,72 @@ class LocalFilesystem extends LeagueFilesystem {
     public function __construct(
         $dataDir,
         LoggerInterface $logger
-    ){
+    ) {
         parent::__construct(new LocalAdapter($dataDir));
-        $logger->info(sprintf("[LocalFilesystem] %s ",$dataDir));
+        $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
         $this->rootPath = $dataDir;
-        $this->logger   = $logger;
+        $this->logger = $logger;
     }
 
     /**
      * @return string
      */
-    public function getRootPath(){
+    public function getRootPath()
+    {
         return $this->rootPath;
     }
 
     /**
-     * Get local repositories
+     * Get local repositories.
+     *
      * @return string[]
      */
-    public function getRepositories(){
-        $repositories = array();
-        $this->findRepositories($repositories,'');
+    public function getRepositories()
+    {
+        $repositories = [];
+        $this->findRepositories($repositories, '');
+
         return $repositories;
     }
 
     /**
-     * Recursive .git finder
+     * Recursive .git finder.
      *
-     * @param array $repositories
      * @param string $parentPath
+     *
      * @return void
      */
-    private function findRepositories(array & $repositories, $directory){
-        $this->logger->debug(sprintf("[LocalFilesystem] findRepositories(%s)... ",$directory));
+    private function findRepositories(array &$repositories, $directory)
+    {
+        $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
 
         try {
             $items = $this->listContents($directory);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $this->logger->info(sprintf(
                 "[LocalFilesystem] findRepositories(%s) : can't list %s",
                 $directory,
                 $e->getMessage()
             ));
+
             return;
         }
 
-        foreach ( $items as $item ){
-            if ( 'dir' !== $item['type'] ){
+        foreach ($items as $item) {
+            if ('dir' !== $item['type']) {
                 continue;
             }
-            if ( $item['basename'] === '.git' ){
+            if ('.git' === $item['basename']) {
                 $this->logger->debug(sprintf(
-                    "[LocalFilesystem] findRepositories(%s) : found %s",
+                    '[LocalFilesystem] findRepositories(%s) : found %s',
                     $directory,
                     $item['path']
                 ));
-                $repositories[] = $directory ;
+                $repositories[] = $directory;
                 continue;
-            }else{
-                $this->findRepositories($repositories,$item['path']);
+            } else {
+                $this->findRepositories($repositories, $item['path']);
             }
-            
         }
     }
-
 }
