@@ -2,7 +2,7 @@
 
 CLI helpers to manage a set of git repositories :
 
-* Retreive and backup hosted GIT repositories (gitlab, gogs, github)
+* Retreive and backup hosted GIT repositories (github, gitlab, gogs, gitea)
 * Performs some basic checks (ex : README.md is available)
 
 ## Usage
@@ -26,16 +26,14 @@ composer install
 * From github :
 
 ```bash
-bin/console git:fetch-all --orgs IGNF --users=mborne https://github.com $SATIS_GITHUB_TOKEN
+bin/console git:fetch-all --orgs IGNF --users=mborne https://github.com $GITHUB_TOKEN
 ```
 
-* From gogs :
+* From gogs or gitea :
 
 ```bash
-bin/console git:fetch-all https://gogs.quadtreeworld.net $SATIS_GOGS_TOKEN
+bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $GITEA_TOKEN
 ```
-
-* ...
 
 
 ### Compute stats about repositories

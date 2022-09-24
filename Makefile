@@ -10,5 +10,6 @@ dist: vendor
 test: vendor
 	vendor/bin/phpunit -c phpunit.xml
 
+.PHONY: vendor
 vendor:
 	composer install
