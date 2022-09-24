@@ -2,6 +2,7 @@
     "name": "mborne/git-manager",
     "type": "project",
     "description": "Command line helpers to manage hosted git repositories",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "MBO\\GitManager\\": "src"
