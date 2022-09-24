@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $dataDir: '%env(GIT_MANAGER_DIR)%'
+
+    MBO\GitManager\:
+        resource: '../src/*'

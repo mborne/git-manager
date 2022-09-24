@@ -6,10 +6,7 @@
     "autoload": {
         "psr-4": {
             "MBO\\GitManager\\": "src"
-        },
-        "classmap": [
-            "app/AppKernel.php"
-        ]
+        }
     },
     "bin": [
         "bin/console"

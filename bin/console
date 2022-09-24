@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+namespace MBO\GitManager;
+
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\ErrorHandler\Debug;
@@ -27,6 +29,6 @@ if ($debug) {
     Debug::enable();
 }
 
-$kernel = new AppKernel($env, $debug);
+$kernel = new Kernel($env, $debug);
 $application = new Application($kernel);
 $application->run($input);

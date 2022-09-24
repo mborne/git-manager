@@ -1,26 +1,29 @@
 <?php
 
+namespace MBO\GitManager;
+
+use Phar;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Config\Loader\LoaderInterface;
 
-class AppKernel extends Kernel
+class Kernel extends BaseKernel
 {
-    public function registerBundles()
+    public function registerBundles(): iterable
     {
-        $bundles = [
-            new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new MBO\GitManager\GitManagerBundle(),
+        return [
+            new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
+            new GitManagerBundle(),
         ];
-        return $bundles;
     }
 
-    public function getRootDir()
+    public function getRootDir(): string
     {
-        return __DIR__;
+        return dirname(__DIR__);
     }
 
-    public function getProjectDir(){
+    public function getProjectDir(): string
+    {
         if ( self::isPhar() ){
             return '.';
         }else{
@@ -28,14 +31,13 @@ class AppKernel extends Kernel
         }
     }
 
-    /**
-     * @return boolean
-     */
-    public static function isPhar() {
+    public static function isPhar(): bool
+    {
         return strlen(Phar::running()) > 0 ? true : false;
     }
 
-    public function getVarDir(){
+    public function getVarDir(): string
+    {
         if ( self::isPhar() ){
             return getenv('HOME').'/.git-manager';
         }else{
@@ -43,12 +45,12 @@ class AppKernel extends Kernel
         }
     }
 
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return $this->getVarDir().'/cache/'.$this->getEnvironment();
     }
 
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return $this->getVarDir().'/logs';
     }
