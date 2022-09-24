@@ -9,10 +9,14 @@ fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_DIR=$(dirname $SCRIPT_DIR)
 
-git config credential.helper '!f() { sleep 1; echo "username=user"; echo "password=${GITLAB_TOKEN}"; }; f'
+# Config auth for "git clone"
+git config --global credential.helper store
+echo "https://user:${GITLAB_TOKEN}@gitlab.com" > ~/.git-credentials
 
+# Fetch mborne repos from gitlab.com
 php ${PROJECT_DIR}/dist/git-manager.phar git:fetch-all --users=mborne https://gitlab.com $GITLAB_TOKEN
 
+# Ensure it works
 if [ ! -e "$DATA_DIR/gitlab.com/mborne/sample-composer/README.md" ];
 then
     echo "gitlab.com/mborne/sample-composer/README.md not found!"
