@@ -38,7 +38,10 @@ jobs:
         chmod +x dist/git-manager.phar
 
     - name: Perform basic checks
-      run: php dist/git-manager.phar --help
+      run: |
+        php dist/git-manager.phar git:fetch-all --help
+        bash .ci/check-gitlab.sh
       env:
         DATA_DIR: /tmp/git-manager-test
+        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 
