@@ -1,6 +1,6 @@
 parameters:
     env(SECRET): ThisTokenIsNotSoSecretChangeIt
-    env(DATA_DIR): '/var/git-manager'
+    env(GIT_MANAGER_DIR): '/var/git-manager'
 
 imports:
     - { resource: services.yml }
