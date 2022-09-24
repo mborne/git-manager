@@ -41,6 +41,6 @@ jobs:
       run: |
         bash .ci/check-gitlab.sh
       env:
-        DATA_DIR: /tmp/git-manager-test
+        GIT_MANAGER_DIR: /tmp/git-manager-test
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 

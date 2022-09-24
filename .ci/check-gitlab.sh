@@ -17,7 +17,7 @@ echo "https://user:${GITLAB_TOKEN}@gitlab.com" > ~/.git-credentials
 php ${PROJECT_DIR}/dist/git-manager.phar git:fetch-all --users=mborne https://gitlab.com $GITLAB_TOKEN
 
 # Ensure it works
-if [ ! -e "$DATA_DIR/gitlab.com/mborne/sample-composer/README.md" ];
+if [ ! -e "$GIT_MANAGER_DIR/gitlab.com/mborne/sample-composer/README.md" ];
 then
     echo "gitlab.com/mborne/sample-composer/README.md not found!"
     exit 1
