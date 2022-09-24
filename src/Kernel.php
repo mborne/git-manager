@@ -27,9 +27,9 @@ class Kernel extends BaseKernel
 
     public function getProjectDir(): string
     {
-        if ( self::isPhar() ){
+        if (self::isPhar()) {
             return '.';
-        }else{
+        } else {
             return parent::getProjectDir();
         }
     }
@@ -46,9 +46,9 @@ class Kernel extends BaseKernel
 
     public function getVarDir(): string
     {
-        if ( self::isPhar() ){
+        if (self::isPhar()) {
             return getenv('HOME').'/.git-manager';
-        }else{
+        } else {
             return $this->getProjectDir().'/var/';
         }
     }
@@ -62,5 +62,4 @@ class Kernel extends BaseKernel
     {
         return $this->getVarDir().'/logs';
     }
-
 }

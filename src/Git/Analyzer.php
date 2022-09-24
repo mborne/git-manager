@@ -5,22 +5,24 @@ namespace MBO\GitManager\Git;
 use Gitonomy\Git\Repository as GitRepository;
 
 /**
- * Analyze git repository to provide informations
+ * Analyze git repository to provide informations.
  */
-class Analyzer {
-
+class Analyzer
+{
     /**
-     * Get metadata for a given repository
+     * Get metadata for a given repository.
      *
      * @param string $repositoryName
+     *
      * @return array
      */
-    public function getMetadata(GitRepository $gitRepository){
+    public function getMetadata(GitRepository $gitRepository)
+    {
         $workingDir = $gitRepository->getWorkingDir();
 
-        $metadata = array(
-            'size' => $gitRepository->getSize() * 1024
-        );
+        $metadata = [
+            'size' => $gitRepository->getSize() * 1024,
+        ];
 
         $metadata['tags'] = $this->getTagNames($gitRepository);
         $metadata['branch'] = $this->getBranchNames($gitRepository);
@@ -46,53 +48,55 @@ class Analyzer {
         $packagePath = $workingDir.DIRECTORY_SEPARATOR.'Jenkinsfile';
         $metadata['jenkinsfile'] = file_exists($packagePath);
 
-        //TODO add facets
+        // TODO add facets
         return $metadata;
     }
 
     /**
-     * Get tag names
+     * Get tag names.
      *
-     * @param GitRepository $gitRepository
      * @return string[]
      */
-    private function getTagNames(GitRepository $gitRepository){
-        $result = array();
-        foreach ( $gitRepository->getReferences()->getTags() as $tag){
+    private function getTagNames(GitRepository $gitRepository)
+    {
+        $result = [];
+        foreach ($gitRepository->getReferences()->getTags() as $tag) {
             $result[] = $tag->getName();
         }
+
         return $result;
     }
 
     /**
-     * Get branch names
+     * Get branch names.
      *
-     * @param GitRepository $gitRepository
      * @return string[]
      */
-    private function getBranchNames(GitRepository $gitRepository){
-        $result = array();
-        foreach ( $gitRepository->getReferences()->getBranches() as $branch){
+    private function getBranchNames(GitRepository $gitRepository)
+    {
+        $result = [];
+        foreach ($gitRepository->getReferences()->getBranches() as $branch) {
             $result[] = $branch->getName();
         }
+
         return $result;
     }
 
     /**
-     * Get commit dates
+     * Get commit dates.
      *
-     * @param GitRepository $gitRepository
      * @return array
      */
-    private function getCommitDates(GitRepository $gitRepository){
-        $result = array();
-        foreach ( $gitRepository->getReferences()->getAll() as $reference ){
+    private function getCommitDates(GitRepository $gitRepository)
+    {
+        $result = [];
+        foreach ($gitRepository->getReferences()->getAll() as $reference) {
             $commit = $reference->getCommit();
             $day = $commit->getAuthorDate()->format('Ymd');
             $result[$day] = isset($result[$day]) ? $result[$day] + 1 : 1;
         }
         ksort($result);
+
         return $result;
     }
-
 }

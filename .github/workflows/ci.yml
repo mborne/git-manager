@@ -32,6 +32,9 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - name: Check style
+      run: vendor/bin/php-cs-fixer fix src -v --dry-run --diff --using-cache=no
+
     - name: Build dist/git-manager.phar
       run: |
         php -d phar.readonly=0 build-phar.php
