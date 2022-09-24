@@ -10,5 +10,10 @@ dist: vendor
 test: vendor
 	vendor/bin/phpunit -c phpunit.xml
 
+.PHONY: vendor
 vendor:
 	composer install
+
+.PHONY: clean
+clean:
+	rm -rf vendor dist/git-manager.phar
