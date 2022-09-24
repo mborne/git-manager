@@ -1,5 +1,7 @@
 # git-manager
 
+[![CI](https://github.com/mborne/git-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/mborne/git-manager/actions/workflows/ci.yml)
+
 CLI helpers to manage a set of git repositories :
 
 * Retreive and backup hosted GIT repositories (github, gitlab, gogs, gitea)
