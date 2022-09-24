@@ -43,7 +43,8 @@ class StatsCommand extends Command {
     }
 
 
-    protected function configure() {
+    protected function configure() : void
+    {
         $this
             ->setName('git:stats')
             ->setDescription('Compute stats on local repositories')
@@ -53,7 +54,8 @@ class StatsCommand extends Command {
     /**
      * @{inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $logger = $this->createLogger($output);
 
         $repositories = $this->localFilesystem->getRepositories();
@@ -72,6 +74,8 @@ class StatsCommand extends Command {
             'repositories.json',
             json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
         );
+
+        return self::SUCCESS;
     }
 
     /**

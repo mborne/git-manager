@@ -43,7 +43,9 @@ class FetchAllCommand extends Command {
         $this->localFilesystem = $localFilesystem;
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     protected function configure() {
         $this
             // the name of the command (the part after "bin/console")
@@ -65,7 +67,7 @@ class FetchAllCommand extends Command {
     }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
         $logger = $this->createLogger($output);
@@ -145,7 +147,7 @@ class FetchAllCommand extends Command {
 
         $logger->info('[git:fetch-all] completed');
 
-        return 0;
+        return self::SUCCESS;
     }
 
     /**
