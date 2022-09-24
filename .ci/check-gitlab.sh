@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$GITLAB_TOKEN"];
+if [ -z "$GITLAB_TOKEN" ];
 then
     echo "GITLAB_TOKEN required"
     exit 1

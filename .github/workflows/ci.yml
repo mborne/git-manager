@@ -37,9 +37,8 @@ jobs:
         php -d phar.readonly=0 build-phar.php
         chmod +x dist/git-manager.phar
 
-    - name: Perform basic checks
+    - name: Test git:fetch-all with gitlab.com
       run: |
-        php dist/git-manager.phar --help
         bash .ci/check-gitlab.sh
       env:
         DATA_DIR: /tmp/git-manager-test
