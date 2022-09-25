@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ddea0f0e7f2411cfabbc511dfb17eb1e",
+    "content-hash": "0cca5954ea5be2563c0e605781d61eda",
     "packages": [
         {
             "name": "gitonomy/gitlib",
@@ -541,16 +541,16 @@
         },
         {
             "name": "mborne/remote-git",
-            "version": "v0.2.1",
+            "version": "v0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mborne/remote-git.git",
-                "reference": "2d16478f96f89953b89f4b8d3e23776d8cedb83e"
+                "reference": "29c109d4ac1c40ff59c58fd7f9e4ea74b44e4921"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mborne/remote-git/zipball/2d16478f96f89953b89f4b8d3e23776d8cedb83e",
-                "reference": "2d16478f96f89953b89f4b8d3e23776d8cedb83e",
+                "url": "https://api.github.com/repos/mborne/remote-git/zipball/29c109d4ac1c40ff59c58fd7f9e4ea74b44e4921",
+                "reference": "29c109d4ac1c40ff59c58fd7f9e4ea74b44e4921",
                 "shasum": ""
             },
             "require": {
@@ -558,12 +558,15 @@
                 "psr/log": "~1.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5|^7"
+                "friendsofphp/php-cs-fixer": "^3.11",
+                "php-coveralls/php-coveralls": "^2.5",
+                "phpmd/phpmd": "^2.8",
+                "phpunit/phpunit": "^9"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "": "src/"
+                    "MBO\\RemoteGit\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -579,9 +582,9 @@
             "description": "A lightweight PHP client providing a consistent way to find hosted and self-hosted git repositories (github, gitlab,...)",
             "support": {
                 "issues": "https://github.com/mborne/remote-git/issues",
-                "source": "https://github.com/mborne/remote-git/tree/master"
+                "source": "https://github.com/mborne/remote-git/tree/v0.4.0"
             },
-            "time": "2019-06-30T16:57:13+00:00"
+            "time": "2022-09-25T17:07:52+00:00"
         },
         {
             "name": "psr/cache",

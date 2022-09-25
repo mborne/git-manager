@@ -29,6 +29,8 @@ composer install
 
 ```bash
 bin/console git:fetch-all --orgs IGNF --users=mborne https://github.com $GITHUB_TOKEN
+# for private repositories, use "_me_" :
+bin/console git:fetch-all --users=_me_ https://github.com $GITHUB_TOKEN
 ```
 
 * From gogs or gitea :
