@@ -15,7 +15,7 @@
         "gitonomy/gitlib": "^1.0",
         "league/flysystem": "^1.0",
         "mborne/remote-git": "0.4.*",
-        "symfony/flex": "^2.2",
+        "symfony/flex": "^1.19",
         "symfony/framework-bundle": "5.4.*",
         "symfony/console": "5.4.*",
         "symfony/runtime": "5.4.*",
