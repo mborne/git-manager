@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "issue_*" ]
   pull_request:
     branches: [ "master" ]
 
@@ -12,10 +12,22 @@ permissions:
 jobs:
   build:
 
+    strategy:
+      matrix:
+        php-version: [7.4,8.1]
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: "Setup PHP ${{ matrix.php-version }}"
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        #coverage: xdebug2
+        #coverage: xdebug
+        #tools: php-cs-fixer, phpunit
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
