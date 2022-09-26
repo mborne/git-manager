@@ -7,6 +7,10 @@ CLI helpers to manage a set of git repositories :
 * Retreive and backup hosted GIT repositories (github, gitlab, gogs, gitea)
 * Performs some basic checks (ex : README.md is available)
 
+## Requirements
+
+* PHP >= 7.4
+
 ## Usage
 
 ### Configuration
