@@ -2,6 +2,8 @@
 
 namespace MBO\GitManager\Command;
 
+use Gitonomy\Git\Admin as GitAdmin;
+use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
@@ -53,8 +55,7 @@ class FetchAllCommand extends Command
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'Remote git type (gitlab-v4,github,gogs-v1,...)')
 
             ->addOption('orgs', 'o', InputOption::VALUE_REQUIRED, 'Find projects according to given organization names')
-            ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
-        ;
+            ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names');
     }
 
     /**
@@ -79,7 +80,8 @@ class FetchAllCommand extends Command
          */
         $clientOptions = new ClientOptions();
         $clientOptions->setUrl($input->getArgument('url'));
-        $clientOptions->setToken($input->getArgument('token'));
+        $token = $input->getArgument('token');
+        $clientOptions->setToken($token);
 
         $type = $input->getOption('type');
         if (!empty($type)) {
@@ -112,28 +114,53 @@ class FetchAllCommand extends Command
 
         foreach ($projects as $project) {
             $logger->info(sprintf(
-                '[%s] %s ...',
+                '[{%s}] %s ...',
                 $project->getName(),
                 $project->getHttpUrl()
             ));
 
-            $host = parse_url($project->getHttpUrl(), PHP_URL_HOST);
+            $projectUrl = $project->getHttpUrl();
+
+            // Compute local path according to url
+            $host = parse_url($projectUrl, PHP_URL_HOST);
             $localPath = $dataDir.'/'.$host.'/'.$project->getName();
-            if (file_exists($localPath)) {
-                $command = sprintf(
-                    'cd %s && git fetch origin -p && git pull',
-                    escapeshellarg($localPath),
-                    escapeshellarg($project->getHttpUrl()),
-                    escapeshellarg($localPath)
-                );
-            } else {
-                $command = sprintf(
-                    'git clone %s %s',
-                    escapeshellarg($project->getHttpUrl()),
-                    escapeshellarg($localPath)
-                );
+
+            // Inject token in url to clone repository
+            $cloneUrl = $projectUrl;
+            if (!empty($token)) {
+                $scheme = parse_url($projectUrl, PHP_URL_SCHEME);
+                $cloneUrl = str_replace("$scheme://", "$scheme://user-token:$token@", $projectUrl);
             }
-            system($command);
+
+            /*
+             * fetch or clone repository to localPath
+             */
+            if (file_exists($localPath)) {
+                $gitRepository = new GitRepository($localPath);
+                // use token to fetch
+                $gitRepository->run('remote', [
+                    'set-url',
+                    'origin',
+                    $cloneUrl,
+                ]);
+                // update local repository
+                $gitRepository->run('fetch', ['origin', '--prune', '--prune-tags']);
+                // remove token
+                $gitRepository->run('remote', [
+                    'set-url',
+                    'origin',
+                    $projectUrl,
+                ]);
+            } else {
+                GitAdmin::cloneTo($localPath, $cloneUrl, false);
+                $gitRepository = new GitRepository($localPath);
+                // remove token
+                $gitRepository->run('remote', [
+                    'set-url',
+                    'origin',
+                    $projectUrl,
+                ]);
+            }
         }
 
         $logger->info('[git:fetch-all] completed');

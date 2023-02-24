@@ -86,7 +86,6 @@ class LocalFilesystem extends LeagueFilesystem
                     $item['path']
                 ));
                 $repositories[] = $directory;
-                continue;
             } else {
                 $this->findRepositories($repositories, $item['path']);
             }
