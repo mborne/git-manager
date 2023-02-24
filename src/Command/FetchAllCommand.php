@@ -8,6 +8,7 @@ use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\FindOptions;
+use MBO\RemoteGit\ProjectInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -118,54 +119,67 @@ class FetchAllCommand extends Command
                 $project->getName(),
                 $project->getHttpUrl()
             ));
-
-            $projectUrl = $project->getHttpUrl();
-
-            // Compute local path according to url
-            $host = parse_url($projectUrl, PHP_URL_HOST);
-            $localPath = $dataDir.'/'.$host.'/'.$project->getName();
-
-            // Inject token in url to clone repository
-            $cloneUrl = $projectUrl;
-            if (!empty($token)) {
-                $scheme = parse_url($projectUrl, PHP_URL_SCHEME);
-                $cloneUrl = str_replace("$scheme://", "$scheme://user-token:$token@", $projectUrl);
-            }
-
-            /*
-             * fetch or clone repository to localPath
-             */
-            if (file_exists($localPath)) {
-                $gitRepository = new GitRepository($localPath);
-                // use token to fetch
-                $gitRepository->run('remote', [
-                    'set-url',
-                    'origin',
-                    $cloneUrl,
-                ]);
-                // update local repository
-                $gitRepository->run('fetch', ['origin', '--prune', '--prune-tags']);
-                // remove token
-                $gitRepository->run('remote', [
-                    'set-url',
-                    'origin',
-                    $projectUrl,
-                ]);
-            } else {
-                GitAdmin::cloneTo($localPath, $cloneUrl, false);
-                $gitRepository = new GitRepository($localPath);
-                // remove token
-                $gitRepository->run('remote', [
-                    'set-url',
-                    'origin',
-                    $projectUrl,
-                ]);
+            try {
+                $this->fetchOrClone($project, $dataDir, $token);
+            } catch (\Exception $e) {
+                $logger->error(sprintf(
+                    '[{%s}] %s : "%s"',
+                    $project->getName(),
+                    $project->getHttpUrl(),
+                    $e->getMessage()
+                ));
             }
         }
 
         $logger->info('[git:fetch-all] completed');
 
         return self::SUCCESS;
+    }
+
+    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token)
+    {
+        $projectUrl = $project->getHttpUrl();
+
+        // Compute local path according to url
+        $host = parse_url($projectUrl, PHP_URL_HOST);
+        $localPath = $dataDir.'/'.$host.'/'.$project->getName();
+
+        // Inject token in url to clone repository
+        $cloneUrl = $projectUrl;
+        if (!empty($token)) {
+            $scheme = parse_url($projectUrl, PHP_URL_SCHEME);
+            $cloneUrl = str_replace("$scheme://", "$scheme://user-token:$token@", $projectUrl);
+        }
+
+        /*
+         * fetch or clone repository to localPath
+         */
+        if (file_exists($localPath)) {
+            $gitRepository = new GitRepository($localPath);
+            // use token to fetch
+            $gitRepository->run('remote', [
+                'set-url',
+                'origin',
+                $cloneUrl,
+            ]);
+            // update local repository
+            $gitRepository->run('fetch', ['origin', '--prune', '--prune-tags']);
+            // remove token
+            $gitRepository->run('remote', [
+                'set-url',
+                'origin',
+                $projectUrl,
+            ]);
+        } else {
+            GitAdmin::cloneTo($localPath, $cloneUrl, false);
+            $gitRepository = new GitRepository($localPath);
+            // remove token
+            $gitRepository->run('remote', [
+                'set-url',
+                'origin',
+                $projectUrl,
+            ]);
+        }
     }
 
     /**
