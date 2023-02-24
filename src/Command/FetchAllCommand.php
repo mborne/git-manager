@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Command;
 
-use Exception;
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Filesystem\LocalFilesystem;
@@ -122,7 +121,7 @@ class FetchAllCommand extends Command
             ));
             try {
                 $this->fetchOrClone($project, $dataDir, $token);
-            }catch(Exception $e){
+            } catch (\Exception $e) {
                 $logger->error(sprintf(
                     '[{%s}] %s : "%s"',
                     $project->getName(),
@@ -137,10 +136,8 @@ class FetchAllCommand extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * 
-     */
-    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token){
+    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token)
+    {
         $projectUrl = $project->getHttpUrl();
 
         // Compute local path according to url
