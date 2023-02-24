@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager;
 
-use Phar;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
@@ -41,7 +40,7 @@ class Kernel extends BaseKernel
 
     public static function isPhar(): bool
     {
-        return strlen(Phar::running()) > 0 ? true : false;
+        return strlen(\Phar::running()) > 0 ? true : false;
     }
 
     public function getVarDir(): string
