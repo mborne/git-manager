@@ -115,7 +115,7 @@ class FetchAllCommand extends Command
 
         foreach ($projects as $project) {
             $logger->info(sprintf(
-                '[{%s}] %s ...',
+                '[%s] %s ...',
                 $project->getName(),
                 $project->getHttpUrl()
             ));
@@ -123,7 +123,7 @@ class FetchAllCommand extends Command
                 $this->fetchOrClone($project, $dataDir, $token);
             } catch (\Exception $e) {
                 $logger->error(sprintf(
-                    '[{%s}] %s : "%s"',
+                    '[%s] %s : "%s"',
                     $project->getName(),
                     $project->getHttpUrl(),
                     $e->getMessage()

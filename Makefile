@@ -7,6 +7,15 @@ dist: vendor
 	php -d phar.readonly=0 build-phar.php
 	chmod +x dist/git-manager.phar
 
+.PHONY: test
+test: vendor
+	mkdir -p var/output
+	rm -rf var/output/*
+	XDEBUG_MODE=coverage SYMFONY_DEPRECATIONS_HELPER=weak vendor/bin/phpunit -c phpunit.xml.dist \
+		--log-junit var/output/junit-report.xml \
+		--coverage-clover var/output/clover.xml \
+		--coverage-html var/output/coverage
+
 .PHONY: fix-style
 fix-style: vendor
 	@echo "-- Fixing coding style using php-cs-fixer..."
