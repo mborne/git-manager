@@ -25,7 +25,8 @@
         "symfony/browser-kit": "5.4.*",
         "symfony/css-selector": "5.4.*",
         "symfony/phpunit-bridge": "^6.3",
-        "phpunit/phpunit": "^9"
+        "phpunit/phpunit": "^9",
+        "php-coveralls/php-coveralls": "^2.5"
     },
     "scripts": {
         "auto-scripts": {

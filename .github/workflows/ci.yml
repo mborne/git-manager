@@ -70,3 +70,9 @@ jobs:
         GIT_MANAGER_DIR: /tmp/git-manager-test
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 
+    - name: Upload coverage results to coveralls.io
+      if: github.ref == 'refs/heads/master' && matrix.php-version == '8.2'
+      run: |
+        vendor/bin/php-coveralls --coverage_clover=var/output/clover.xml --json_path=var/output/coveralls.json -v
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
