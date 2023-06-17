@@ -2,8 +2,8 @@
 
 namespace MBO\GitManager\Filesystem;
 
-use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\Filesystem as LeagueFilesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,7 +25,7 @@ class LocalFilesystem extends LeagueFilesystem
         $dataDir,
         LoggerInterface $logger
     ) {
-        parent::__construct(new LocalAdapter($dataDir));
+        parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
         $this->rootPath = $dataDir;
         $this->logger = $logger;
@@ -64,18 +64,18 @@ class LocalFilesystem extends LeagueFilesystem
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
         $items = $this->listContents($directory);
         foreach ($items as $item) {
-            if ('dir' !== $item['type']) {
+            if ('dir' !== $item->type()) {
                 continue;
             }
-            if ('.git' === $item['basename']) {
+            if ('.git' === basename($item->path())) {
                 $this->logger->debug(sprintf(
                     '[LocalFilesystem] findRepositories(%s) : found %s',
                     $directory,
-                    $item['path']
+                    $item->path()
                 ));
                 $repositories[] = $directory;
             } else {
-                $this->findRepositories($repositories, $item['path']);
+                $this->findRepositories($repositories, $item->path());
             }
         }
     }

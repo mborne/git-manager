@@ -65,7 +65,7 @@ class StatsCommand extends Command
         }
 
         $logger->info(sprintf('save stats : %s', $this->localFilesystem->getRootPath().'/repositories.json'));
-        $this->localFilesystem->put(
+        $this->localFilesystem->write(
             'repositories.json',
             json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         );
