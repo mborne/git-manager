@@ -2,8 +2,9 @@
 
 namespace MBO\GitManager\Filesystem;
 
-use League\Flysystem\Adapter\Local as LocalAdapter;
+use Exception;
 use League\Flysystem\Filesystem as LeagueFilesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,7 +26,7 @@ class LocalFilesystem extends LeagueFilesystem
         $dataDir,
         LoggerInterface $logger
     ) {
-        parent::__construct(new LocalAdapter($dataDir));
+        parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
         $this->rootPath = $dataDir;
         $this->logger = $logger;
@@ -62,21 +63,32 @@ class LocalFilesystem extends LeagueFilesystem
     private function findRepositories(array &$repositories, $directory)
     {
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
+
+        // test if current directory is a git repository
+        if ($this->isGitRepository($directory)) {
+            $this->logger->debug(sprintf(
+                '[LocalFilesystem] findRepositories(%s) : found',
+                $directory
+            ));
+            $repositories[] = $directory;
+            return;
+        }
+
+        // else, scan sub directories
         $items = $this->listContents($directory);
         foreach ($items as $item) {
-            if ('dir' !== $item['type']) {
+            if ('dir' !== $item->type()) {
                 continue;
             }
-            if ('.git' === $item['basename']) {
-                $this->logger->debug(sprintf(
-                    '[LocalFilesystem] findRepositories(%s) : found %s',
-                    $directory,
-                    $item['path']
-                ));
-                $repositories[] = $directory;
-            } else {
-                $this->findRepositories($repositories, $item['path']);
-            }
+            $this->findRepositories($repositories, $item->path());
         }
+    }
+
+    /**
+     * Test if directory contains .git subfolder
+     */
+    private function isGitRepository(string $directory): bool
+    {
+        return $this->directoryExists($directory.'/.git');
     }
 }

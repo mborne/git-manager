@@ -13,12 +13,14 @@
     ],
     "require": {
         "gitonomy/gitlib": "^1.0",
-        "league/flysystem": "^1.0",
-        "mborne/remote-git": "0.4.*",
+        "league/flysystem": "^3.0",
+        "mborne/remote-git": "0.5.*",
         "symfony/framework-bundle": "5.4.*",
         "symfony/console": "5.4.*",
         "symfony/runtime": "5.4.*",
-        "symfony/yaml": "5.4.*"
+        "symfony/yaml": "5.4.*",
+        "symfony/twig-bundle": "^6.3",
+        "symfony/asset": "^6.3"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.11",

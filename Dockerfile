@@ -12,6 +12,20 @@ RUN apt-get update \
  && docker-php-ext-install opcache \
  && rm -rf /var/cache/apt/*
 
+#----------------------------------------------------------------------
+# Configure PHP
+#----------------------------------------------------------------------
+COPY .docker/php.ini /usr/local/etc/php/conf.d/app.ini
+
+#----------------------------------------------------------------------
+# Configure apache
+#----------------------------------------------------------------------
+COPY .docker/apache-ports.conf /etc/apache2/ports.conf
+COPY .docker/apache-security.conf /etc/apache2/conf-enabled/security.conf
+COPY .docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+
+RUN a2enmod rewrite
+
 COPY . /opt/git-manager
 WORKDIR /opt/git-manager
 COPY --from=builder /opt/git-manager/vendor vendor
@@ -21,3 +35,5 @@ RUN chown -R www-data:www-data /opt/git-manager/var \
 VOLUME /var/git-manager
 
 USER www-data
+EXPOSE 8000
+

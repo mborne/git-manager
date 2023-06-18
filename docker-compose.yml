@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+
+  git-manager:
+    image: ghcr.io/mborne/git-manager:latest
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    volumes:
+      - git-manager-data:/var/git-manager
+    restart: unless-stopped
+
+volumes:
+  git-manager-data:
+    name: git-manager-data
+
