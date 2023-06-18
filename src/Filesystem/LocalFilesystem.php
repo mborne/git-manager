@@ -63,25 +63,31 @@ class LocalFilesystem extends LeagueFilesystem
     private function findRepositories(array &$repositories, $directory)
     {
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
-        try {
-            $items = $this->listContents($directory);
-            foreach ($items as $item) {
-                if ('dir' !== $item->type()) {
-                    continue;
-                }
-                if ('.git' === basename($item->path())) {
-                    $this->logger->debug(sprintf(
-                        '[LocalFilesystem] findRepositories(%s) : found %s',
-                        $directory,
-                        $item->path()
-                    ));
-                    $repositories[] = $directory;
-                } else {
-                    $this->findRepositories($repositories, $item->path());
-                }
-            }
-        }catch(Exception $e){
-            $this->logger->error(sprintf('[LocalFilesystem] findRepositories(%s) : %s', $directory, $e->getMessage()));
+
+        // test if current directory is a git repository
+        if ( $this->isGitRepository($directory) ){
+            $this->logger->debug(sprintf(
+                '[LocalFilesystem] findRepositories(%s) : found',
+                $directory
+            ));
+            $repositories[] = $directory;
+            return;
         }
+
+        // else, scan sub directories
+        $items = $this->listContents($directory);
+        foreach ($items as $item) {
+            if ('dir' !== $item->type()) {
+                continue;
+            }
+            $this->findRepositories($repositories, $item->path());
+        }
+    }
+
+    /**
+     * Test if directory contains .git subfolder
+     */
+    private function isGitRepository(string $directory): bool {
+        return $this->directoryExists($directory.'/.git');
     }
 }
