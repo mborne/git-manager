@@ -9,7 +9,7 @@ CLI helpers to manage a set of git repositories :
 
 ## Requirements
 
-* PHP >= 7.4
+* PHP >= 8.x
 
 ## Parameters
 
