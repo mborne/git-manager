@@ -3,12 +3,27 @@
 namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Git\Checker\CheckerInterface;
+use MBO\GitManager\Git\Checker\LicenseChecker;
+use MBO\GitManager\Git\Checker\ReadmeChecker;
 
 /**
  * Analyze git repository to provide informations.
  */
 class Analyzer
 {
+    /**
+     * @var CheckerInterface[]
+     */
+    private $checkers;
+
+    public function __construct()
+    {
+        $this->checkers = [
+            new ReadmeChecker(),
+            new LicenseChecker(),
+        ];
+    }
     /**
      * Get metadata for a given repository.
      *
@@ -18,8 +33,6 @@ class Analyzer
      */
     public function getMetadata(GitRepository $gitRepository)
     {
-        $workingDir = $gitRepository->getWorkingDir();
-
         $metadata = [
             'size' => $gitRepository->getSize() * 1024,
         ];
@@ -28,27 +41,10 @@ class Analyzer
         $metadata['branch'] = $this->getBranchNames($gitRepository);
         $metadata['activity'] = $this->getCommitDates($gitRepository);
 
-        /* test README.md */
-        $readmePath = $workingDir.DIRECTORY_SEPARATOR.'README.md';
-        $metadata['readme'] = file_exists($readmePath);
+        foreach ( $this->checkers as $checker ){
+            $metadata[$checker->getName()] = $checker->check($gitRepository);
+        }
 
-        /* test composer.json */
-        $composerPath = $workingDir.DIRECTORY_SEPARATOR.'composer.json';
-        $metadata['php_composer'] = file_exists($composerPath);
-
-        /* test composer.json */
-        $pomPath = $workingDir.DIRECTORY_SEPARATOR.'pom.xml';
-        $metadata['maven'] = file_exists($pomPath);
-
-        /* test package.json */
-        $packagePath = $workingDir.DIRECTORY_SEPARATOR.'package.json';
-        $metadata['npm_package'] = file_exists($packagePath);
-
-        /* test Jenkinsfile */
-        $packagePath = $workingDir.DIRECTORY_SEPARATOR.'Jenkinsfile';
-        $metadata['jenkinsfile'] = file_exists($packagePath);
-
-        // TODO add facets
         return $metadata;
     }
 

@@ -2,6 +2,7 @@
 
 namespace MBO\GitManager\Filesystem;
 
+use Exception;
 use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Log\LoggerInterface;
@@ -62,21 +63,25 @@ class LocalFilesystem extends LeagueFilesystem
     private function findRepositories(array &$repositories, $directory)
     {
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
-        $items = $this->listContents($directory);
-        foreach ($items as $item) {
-            if ('dir' !== $item->type()) {
-                continue;
+        try {
+            $items = $this->listContents($directory);
+            foreach ($items as $item) {
+                if ('dir' !== $item->type()) {
+                    continue;
+                }
+                if ('.git' === basename($item->path())) {
+                    $this->logger->debug(sprintf(
+                        '[LocalFilesystem] findRepositories(%s) : found %s',
+                        $directory,
+                        $item->path()
+                    ));
+                    $repositories[] = $directory;
+                } else {
+                    $this->findRepositories($repositories, $item->path());
+                }
             }
-            if ('.git' === basename($item->path())) {
-                $this->logger->debug(sprintf(
-                    '[LocalFilesystem] findRepositories(%s) : found %s',
-                    $directory,
-                    $item->path()
-                ));
-                $repositories[] = $directory;
-            } else {
-                $this->findRepositories($repositories, $item->path());
-            }
+        }catch(Exception $e){
+            $this->logger->error(sprintf('[LocalFilesystem] findRepositories(%s) : %s', $directory, $e->getMessage()));
         }
     }
 }

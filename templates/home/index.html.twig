@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Accueil{% endblock %}
+
+{% block body %}
+<div class="container">
+
+    <table id="repositories" class="table table-striped" width="100%"></table>
+
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+<script type="text/javascript">
+$(document).ready(loadRepositories);
+</script>
+{% endblock %}
