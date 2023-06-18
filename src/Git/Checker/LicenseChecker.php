@@ -10,21 +10,22 @@ use MBO\GitManager\Git\CheckerInterface;
  */
 class LicenseChecker implements CheckerInterface
 {
-    const LICENSE_FILENAMES = [
+    public const LICENSE_FILENAMES = [
         'LICENSE',
         'LICENSE.md'
     ];
 
-    function getName(): string
+    public function getName(): string
     {
         return 'license';
     }
 
-    function check(GitRepository $gitRepository): bool|string {
+    public function check(GitRepository $gitRepository): bool|string
+    {
         $workingDir = $gitRepository->getWorkingDir();
-        foreach ( static::LICENSE_FILENAMES as $filename ){
+        foreach (static::LICENSE_FILENAMES as $filename) {
             $expectedPath = $workingDir.DIRECTORY_SEPARATOR.$filename;
-            if ( file_exists($expectedPath) ){
+            if (file_exists($expectedPath)) {
                 return $filename;
             }
         }

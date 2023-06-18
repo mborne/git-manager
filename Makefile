@@ -8,7 +8,7 @@ dist: vendor
 	chmod +x dist/git-manager.phar
 
 .PHONY: test
-test: vendor
+test: check-style
 	mkdir -p var/output
 	rm -rf var/output/*
 	XDEBUG_MODE=coverage SYMFONY_DEPRECATIONS_HELPER=weak vendor/bin/phpunit -c phpunit.xml.dist \

@@ -64,7 +64,7 @@ class StatsCommand extends Command
                     $this->localFilesystem->getRootPath().'/'.$repository
                 );
                 $results[$repository] = $this->analyzer->getMetadata($gitRepository);
-            }catch(Exception $e){
+            } catch(Exception $e) {
                 $logger->error(sprintf('%s : %s', $repository, $e->getMessage()));
             }
 

@@ -65,7 +65,7 @@ class LocalFilesystem extends LeagueFilesystem
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
 
         // test if current directory is a git repository
-        if ( $this->isGitRepository($directory) ){
+        if ($this->isGitRepository($directory)) {
             $this->logger->debug(sprintf(
                 '[LocalFilesystem] findRepositories(%s) : found',
                 $directory
@@ -87,7 +87,8 @@ class LocalFilesystem extends LeagueFilesystem
     /**
      * Test if directory contains .git subfolder
      */
-    private function isGitRepository(string $directory): bool {
+    private function isGitRepository(string $directory): bool
+    {
         return $this->directoryExists($directory.'/.git');
     }
 }

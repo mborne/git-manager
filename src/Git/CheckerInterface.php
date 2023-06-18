@@ -12,9 +12,9 @@ interface CheckerInterface
     /**
      * Get name of the checker
      */
-    function getName(): string ;
+    public function getName(): string ;
     /**
      * Performs the check on the given repository
      */
-    function check(GitRepository $gitRepository): mixed ;
+    public function check(GitRepository $gitRepository): mixed ;
 }

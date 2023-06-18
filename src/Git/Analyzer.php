@@ -41,7 +41,7 @@ class Analyzer
         $metadata['branch'] = $this->getBranchNames($gitRepository);
         $metadata['activity'] = $this->getCommitDates($gitRepository);
 
-        foreach ( $this->checkers as $checker ){
+        foreach ($this->checkers as $checker) {
             $metadata[$checker->getName()] = $checker->check($gitRepository);
         }
 

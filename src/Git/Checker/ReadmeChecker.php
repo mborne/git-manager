@@ -10,12 +10,13 @@ use MBO\GitManager\Git\CheckerInterface;
  */
 class ReadmeChecker implements CheckerInterface
 {
-    function getName(): string
+    public function getName(): string
     {
         return 'readme';
     }
 
-    function check(GitRepository $gitRepository): bool {
+    public function check(GitRepository $gitRepository): bool
+    {
         $workingDir = $gitRepository->getWorkingDir();
         $readmePath = $workingDir.DIRECTORY_SEPARATOR.'README.md';
         return file_exists($readmePath);
