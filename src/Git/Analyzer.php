@@ -6,6 +6,7 @@ use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Git\Checker\CheckerInterface;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
+use MBO\GitManager\Git\Checker\TrivyChecker;
 
 /**
  * Analyze git repository to provide informations.
@@ -22,6 +23,7 @@ class Analyzer
         $this->checkers = [
             new ReadmeChecker(),
             new LicenseChecker(),
+            new TrivyChecker(),
         ];
     }
     /**
