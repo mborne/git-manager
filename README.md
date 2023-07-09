@@ -2,10 +2,15 @@
 
 [![CI](https://github.com/mborne/git-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/mborne/git-manager/actions/workflows/ci.yml)
 
-CLI helpers to manage a set of git repositories :
+CLI helpers to manage a set of git repositories.
+
+## Features
 
 * Retrieve and backup hosted GIT repositories (github, gitlab, gogs, gitea)
-* Performs some basic checks (ex : README.md is available)
+* Compute stats and performs some basic checks (ex : README.md, LICENSE, [trivy scan](https://aquasecurity.github.io/trivy/),...)
+* View stats and checks :
+
+![screenshot](docs/screenshot.png)
 
 ## Requirements
 
@@ -54,7 +59,7 @@ bin/console git:stats -O stats.json
 ```bash
 # Build image
 docker compose build
-# Start git-manager
+# Start git-manager on http://localhost:8000
 docker compose up -d
 
 # Fetch repositories
