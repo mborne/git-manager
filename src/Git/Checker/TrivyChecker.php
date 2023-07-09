@@ -13,7 +13,7 @@ use Symfony\Component\Process\Process;
  */
 class TrivyChecker implements CheckerInterface
 {
-    const SEVERITIES = ['HIGH','CRITICAL'];
+    public const SEVERITIES = ['HIGH','CRITICAL'];
 
     public function getName(): string
     {
@@ -28,7 +28,7 @@ class TrivyChecker implements CheckerInterface
             'trivy',
             'fs',
             '--scanners', 'vuln',
-            '--severity', implode(',',self::SEVERITIES),
+            '--severity', implode(',', self::SEVERITIES),
             '--format', 'json',
             '--output', $trivyReportPath,
             $workingDir
@@ -41,30 +41,31 @@ class TrivyChecker implements CheckerInterface
             'vulnerabilities' => false,
             'summary' => false
         ];
-        if ( ! $process->isSuccessful() ){
+        if (! $process->isSuccessful()) {
             echo $process->getErrorOutput();
         }
-        if ( ! file_exists($trivyReportPath) ){
+        if (! file_exists($trivyReportPath)) {
             return $result;
         }
-        
-        $report = json_decode( file_get_contents($trivyReportPath), true );
+
+        $report = json_decode(file_get_contents($trivyReportPath), true);
         $result['vulnerabilities'] = $this->getVulnerabilities($report);
         $result['summary'] = $this->getSummary($result['vulnerabilities']);
         return $result;
     }
 
-    private function getVulnerabilities($report){
+    private function getVulnerabilities($report)
+    {
         $vulnerabilities = [];
-        if ( isset($report['Results']) ){
-            foreach ( $report['Results'] as $reportResult ){
-                if ( ! isset($reportResult['Vulnerabilities']) ){
+        if (isset($report['Results'])) {
+            foreach ($report['Results'] as $reportResult) {
+                if (! isset($reportResult['Vulnerabilities'])) {
                     continue;
                 }
-                foreach ( $reportResult['Vulnerabilities'] as $vulnerability ){
+                foreach ($reportResult['Vulnerabilities'] as $vulnerability) {
                     $id       = $vulnerability['VulnerabilityID'];
                     $severity = $vulnerability['Severity'];
-                    
+
                     $vulnerabilities[$id] = $severity;
                 }
             }
@@ -72,11 +73,12 @@ class TrivyChecker implements CheckerInterface
         return $vulnerabilities;
     }
 
-    public function getSummary(array $vulnerabilities){
-        foreach ( self::SEVERITIES as $severity ){
+    public function getSummary(array $vulnerabilities)
+    {
+        foreach (self::SEVERITIES as $severity) {
             $stats[$severity] = 0;
         }
-        foreach ( $vulnerabilities as $id => $severity ){
+        foreach ($vulnerabilities as $id => $severity) {
             $stats[$severity]++;
         }
         return $stats;
@@ -90,7 +92,7 @@ class TrivyChecker implements CheckerInterface
         try {
             $this->getVersion();
             return true;
-        }catch(Exception $e){
+        } catch(Exception $e) {
             return false;
         }
     }
