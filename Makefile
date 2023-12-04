@@ -11,7 +11,9 @@ dist: vendor
 test: check-style
 	mkdir -p var/output
 	rm -rf var/output/*
-	XDEBUG_MODE=coverage SYMFONY_DEPRECATIONS_HELPER=weak vendor/bin/phpunit -c phpunit.xml.dist \
+	XDEBUG_MODE=coverage \
+	SYMFONY_DEPRECATIONS_HELPER='logFile=var/output/deprecations.log' \
+		vendor/bin/phpunit -c phpunit.xml.dist \
 		--log-junit var/output/junit-report.xml \
 		--coverage-clover var/output/clover.xml \
 		--coverage-html var/output/coverage
