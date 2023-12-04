@@ -13,7 +13,7 @@ class RepositoriesController extends AbstractController
     public function list(LocalFilesystem $localFilesystem): Response
     {
         $path = $localFilesystem->getRootPath().'/repositories.json';
-        if (! file_exists($path)) {
+        if (!file_exists($path)) {
             return $this->json('repositories.json is not available (run git:stats)', 404);
         }
         $repositories = json_decode(file_get_contents($path));

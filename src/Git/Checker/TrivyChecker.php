@@ -41,10 +41,10 @@ class TrivyChecker implements CheckerInterface
             'vulnerabilities' => false,
             'summary' => false
         ];
-        if (! $process->isSuccessful()) {
+        if (!$process->isSuccessful()) {
             echo $process->getErrorOutput();
         }
-        if (! file_exists($trivyReportPath)) {
+        if (!file_exists($trivyReportPath)) {
             return $result;
         }
 
@@ -59,7 +59,7 @@ class TrivyChecker implements CheckerInterface
         $vulnerabilities = [];
         if (isset($report['Results'])) {
             foreach ($report['Results'] as $reportResult) {
-                if (! isset($reportResult['Vulnerabilities'])) {
+                if (!isset($reportResult['Vulnerabilities'])) {
                     continue;
                 }
                 foreach ($reportResult['Vulnerabilities'] as $vulnerability) {
