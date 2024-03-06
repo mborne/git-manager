@@ -17,6 +17,7 @@ class RepositoriesController extends AbstractController
             return $this->json('repositories.json is not available (run git:stats)', 404);
         }
         $repositories = json_decode(file_get_contents($path));
+
         return $this->json($repositories);
     }
 }

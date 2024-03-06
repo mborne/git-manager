@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Filesystem;
 
-use Exception;
 use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Log\LoggerInterface;
@@ -56,8 +55,6 @@ class LocalFilesystem extends LeagueFilesystem
     /**
      * Recursive .git finder.
      *
-     * @param string $parentPath
-     *
      * @return void
      */
     private function findRepositories(array &$repositories, $directory)
@@ -71,6 +68,7 @@ class LocalFilesystem extends LeagueFilesystem
                 $directory
             ));
             $repositories[] = $directory;
+
             return;
         }
 
@@ -85,7 +83,7 @@ class LocalFilesystem extends LeagueFilesystem
     }
 
     /**
-     * Test if directory contains .git subfolder
+     * Test if directory contains .git subfolder.
      */
     private function isGitRepository(string $directory): bool
     {

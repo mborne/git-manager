@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Command;
 
-use Exception;
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
@@ -47,9 +46,6 @@ class StatsCommand extends Command
         ;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $logger = $this->createLogger($output);
@@ -64,10 +60,9 @@ class StatsCommand extends Command
                     $this->localFilesystem->getRootPath().'/'.$repository
                 );
                 $results[$repository] = $this->analyzer->getMetadata($gitRepository);
-            } catch(Exception $e) {
+            } catch (\Exception $e) {
                 $logger->error(sprintf('%s : %s', $repository, $e->getMessage()));
             }
-
         }
 
         $logger->info(sprintf('save stats : %s', $this->localFilesystem->getRootPath().'/repositories.json'));

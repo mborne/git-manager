@@ -6,7 +6,7 @@ use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Git\CheckerInterface;
 
 /**
- * Ensure that README file is present
+ * Ensure that README file is present.
  */
 class ReadmeChecker implements CheckerInterface
 {
@@ -19,7 +19,7 @@ class ReadmeChecker implements CheckerInterface
     {
         $workingDir = $gitRepository->getWorkingDir();
         $readmePath = $workingDir.DIRECTORY_SEPARATOR.'README.md';
+
         return file_exists($readmePath);
     }
-
 }

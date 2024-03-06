@@ -36,9 +36,6 @@ class FetchAllCommand extends Command
         $this->localFilesystem = $localFilesystem;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function configure()
     {
         $this
@@ -59,9 +56,6 @@ class FetchAllCommand extends Command
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $logger = $this->createLogger($output);

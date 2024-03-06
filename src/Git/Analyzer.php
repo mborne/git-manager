@@ -26,10 +26,9 @@ class Analyzer
             new TrivyChecker(),
         ];
     }
+
     /**
      * Get metadata for a given repository.
-     *
-     * @param string $repositoryName
      *
      * @return array
      */
