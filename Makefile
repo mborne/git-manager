@@ -22,11 +22,13 @@ test: check-style
 fix-style: vendor
 	@echo "-- Fixing coding style using php-cs-fixer..."
 	vendor/bin/php-cs-fixer fix src
+	vendor/bin/php-cs-fixer fix tests
 
 .PHONY: check-style
 check-style: vendor
 	@echo "-- Checking coding style using php-cs-fixer (run 'make fix-style' if it fails)"
 	vendor/bin/php-cs-fixer fix src -v --dry-run --diff
+	vendor/bin/php-cs-fixer fix tests -v --dry-run --diff
 
 .PHONY: vendor
 vendor:

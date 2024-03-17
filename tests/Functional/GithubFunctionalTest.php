@@ -33,7 +33,7 @@ class GithubFunctionalTest extends KernelTestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute([
             'url' => 'https://github.com',
-            '--users' => 'mborne'
+            '--users' => 'mborne',
         ]);
 
         $commandTester->assertCommandIsSuccessful();
@@ -48,7 +48,8 @@ class GithubFunctionalTest extends KernelTestCase
     /**
      * @depends testCommandFetchAll
      */
-    public function testCommandStats(){
+    public function testCommandStats()
+    {
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
