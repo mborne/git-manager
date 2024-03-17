@@ -3,7 +3,6 @@
 namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
-use MBO\GitManager\Git\Checker\CheckerInterface;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
 use MBO\GitManager\Git\Checker\TrivyChecker;
