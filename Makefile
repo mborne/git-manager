@@ -26,7 +26,7 @@ fix-style: vendor
 .PHONY: check-style
 check-style: vendor
 	@echo "-- Checking coding style using php-cs-fixer (run 'make fix-style' if it fails)"
-	vendor/bin/php-cs-fixer fix src -v --dry-run --diff --using-cache=no
+	vendor/bin/php-cs-fixer fix src -v --dry-run --diff
 
 .PHONY: vendor
 vendor:
