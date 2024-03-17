@@ -24,19 +24,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FetchAllCommand extends Command
 {
-    /**
-     * @var LocalFilesystem
-     */
-    private $localFilesystem;
 
-    public function __construct(LocalFilesystem $localFilesystem)
+    public function __construct(
+        private LocalFilesystem $localFilesystem
+    )
     {
         parent::__construct();
-
-        $this->localFilesystem = $localFilesystem;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             // the name of the command (the part after "bin/console")
@@ -56,7 +52,7 @@ class FetchAllCommand extends Command
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $logger = $this->createLogger($output);
 
@@ -130,7 +126,7 @@ class FetchAllCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token)
+    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token): void
     {
         $projectUrl = $project->getHttpUrl();
 
@@ -178,10 +174,8 @@ class FetchAllCommand extends Command
 
     /**
      * Create console logger.
-     *
-     * @return ConsoleLogger
      */
-    protected function createLogger(OutputInterface $output)
+    protected function createLogger(OutputInterface $output): ConsoleLogger
     {
         $verbosityLevelMap = [
             LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,

@@ -54,7 +54,14 @@ class TrivyChecker implements CheckerInterface
         return $result;
     }
 
-    private function getVulnerabilities($report)
+    /**
+     * Get vulnerability
+     * 
+     * @param array<string,mixed> $report
+     * 
+     * @return array<string,string>
+     */
+    private function getVulnerabilities(array $report): array
     {
         $vulnerabilities = [];
         if (isset($report['Results'])) {
@@ -74,7 +81,14 @@ class TrivyChecker implements CheckerInterface
         return $vulnerabilities;
     }
 
-    public function getSummary(array $vulnerabilities)
+    /**
+     * Get number of vulnerabilities by severity
+     * 
+     * @param array<string,string> $vulnerabilities
+     * 
+     * @return array<string,int>
+     */
+    public function getSummary(array $vulnerabilities): array
     {
         foreach (self::SEVERITIES as $severity) {
             $stats[$severity] = 0;

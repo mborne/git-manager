@@ -6,7 +6,7 @@ use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Git\CheckerInterface;
 
 /**
- * Ensure that README file is present.
+ * Ensure that LICENSE file is present.
  */
 class LicenseChecker implements CheckerInterface
 {

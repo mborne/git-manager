@@ -29,9 +29,9 @@ class Analyzer
     /**
      * Get metadata for a given repository.
      *
-     * @return array
+     * @return array<string,mixed>
      */
-    public function getMetadata(GitRepository $gitRepository)
+    public function getMetadata(GitRepository $gitRepository): array
     {
         $metadata = [
             'size' => $gitRepository->getSize() * 1024,
@@ -53,7 +53,7 @@ class Analyzer
      *
      * @return string[]
      */
-    private function getTagNames(GitRepository $gitRepository)
+    private function getTagNames(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getTags() as $tag) {
@@ -68,7 +68,7 @@ class Analyzer
      *
      * @return string[]
      */
-    private function getBranchNames(GitRepository $gitRepository)
+    private function getBranchNames(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getBranches() as $branch) {
@@ -81,9 +81,9 @@ class Analyzer
     /**
      * Get commit dates.
      *
-     * @return array
+     * @return array<string,int>
      */
-    private function getCommitDates(GitRepository $gitRepository)
+    private function getCommitDates(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getAll() as $reference) {

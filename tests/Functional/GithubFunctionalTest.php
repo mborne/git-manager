@@ -48,7 +48,7 @@ class GithubFunctionalTest extends KernelTestCase
     /**
      * @depends testCommandFetchAll
      */
-    public function testCommandStats()
+    public function testCommandStats(): void
     {
         $kernel = self::bootKernel();
         $application = new Application($kernel);

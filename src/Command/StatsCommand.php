@@ -18,24 +18,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class StatsCommand extends Command
 {
-    /**
-     * @var LocalFilesystem
-     */
-    private $localFilesystem;
-
-    /**
-     * @var Analyzer
-     */
-    private $analyzer;
-
     public function __construct(
-        LocalFilesystem $localFilesystem,
-        Analyzer $analyzer
+        private LocalFilesystem $localFilesystem,
+        private Analyzer $analyzer
     ) {
         parent::__construct();
-
-        $this->localFilesystem = $localFilesystem;
-        $this->analyzer = $analyzer;
     }
 
     protected function configure(): void
@@ -46,7 +33,7 @@ class StatsCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $logger = $this->createLogger($output);
 
@@ -76,10 +63,8 @@ class StatsCommand extends Command
 
     /**
      * Create console logger.
-     *
-     * @return ConsoleLogger
      */
-    protected function createLogger(OutputInterface $output)
+    protected function createLogger(OutputInterface $output): ConsoleLogger
     {
         $verbosityLevelMap = [
             LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,

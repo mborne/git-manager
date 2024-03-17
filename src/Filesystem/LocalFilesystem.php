@@ -11,32 +11,20 @@ use Psr\Log\LoggerInterface;
  */
 class LocalFilesystem extends LeagueFilesystem
 {
-    /**
-     * @var string
-     */
-    private $rootPath;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
     public function __construct(
-        $dataDir,
-        LoggerInterface $logger
+        private string $dataDir,
+        private LoggerInterface $logger
     ) {
         parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
-        $this->rootPath = $dataDir;
-        $this->logger = $logger;
     }
 
     /**
-     * @return string
+     * Get path to root directory
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
-        return $this->rootPath;
+        return $this->dataDir;
     }
 
     /**
@@ -44,7 +32,7 @@ class LocalFilesystem extends LeagueFilesystem
      *
      * @return string[]
      */
-    public function getRepositories()
+    public function getRepositories(): array
     {
         $repositories = [];
         $this->findRepositories($repositories, '');
@@ -54,10 +42,10 @@ class LocalFilesystem extends LeagueFilesystem
 
     /**
      * Recursive .git finder.
-     *
-     * @return void
+     * 
+     * @param string[] $repositories
      */
-    private function findRepositories(array &$repositories, $directory)
+    private function findRepositories(array &$repositories, string $directory): void
     {
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
 
