@@ -23,7 +23,8 @@
         "symfony/twig-bundle": "^6.4",
         "symfony/asset": "^6.4",
         "symfony/flex": "^2.4",
-        "symfony/monolog-bundle": "^3.10"
+        "symfony/monolog-bundle": "^3.10",
+        "symfony/dotenv": "6.4.*"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.11",
@@ -31,7 +32,8 @@
         "symfony/css-selector": "^6.4",
         "symfony/phpunit-bridge": "^6.4",
         "phpunit/phpunit": "^9",
-        "php-coveralls/php-coveralls": "^2.5"
+        "php-coveralls/php-coveralls": "^2.5",
+        "phpstan/phpstan": "^1.10"
     },
     "scripts": {
         "auto-scripts": {
