@@ -17,6 +17,7 @@ class GithubFunctionalTest extends KernelTestCase
     public function setUp(): void
     {
         $this->gitManagerDir = getenv('GIT_MANAGER_DIR');
+        $this->assertNotFalse($this->gitManagerDir);
         $this->assertStringEndsWith('git-manager-test', $this->gitManagerDir);
     }
 

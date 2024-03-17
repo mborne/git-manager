@@ -72,7 +72,6 @@ class TrivyChecker implements CheckerInterface
                 foreach ($reportResult['Vulnerabilities'] as $vulnerability) {
                     $id = $vulnerability['VulnerabilityID'];
                     $severity = $vulnerability['Severity'];
-
                     $vulnerabilities[$id] = $severity;
                 }
             }
