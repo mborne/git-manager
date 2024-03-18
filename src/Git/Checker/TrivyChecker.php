@@ -55,10 +55,10 @@ class TrivyChecker implements CheckerInterface
     }
 
     /**
-     * Get vulnerability
-     * 
+     * Get vulnerability.
+     *
      * @param array<string,mixed> $report
-     * 
+     *
      * @return array<string,string>
      */
     private function getVulnerabilities(array $report): array
@@ -81,10 +81,10 @@ class TrivyChecker implements CheckerInterface
     }
 
     /**
-     * Get number of vulnerabilities by severity
-     * 
+     * Get number of vulnerabilities by severity.
+     *
      * @param array<string,string> $vulnerabilities
-     * 
+     *
      * @return array<string,int>
      */
     public function getSummary(array $vulnerabilities): array

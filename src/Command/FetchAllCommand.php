@@ -24,11 +24,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FetchAllCommand extends Command
 {
-
     public function __construct(
         private LocalFilesystem $localFilesystem
-    )
-    {
+    ) {
         parent::__construct();
     }
 

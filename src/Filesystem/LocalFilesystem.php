@@ -20,7 +20,7 @@ class LocalFilesystem extends LeagueFilesystem
     }
 
     /**
-     * Get path to root directory
+     * Get path to root directory.
      */
     public function getRootPath(): string
     {
@@ -42,7 +42,7 @@ class LocalFilesystem extends LeagueFilesystem
 
     /**
      * Recursive .git finder.
-     * 
+     *
      * @param string[] $repositories
      */
     private function findRepositories(array &$repositories, string $directory): void
