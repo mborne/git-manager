@@ -18,6 +18,11 @@
         <server name="KERNEL_CLASS" value="MBO\GitManager\Kernel" />
         <server name="APP_SECRET" value="secretf0rt3st" />
         <env name="GIT_MANAGER_DIR" value="/tmp/git-manager-test" force="true" />
+
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="dev"/>
+        <env name="APP_SECRET" value="215348b88516d729413d0886afc8f15d"/>
+        <!-- ###- symfony/framework-bundle ### -->
     </php>
 
     <testsuites>

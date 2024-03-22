@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Filesystem;
 
-use Exception;
 use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Log\LoggerInterface;
@@ -12,32 +11,20 @@ use Psr\Log\LoggerInterface;
  */
 class LocalFilesystem extends LeagueFilesystem
 {
-    /**
-     * @var string
-     */
-    private $rootPath;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
     public function __construct(
-        $dataDir,
-        LoggerInterface $logger
+        private string $dataDir,
+        private LoggerInterface $logger
     ) {
         parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
-        $this->rootPath = $dataDir;
-        $this->logger = $logger;
     }
 
     /**
-     * @return string
+     * Get path to root directory.
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
-        return $this->rootPath;
+        return $this->dataDir;
     }
 
     /**
@@ -45,7 +32,7 @@ class LocalFilesystem extends LeagueFilesystem
      *
      * @return string[]
      */
-    public function getRepositories()
+    public function getRepositories(): array
     {
         $repositories = [];
         $this->findRepositories($repositories, '');
@@ -56,11 +43,9 @@ class LocalFilesystem extends LeagueFilesystem
     /**
      * Recursive .git finder.
      *
-     * @param string $parentPath
-     *
-     * @return void
+     * @param string[] $repositories
      */
-    private function findRepositories(array &$repositories, $directory)
+    private function findRepositories(array &$repositories, string $directory): void
     {
         $this->logger->debug(sprintf('[LocalFilesystem] findRepositories(%s)... ', $directory));
 
@@ -71,6 +56,7 @@ class LocalFilesystem extends LeagueFilesystem
                 $directory
             ));
             $repositories[] = $directory;
+
             return;
         }
 
@@ -85,7 +71,7 @@ class LocalFilesystem extends LeagueFilesystem
     }
 
     /**
-     * Test if directory contains .git subfolder
+     * Test if directory contains .git subfolder.
      */
     private function isGitRepository(string $directory): bool
     {

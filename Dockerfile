@@ -1,5 +1,5 @@
 # Download PHP vendor in dedicated layer
-FROM composer:2.3 as builder
+FROM composer:2.7 as builder
 
 RUN mkdir /opt/git-manager
 COPY composer.json /opt/git-manager/.

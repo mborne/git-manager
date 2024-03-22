@@ -3,7 +3,6 @@
 namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
-use MBO\GitManager\Git\Checker\CheckerInterface;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
 use MBO\GitManager\Git\Checker\TrivyChecker;
@@ -26,14 +25,13 @@ class Analyzer
             new TrivyChecker(),
         ];
     }
+
     /**
      * Get metadata for a given repository.
      *
-     * @param string $repositoryName
-     *
-     * @return array
+     * @return array<string,mixed>
      */
-    public function getMetadata(GitRepository $gitRepository)
+    public function getMetadata(GitRepository $gitRepository): array
     {
         $metadata = [
             'size' => $gitRepository->getSize() * 1024,
@@ -55,7 +53,7 @@ class Analyzer
      *
      * @return string[]
      */
-    private function getTagNames(GitRepository $gitRepository)
+    private function getTagNames(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getTags() as $tag) {
@@ -70,7 +68,7 @@ class Analyzer
      *
      * @return string[]
      */
-    private function getBranchNames(GitRepository $gitRepository)
+    private function getBranchNames(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getBranches() as $branch) {
@@ -83,9 +81,9 @@ class Analyzer
     /**
      * Get commit dates.
      *
-     * @return array
+     * @return array<string,int>
      */
-    private function getCommitDates(GitRepository $gitRepository)
+    private function getCommitDates(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getAll() as $reference) {
