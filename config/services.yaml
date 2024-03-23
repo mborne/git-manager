@@ -1,5 +1,5 @@
 parameters:
-    env(GIT_MANAGER_DIR): '/var/git-manager'
+    env(GIT_MANAGER_DIR): '%kernel.project_dir%/var/data'
 
 services:
     _defaults:
