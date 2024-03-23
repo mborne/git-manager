@@ -35,13 +35,14 @@ class GithubFunctionalTest extends KernelTestCase
         $commandTester->execute([
             'url' => 'https://github.com',
             '--users' => 'mborne',
+            '--include' => '(ansible)',
         ]);
 
         $commandTester->assertCommandIsSuccessful();
 
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString(
-            'https://github.com/mborne/git-manager.git',
+            'https://github.com/mborne/ansible-docker-ce.git',
             $output
         );
     }

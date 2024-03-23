@@ -7,6 +7,8 @@ use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
+use MBO\RemoteGit\Filter\FilterCollection;
+use MBO\RemoteGit\Filter\IncludeRegexpFilter;
 use MBO\RemoteGit\FindOptions;
 use MBO\RemoteGit\ProjectInterface;
 use Psr\Log\LogLevel;
@@ -47,7 +49,10 @@ class FetchAllCommand extends Command
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'Remote git type (gitlab-v4,github,gogs-v1,...)')
 
             ->addOption('orgs', 'o', InputOption::VALUE_REQUIRED, 'Find projects according to given organization names')
-            ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names');
+            ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
+
+            ->addOption('include', null, InputOption::VALUE_REQUIRED, 'Filter according to a given regexp, for ex : "(ansible)"')
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -94,6 +99,16 @@ class FetchAllCommand extends Command
         $users = $input->getOption('users');
         if (!empty($users)) {
             $findOptions->setUsers(explode(',', $users));
+        }
+
+        $filterCollection = new FilterCollection($logger);
+        $findOptions->setFilter($filterCollection);
+
+        /* include option */
+        if (!empty($input->getOption('include'))) {
+            $filterCollection->addFilter(new IncludeRegexpFilter(
+                $input->getOption('include')
+            ));
         }
 
         /*

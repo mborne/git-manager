@@ -1,18 +1,6 @@
 /composer.lock
 /symfony.lock
 
-/var/*
-!/var/cache
-/var/cache/*
-!var/cache/.gitkeep
-!/var/logs
-/var/logs/*
-!var/logs/.gitkeep
-!/var/sessions
-/var/sessions/*
-!var/sessions/.gitkeep
-!var/SymfonyRequirements.php
-
 /.vscode/
 /.phpunit.cache
 
@@ -30,6 +18,7 @@
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
+
 ###> symfony/phpunit-bridge ###
 .phpunit.result.cache
 /phpunit.xml
@@ -39,3 +28,4 @@
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+
