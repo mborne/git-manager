@@ -57,6 +57,7 @@ jobs:
         XDEBUG_MODE: coverage
         SYMFONY_DEPRECATIONS_HELPER: weak
         GIT_MANAGER_DIR: /tmp/git-manager-test
+        TRIVY_ENABLED: false
 
     - name: Upload coverage results to coveralls.io
       if: github.ref == 'refs/heads/master' && matrix.php-version == '8.2'

@@ -18,9 +18,10 @@ CLI helpers to manage a set of git repositories.
 
 ## Parameters
 
-| Name              | Description                           | Default            |
-| ----------------- | ------------------------------------- | ------------------ |
-| `GIT_MANAGER_DIR` | Directory containing git repositories | `/var/git-manager` |
+| Name              | Description                           | Default                 |
+| ----------------- | ------------------------------------- | ----------------------- |
+| `GIT_MANAGER_DIR` | Directory containing git repositories | `{projectDir}/var/data` |
+| `TRIVY_ENABLED`   | Enable/disable trivy scan             | `true`                  |
 
 ## Setup
 

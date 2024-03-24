@@ -6,6 +6,7 @@ use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
 use MBO\GitManager\Git\Checker\TrivyChecker;
+use Psr\Log\LoggerInterface;
 
 /**
  * Analyze git repository to provide informations.
@@ -17,12 +18,14 @@ class Analyzer
      */
     private $checkers;
 
-    public function __construct()
-    {
+    public function __construct(
+        bool $trivyEnabled,
+        private LoggerInterface $logger
+    ) {
         $this->checkers = [
-            new ReadmeChecker(),
-            new LicenseChecker(),
-            new TrivyChecker(),
+            new ReadmeChecker($logger),
+            new LicenseChecker($logger),
+            new TrivyChecker($trivyEnabled, $logger),
         ];
     }
 
@@ -33,6 +36,9 @@ class Analyzer
      */
     public function getMetadata(GitRepository $gitRepository): array
     {
+        $this->logger->debug('[Analyser] retrieve git metadata...', [
+            'repository' => $gitRepository->getWorkingDir(),
+        ]);
         $metadata = [
             'size' => $gitRepository->getSize() * 1024,
         ];
