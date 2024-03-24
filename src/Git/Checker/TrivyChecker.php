@@ -4,6 +4,7 @@ namespace MBO\GitManager\Git\Checker;
 
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Git\CheckerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -14,6 +15,15 @@ class TrivyChecker implements CheckerInterface
 {
     public const SEVERITIES = ['HIGH', 'CRITICAL'];
 
+    private bool $enabled;
+
+    public function __construct(
+        bool $trivyEnabled,
+        private LoggerInterface $logger
+    ) {
+        $this->enabled = $trivyEnabled && $this->isAvailable();
+    }
+
     public function getName(): string
     {
         return 'trivy';
@@ -22,6 +32,21 @@ class TrivyChecker implements CheckerInterface
     public function check(GitRepository $gitRepository): mixed
     {
         $workingDir = $gitRepository->getWorkingDir();
+
+        if (!$this->enabled) {
+            $this->logger->debug('[{checker}] skipped (disabled)', [
+                'checker' => $this->getName(),
+                'repository' => $workingDir,
+            ]);
+
+            return null;
+        }
+
+        $this->logger->debug('[{checker}] run trivy fs on repository...', [
+            'checker' => $this->getName(),
+            'repository' => $workingDir,
+        ]);
+
         $trivyReportPath = $workingDir.'/.trivy.json';
         $process = new Process([
             'trivy',
@@ -105,10 +130,18 @@ class TrivyChecker implements CheckerInterface
     public function isAvailable(): bool
     {
         try {
-            $this->getVersion();
+            $version = $this->getVersion();
+            $this->logger->info('[{checker}] trivy executable found (version={trivy_version})', [
+                'checker' => $this->getName(),
+                'trivy_version' => $version,
+            ]);
 
             return true;
         } catch (\Exception $e) {
+            $this->logger->warning('[{checker}] trivy not found, scan disabled', [
+                'checker' => $this->getName(),
+            ]);
+
             return false;
         }
     }
