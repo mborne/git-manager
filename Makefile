@@ -3,14 +3,7 @@ all: test
 
 .PHONY: test
 test: check-style check-rules
-	mkdir -p var/output
-	rm -rf var/output/*
-	XDEBUG_MODE=coverage \
-	SYMFONY_DEPRECATIONS_HELPER='logFile=var/output/deprecations.log' \
-		vendor/bin/phpunit -c phpunit.xml.dist \
-		--log-junit var/output/junit-report.xml \
-		--coverage-clover var/output/clover.xml \
-		--coverage-html var/output/coverage
+	bash .ci/run-test.sh
 
 .PHONY: check-rules
 check-rules: phpstan

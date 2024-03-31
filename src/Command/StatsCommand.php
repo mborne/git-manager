@@ -2,7 +2,9 @@
 
 namespace MBO\GitManager\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
 use Psr\Log\LogLevel;
@@ -19,6 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class StatsCommand extends Command
 {
     public function __construct(
+        private EntityManagerInterface $entityManager,
         private LocalFilesystem $localFilesystem,
         private Analyzer $analyzer
     ) {
@@ -37,26 +40,37 @@ class StatsCommand extends Command
     {
         $logger = $this->createLogger($output);
 
-        $repositories = $this->localFilesystem->getRepositories();
+        $projectRepository = $this->entityManager->getRepository(Project::class);
 
-        $results = [];
+        $logger->info(sprintf('[git:stats] list repositories ...'));
+        $repositories = $this->localFilesystem->getRepositories();
         foreach ($repositories as $repository) {
-            $logger->info(sprintf('%s ...', $repository));
+            $logger->info(sprintf('[git:stats] process %s ...', $repository));
+
+            /** @var Project $project */
+            $project = $projectRepository->findOneBy([
+                'name' => $repository,
+            ]);
+            if (null == $project) {
+                $project = new Project();
+                $project->setName($repository);
+            }
+
             try {
                 $gitRepository = new GitRepository(
                     $this->localFilesystem->getRootPath().'/'.$repository
                 );
-                $results[$repository] = $this->analyzer->getMetadata($gitRepository);
+                $project->setMetadata($this->analyzer->getMetadata($gitRepository));
+                $this->entityManager->persist($project);
             } catch (\Exception $e) {
-                $logger->error(sprintf('%s : %s', $repository, $e->getMessage()));
+                $logger->error(sprintf('[git:stats] %s : %s', $repository, $e->getMessage()));
             }
         }
 
-        $logger->info(sprintf('save stats : %s', $this->localFilesystem->getRootPath().'/repositories.json'));
-        $this->localFilesystem->write(
-            'repositories.json',
-            json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        );
+        $logger->info(sprintf('[git:stats] save stats ...'));
+        $this->entityManager->flush();
+
+        $logger->info(sprintf('[git:stats] completed.'));
 
         return self::SUCCESS;
     }

@@ -63,10 +63,8 @@ class GithubFunctionalTest extends KernelTestCase
 
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString(
-            '[info] save stats : /tmp/git-manager-test/repositories.json',
+            '[git:stats] completed.',
             $output
         );
-
-        $this->assertFileExists('/tmp/git-manager-test/repositories.json');
     }
 }
