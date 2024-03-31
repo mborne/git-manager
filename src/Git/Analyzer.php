@@ -3,6 +3,8 @@
 namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
 use MBO\GitManager\Git\Checker\TrivyChecker;
@@ -19,6 +21,7 @@ class Analyzer
     private $checkers;
 
     public function __construct(
+        private LocalFilesystem $localFilesystem,
         bool $trivyEnabled,
         private LoggerInterface $logger
     ) {
@@ -30,23 +33,37 @@ class Analyzer
     }
 
     /**
+     * Update a given projet using local data.
+     */
+    public function update(Project $project): void
+    {
+        $this->logger->debug('[Analyser] update %s...', [
+            'repository' => $project->getName(),
+        ]);
+        $gitRepository = new GitRepository(
+            $this->localFilesystem->getRootPath().'/'.$project->getName()
+        );
+        $project->setMetadata($this->getMetadata($gitRepository));
+    }
+
+    /**
      * Get metadata for a given repository.
      *
      * @return array<string,mixed>
      */
-    public function getMetadata(GitRepository $gitRepository): array
+    private function getMetadata(GitRepository $gitRepository): array
     {
         $this->logger->debug('[Analyser] retrieve git metadata...', [
             'repository' => $gitRepository->getWorkingDir(),
         ]);
         $metadata = [
+            'updatedAt' => new \DateTime('now'),
             'size' => $gitRepository->getSize() * 1024,
         ];
 
         $metadata['tags'] = $this->getTagNames($gitRepository);
         $metadata['branch'] = $this->getBranchNames($gitRepository);
         $metadata['activity'] = $this->getCommitDates($gitRepository);
-
         foreach ($this->checkers as $checker) {
             $metadata[$checker->getName()] = $checker->check($gitRepository);
         }

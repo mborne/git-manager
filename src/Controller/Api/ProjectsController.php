@@ -1,6 +1,6 @@
 <?php
 
-namespace MBO\GitManager\Controller;
+namespace MBO\GitManager\Controller\Api;
 
 use Doctrine\ORM\EntityManagerInterface;
 use MBO\GitManager\Entity\Project;
@@ -8,26 +8,30 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class RepositoriesController extends AbstractController
+class ProjectsController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager
     ) {
     }
 
-    #[Route('/api/repositories', name: 'app_repositories_list')]
+    #[Route('/api/projects', name: 'app_projects_list')]
     public function list(): Response
     {
         $projectRepository = $this->entityManager->getRepository(Project::class);
         /** @var Project[] $projects */
         $projects = $projectRepository->findAll();
 
-        // TODO : flatten rendering
-        $repositories = [];
-        foreach ($projects as $project) {
-            $repositories[$project->getName()] = $project->getMetadata();
-        }
+        return $this->json($projects);
+    }
 
-        return $this->json($repositories);
+    #[Route('/api/projects/{id}', name: 'app_projects_get')]
+    public function get(string $id): Response
+    {
+        $projectRepository = $this->entityManager->getRepository(Project::class);
+        /** @var Project $project */
+        $project = $projectRepository->find($id);
+
+        return $this->json($project);
     }
 }

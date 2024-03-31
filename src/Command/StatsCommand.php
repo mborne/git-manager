@@ -3,7 +3,6 @@
 namespace MBO\GitManager\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
@@ -57,10 +56,7 @@ class StatsCommand extends Command
             }
 
             try {
-                $gitRepository = new GitRepository(
-                    $this->localFilesystem->getRootPath().'/'.$repository
-                );
-                $project->setMetadata($this->analyzer->getMetadata($gitRepository));
+                $this->analyzer->update($project);
                 $this->entityManager->persist($project);
             } catch (\Exception $e) {
                 $logger->error(sprintf('[git:stats] %s : %s', $repository, $e->getMessage()));

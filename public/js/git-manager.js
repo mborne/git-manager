@@ -23,22 +23,23 @@ function renderTrivy(trivy){
  * Load /api/repositories to #repositories tables.
  */
 function loadRepositories() {
-    fetch('/api/repositories').then(function (response) {
+    fetch('/api/projects').then(function (response) {
         if (response.status != 200) {
-            throw new Error('fail to fetch repositories');
+            throw new Error('fail to fetch projects');
         }
         return response.json();
     }).then(function (items) {
-        let dataSet = Object.keys(items).map(function (name) {
-            const item = items[name];
-            const sizeMo = (item.size / (1024 * 1024)).toFixed(1);
+        let dataSet = items.map(function (item) {
+            const name = item.name;
+            const metadata = item.metadata;
+            const sizeMo = (metadata.size / (1024 * 1024)).toFixed(1);
             return [
                 `<a href="https://${name}">${name}</a>`,
-                `<span class="${item.readme ? "text-success" : "text-danger"}">${item.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${item.license ? "text-success" : "text-danger"}">${item.license ? item.license : "MISSING"}</span>`,
-                getLastActivity(item),
+                `<span class="${metadata.readme ? "text-success" : "text-danger"}">${metadata.readme ? "FOUND" : "MISSING"}</span>`,
+                `<span class="${metadata.license ? "text-success" : "text-danger"}">${metadata.license ? metadata.license : "MISSING"}</span>`,
+                getLastActivity(metadata),
                 sizeMo,
-                item.trivy
+                metadata.trivy
             ];
         });
         $('#repositories').DataTable({
