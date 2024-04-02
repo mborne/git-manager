@@ -43,32 +43,26 @@ class Analyzer
         $gitRepository = new GitRepository(
             $this->localFilesystem->getRootPath().'/'.$project->getName()
         );
-        $project->setMetadata($this->getMetadata($gitRepository));
+        $project->setUpdatedAt(new \DateTime('now'));
+        $project->setSize($gitRepository->getSize() * 1024);
+        $project->setTags($this->getTagNames($gitRepository));
+        $project->setBranches($this->getBranchNames($gitRepository));
+        $project->setActivity($this->getCommitDates($gitRepository));
+
+        $project->setChecks($this->getChecks($gitRepository));
     }
 
     /**
-     * Get metadata for a given repository.
-     *
      * @return array<string,mixed>
      */
-    private function getMetadata(GitRepository $gitRepository): array
+    private function getChecks(GitRepository $gitRepository): array
     {
-        $this->logger->debug('[Analyser] retrieve git metadata...', [
-            'repository' => $gitRepository->getWorkingDir(),
-        ]);
-        $metadata = [
-            'updatedAt' => new \DateTime('now'),
-            'size' => $gitRepository->getSize() * 1024,
-        ];
-
-        $metadata['tags'] = $this->getTagNames($gitRepository);
-        $metadata['branch'] = $this->getBranchNames($gitRepository);
-        $metadata['activity'] = $this->getCommitDates($gitRepository);
+        $results = [];
         foreach ($this->checkers as $checker) {
-            $metadata[$checker->getName()] = $checker->check($gitRepository);
+            $results[$checker->getName()] = $checker->check($gitRepository);
         }
 
-        return $metadata;
+        return $results;
     }
 
     /**

@@ -8,13 +8,14 @@ cd $PROJECT_DIR
 export APP_ENV=test
 
 # reset database
+rm -rf var/data/git-manager-test.db
 bin/console cache:clear
 bin/console doctrine:schema:update --force
 
 
 # prepare output dir for test
 mkdir -p var/output
-rm -rf var/output/* 
+rm -rf var/output/*
 
 # run test
 export XDEBUG_MODE=coverage

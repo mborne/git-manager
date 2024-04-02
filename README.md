@@ -46,13 +46,13 @@ bin/console git:fetch-all --users=_me_ https://github.com $GITHUB_TOKEN
 * From gogs or gitea :
 
 ```bash
-bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
+bin/console git:fetch-all -vv --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
 ### Compute stats about repositories
 
 ```bash
-bin/console git:stats -O stats.json
+bin/console git:stats -vv
 ```
 
 ## Usage with docker

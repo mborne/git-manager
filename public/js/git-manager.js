@@ -9,7 +9,6 @@ function getLastActivity(repository) {
 
 
 function renderTrivy(trivy){
-    console.log(trivy);
     if ( ! trivy.success ){
         return `<span class="text-danger">FAILURE</span>`
     }
@@ -31,15 +30,15 @@ function loadRepositories() {
     }).then(function (items) {
         let dataSet = items.map(function (item) {
             const name = item.name;
-            const metadata = item.metadata;
-            const sizeMo = (metadata.size / (1024 * 1024)).toFixed(1);
+            const sizeMo = (item.size / (1024 * 1024)).toFixed(1);
+            const checks = item.checks;
             return [
                 `<a href="https://${name}">${name}</a>`,
-                `<span class="${metadata.readme ? "text-success" : "text-danger"}">${metadata.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${metadata.license ? "text-success" : "text-danger"}">${metadata.license ? metadata.license : "MISSING"}</span>`,
-                getLastActivity(metadata),
+                `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
+                `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
+                getLastActivity(item),
                 sizeMo,
-                metadata.trivy
+                checks.trivy
             ];
         });
         $('#repositories').DataTable({
