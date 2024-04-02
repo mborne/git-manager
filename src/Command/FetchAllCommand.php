@@ -11,12 +11,11 @@ use MBO\RemoteGit\Filter\FilterCollection;
 use MBO\RemoteGit\Filter\IncludeRegexpFilter;
 use MBO\RemoteGit\FindOptions;
 use MBO\RemoteGit\ProjectInterface;
-use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -27,6 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class FetchAllCommand extends Command
 {
     public function __construct(
+        private LoggerInterface $logger,
         private LocalFilesystem $localFilesystem
     ) {
         parent::__construct();
@@ -57,9 +57,7 @@ class FetchAllCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $logger = $this->createLogger($output);
-
-        $logger->info('[git:fetch-all] started...');
+        $this->logger->info('[git:fetch-all] started...');
 
         $dataDir = $this->localFilesystem->getRootPath();
         if (!file_exists($dataDir)) {
@@ -83,7 +81,7 @@ class FetchAllCommand extends Command
         }
         $client = ClientFactory::createClient(
             $clientOptions,
-            $logger
+            $this->logger
         );
 
         /*
@@ -101,7 +99,7 @@ class FetchAllCommand extends Command
             $findOptions->setUsers(explode(',', $users));
         }
 
-        $filterCollection = new FilterCollection($logger);
+        $filterCollection = new FilterCollection($this->logger);
         $findOptions->setFilter($filterCollection);
 
         /* include option */
@@ -117,7 +115,7 @@ class FetchAllCommand extends Command
         $projects = $client->find($findOptions);
 
         foreach ($projects as $project) {
-            $logger->info(sprintf(
+            $this->logger->info(sprintf(
                 '[%s] %s ...',
                 $project->getName(),
                 $project->getHttpUrl()
@@ -125,7 +123,7 @@ class FetchAllCommand extends Command
             try {
                 $this->fetchOrClone($project, $dataDir, $token);
             } catch (\Exception $e) {
-                $logger->error(sprintf(
+                $this->logger->error(sprintf(
                     '[%s] %s : "%s"',
                     $project->getName(),
                     $project->getHttpUrl(),
@@ -134,7 +132,7 @@ class FetchAllCommand extends Command
             }
         }
 
-        $logger->info('[git:fetch-all] completed');
+        $this->logger->info('[git:fetch-all] completed');
 
         return self::SUCCESS;
     }
@@ -183,18 +181,5 @@ class FetchAllCommand extends Command
                 $projectUrl,
             ]);
         }
-    }
-
-    /**
-     * Create console logger.
-     */
-    protected function createLogger(OutputInterface $output): ConsoleLogger
-    {
-        $verbosityLevelMap = [
-            LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,
-            LogLevel::INFO => OutputInterface::VERBOSITY_NORMAL,
-        ];
-
-        return new ConsoleLogger($output, $verbosityLevelMap);
     }
 }

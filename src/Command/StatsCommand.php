@@ -6,10 +6,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
-use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -22,7 +21,8 @@ class StatsCommand extends Command
     public function __construct(
         private EntityManagerInterface $entityManager,
         private LocalFilesystem $localFilesystem,
-        private Analyzer $analyzer
+        private Analyzer $analyzer,
+        private LoggerInterface $logger
     ) {
         parent::__construct();
     }
@@ -37,14 +37,12 @@ class StatsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $logger = $this->createLogger($output);
-
         $projectRepository = $this->entityManager->getRepository(Project::class);
 
-        $logger->info(sprintf('[git:stats] list repositories ...'));
+        $this->logger->info(sprintf('[git:stats] list repositories ...'));
         $repositories = $this->localFilesystem->getRepositories();
         foreach ($repositories as $repository) {
-            $logger->info(sprintf('[git:stats] process %s ...', $repository));
+            $this->logger->info(sprintf('[git:stats] process %s ...', $repository));
 
             /** @var Project $project */
             $project = $projectRepository->findOneBy([
@@ -59,28 +57,15 @@ class StatsCommand extends Command
                 $this->analyzer->update($project);
                 $this->entityManager->persist($project);
             } catch (\Exception $e) {
-                $logger->error(sprintf('[git:stats] %s : %s', $repository, $e->getMessage()));
+                $this->logger->error(sprintf('[git:stats] %s : %s', $repository, $e->getMessage()));
             }
         }
 
-        $logger->info(sprintf('[git:stats] save stats ...'));
+        $this->logger->info(sprintf('[git:stats] save stats ...'));
         $this->entityManager->flush();
 
-        $logger->info(sprintf('[git:stats] completed.'));
+        $this->logger->info(sprintf('[git:stats] completed.'));
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Create console logger.
-     */
-    protected function createLogger(OutputInterface $output): ConsoleLogger
-    {
-        $verbosityLevelMap = [
-            LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,
-            LogLevel::INFO => OutputInterface::VERBOSITY_NORMAL,
-        ];
-
-        return new ConsoleLogger($output, $verbosityLevelMap);
     }
 }

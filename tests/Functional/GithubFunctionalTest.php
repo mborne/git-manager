@@ -2,8 +2,11 @@
 
 namespace App\Tests\Functional;
 
+use Doctrine\ORM\EntityManagerInterface;
+use MBO\GitManager\Entity\Project;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -36,14 +39,13 @@ class GithubFunctionalTest extends KernelTestCase
             'url' => 'https://github.com',
             '--users' => 'mborne',
             '--include' => '(ansible)',
+        ], [
+            'verbosity' => ConsoleOutput::VERBOSITY_DEBUG,
         ]);
 
         $commandTester->assertCommandIsSuccessful();
-
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString(
-            'https://github.com/mborne/ansible-docker-ce.git',
-            $output
+        $this->assertFileExists(
+            $this->gitManagerDir.'/github.com/mborne/ansible-docker-ce'
         );
     }
 
@@ -57,14 +59,17 @@ class GithubFunctionalTest extends KernelTestCase
 
         $command = $application->find('git:stats');
         $commandTester = new CommandTester($command);
-        $commandTester->execute([]);
+        $commandTester->execute([], [
+            'verbosity' => ConsoleOutput::VERBOSITY_DEBUG,
+        ]);
 
         $commandTester->assertCommandIsSuccessful();
 
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString(
-            '[git:stats] completed.',
-            $output
-        );
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $kernel->getContainer()->get('doctrine')->getManager();
+        $projectRepository = $entityManager->getRepository(Project::class);
+        /** @var Project $project */
+        $project = $projectRepository->findOneBy(['name' => 'github.com/mborne/ansible-docker-ce']);
+        $this->assertNotNull($project);
     }
 }
