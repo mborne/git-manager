@@ -1,3 +1,16 @@
+/*
+ * Welcome to your app's main JavaScript file!
+ *
+ * This file will be included onto the page via the importmap() Twig function,
+ * which should already be in your base.html.twig.
+ */
+import './styles/app.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'datatables.net-dt/css/dataTables.dataTables.min.css';
+
+import $ from 'jquery';
+import DataTable from 'datatables.net-dt';
+
 function getLastActivity(repository) {
     const dates = Object.keys(repository.activity);
     if (dates.length == 0) {
@@ -41,7 +54,7 @@ function loadRepositories() {
                 checks.trivy
             ];
         });
-        $('#repositories').DataTable({
+        let dataTable = new DataTable('#repositories',{
             data: dataSet,
             columns: [
                 { title: "Name"},
@@ -64,7 +77,7 @@ function loadRepositories() {
             "info": false
         });
     }).catch(function (error) {
-        $('#repositories').DataTable({
+        let dataTable = new DataTable('#repositories',{
             data: [[
                 `<span class="text-danger">fail to load repositories (run 'bin/console git:stats')</span>`,
             ]],
@@ -76,3 +89,6 @@ function loadRepositories() {
         });
     });
 }
+
+$(document).ready(loadRepositories);
+

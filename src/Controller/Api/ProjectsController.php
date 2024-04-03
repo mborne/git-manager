@@ -3,6 +3,7 @@
 namespace MBO\GitManager\Controller\Api;
 
 use MBO\GitManager\Entity\Project;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,5 +32,16 @@ class ProjectsController extends AbstractController
         $project = $this->projectRepository->find($id);
 
         return $this->json($project);
+    }
+
+    #[Route('/api/projects/{id}/trivy', name: 'app_projects_get_trivy')]
+    public function trivy(string $id, LocalFilesystem $localFilesystem): Response
+    {
+        /** @var Project $project */
+        $project = $this->projectRepository->find($id);
+        $trivyContent = $localFilesystem->read($project->getName().'/.trivy.json');
+        return new Response($trivyContent,200,[
+            'Content-Type' => 'application/json'
+        ]);
     }
 }
