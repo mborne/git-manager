@@ -14,7 +14,7 @@ CLI helpers to manage a set of git repositories.
 
 ## Requirements
 
-* PHP >= 8.x
+* [PHP >= 8.3](https://www.php.net/supported-versions)
 
 ## Parameters
 

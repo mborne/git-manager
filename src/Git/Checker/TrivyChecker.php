@@ -19,7 +19,7 @@ class TrivyChecker implements CheckerInterface
 
     public function __construct(
         bool $trivyEnabled,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
         $this->enabled = $trivyEnabled && $this->isAvailable();
     }
