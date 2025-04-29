@@ -4,6 +4,9 @@ services:
     image: ghcr.io/mborne/git-manager:latest
     build:
       context: .
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
     ports:
       - 8000:8000
     volumes:
