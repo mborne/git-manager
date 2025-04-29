@@ -1,13 +1,21 @@
+#------------------------------------------------------
 # Download PHP vendor in dedicated layer
-FROM composer:2.7 as builder
+#------------------------------------------------------
+FROM composer:2.8 AS builder
 
-RUN mkdir /opt/git-manager
-COPY composer.json /opt/git-manager/.
 WORKDIR /opt/git-manager
+COPY composer.json .env .
 RUN composer install
+COPY bin bin/
+COPY config config/
+COPY public public/
+COPY src src/
+COPY templates templates/
 
+#------------------------------------------------------
 # Download /usr/bin/trivy in dedicated layer
-FROM ubuntu:22.04 as trivy
+#------------------------------------------------------
+FROM ubuntu:24.04 AS trivy
 
 RUN apt-get update \
  && apt-get install -y wget apt-transport-https gnupg lsb-release \
@@ -18,40 +26,52 @@ RUN apt-get update \
  && apt-get install -y trivy \
  && rm -rf /var/cache/apt/*
 
-# Build git-manager image
-FROM php:8.2-apache
+#------------------------------------------------------
+# Build the final image using frankenphp.
+#
+# see https://frankenphp.dev/docs/docker/
+#------------------------------------------------------
+FROM dunglas/frankenphp:1-php8.4-alpine
 
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY .docker/php.ini $PHP_INI_DIR/conf.d/app.ini
+
+#------------------------------------------------------
+# Install trivy
+#------------------------------------------------------
 COPY --from=trivy /usr/bin/trivy /usr/bin/trivy
 
-RUN apt-get update \
- && apt-get install -y git wget \
- # Install PHP extensions
- && docker-php-ext-install opcache \
- && rm -rf /var/cache/apt/*
+ENV TRIVY_CACHE_DIR=/var/trivy/cache
+RUN mkdir -p $TRIVY_CACHE_DIR \
+ && chown -R www-data:www-data $TRIVY_CACHE_DIR
 
-#----------------------------------------------------------------------
-# Configure PHP
-#----------------------------------------------------------------------
-COPY .docker/php.ini /usr/local/etc/php/conf.d/app.ini
+#------------------------------------------------------
+# Install git
+#------------------------------------------------------
+RUN apk add --no-cache git
 
-#----------------------------------------------------------------------
-# Configure apache
-#----------------------------------------------------------------------
-COPY .docker/apache-ports.conf /etc/apache2/ports.conf
-COPY .docker/apache-security.conf /etc/apache2/conf-enabled/security.conf
-COPY .docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+#------------------------------------------------------
+# Install git-manager
+#------------------------------------------------------
+WORKDIR /app
+COPY --from=builder /opt/git-manager .
 
-RUN a2enmod rewrite
+# prepare symfony storage directory
+RUN mkdir -p /app/var \
+ && chown -R www-data:www-data /app/var
+VOLUME /app/var
 
-COPY . /opt/git-manager
-WORKDIR /opt/git-manager
-COPY --from=builder /opt/git-manager/vendor vendor
-
-ENV HOME=/var/git-manager
-RUN chown -R www-data:www-data /opt/git-manager/var \
- && mkdir /var/git-manager && chown -R www-data:www-data /var/git-manager
+# prepare git-manager storage directory
+ENV GIT_MANAGER_DIR=/var/git-manager
+RUN mkdir -p /var/git-manager \
+ && chown -R www-data:www-data /var/git-manager
 VOLUME /var/git-manager
 
-USER www-data
-EXPOSE 8000
+# fix permissions for caddy
+RUN chown -R www-data:www-data /data/caddy \
+ && chown -R www-data:www-data /config/caddy	
 
+# uid=82(www-data) gid=82(www-data) groups=82(www-data)
+USER www-data
+ENV SERVER_NAME=:8000
+EXPOSE 8000

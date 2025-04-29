@@ -20,7 +20,7 @@ class StatsCommand extends Command
 {
     public function __construct(
         private LocalFilesystem $localFilesystem,
-        private Analyzer $analyzer
+        private Analyzer $analyzer,
     ) {
         parent::__construct();
     }

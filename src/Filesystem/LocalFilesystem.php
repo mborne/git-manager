@@ -13,7 +13,7 @@ class LocalFilesystem extends LeagueFilesystem
 {
     public function __construct(
         private string $dataDir,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
         parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));

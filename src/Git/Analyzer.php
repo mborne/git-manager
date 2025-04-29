@@ -20,7 +20,7 @@ class Analyzer
 
     public function __construct(
         bool $trivyEnabled,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
         $this->checkers = [
             new ReadmeChecker($logger),
