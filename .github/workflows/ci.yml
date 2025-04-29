@@ -45,6 +45,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Check style
+      if: matrix.php-version == '8.3'
       run: vendor/bin/php-cs-fixer fix src -v --dry-run --diff --using-cache=no
 
     - name: Run tests
