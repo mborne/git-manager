@@ -57,7 +57,6 @@ jobs:
       env:
         XDEBUG_MODE: coverage
         SYMFONY_DEPRECATIONS_HELPER: weak
-        GIT_MANAGER_DIR: /tmp/git-manager-test
         TRIVY_ENABLED: false
 
     - name: Upload coverage results to coveralls.io
