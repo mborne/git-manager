@@ -7,7 +7,7 @@ test: check-style check-rules
 	rm -rf var/output/*
 	XDEBUG_MODE=coverage \
 	SYMFONY_DEPRECATIONS_HELPER='logFile=var/output/deprecations.log' \
-		vendor/bin/phpunit -c phpunit.xml.dist \
+		vendor/bin/phpunit \
 		--log-junit var/output/junit-report.xml \
 		--coverage-clover var/output/clover.xml \
 		--coverage-html var/output/coverage
@@ -16,7 +16,7 @@ test: check-style check-rules
 check-rules: phpstan
 
 phpstan:
-	vendor/bin/phpstan analyse -c phpstan.neon --error-format=raw
+	vendor/bin/phpstan analyse -c phpstan.dist.neon --error-format=raw
 
 .PHONY: fix-style
 fix-style: vendor

@@ -3,27 +3,19 @@
 
 use MBO\GitManager\Kernel;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArgvInput;
 
-set_time_limit(0);
-
-function includeIfExists($file)
-{
-    if (file_exists($file)) {
-        return include $file;
-    }
+if (!is_dir(dirname(__DIR__).'/vendor')) {
+    throw new LogicException('Dependencies are missing. Try running "composer install".');
 }
 
-
-if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../../autoload.php'))) {
-    print('You must set up the project dependencies using Composer before you can use git-manager.');
-    exit(1);
+if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
+    throw new LogicException('Symfony Runtime is missing. Try running "composer require symfony/runtime".');
 }
 
-$input = new ArgvInput();
-$env = $input->getParameterOption(['--env', '-e'], getenv('APP_ENV') ?: 'prod', true);
-$debug = getenv('APP_DEBUG') !== '0' && !$input->hasParameterOption('--no-debug', true) && $env !== 'prod';
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
-$kernel = new Kernel($env, $debug);
-$application = new Application($kernel);
-$application->run($input);
+return function (array $context) {
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+
+    return new Application($kernel);
+};
