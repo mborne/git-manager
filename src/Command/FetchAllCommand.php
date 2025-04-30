@@ -5,6 +5,7 @@ namespace MBO\GitManager\Command;
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
@@ -28,6 +29,7 @@ class FetchAllCommand extends Command
 {
     public function __construct(
         private LocalFilesystem $localFilesystem,
+        private ProjectHelpers $projectHelpers,
     ) {
         parent::__construct();
     }
@@ -60,14 +62,6 @@ class FetchAllCommand extends Command
         $logger = $this->createLogger($output);
 
         $logger->info('[git:fetch-all] started...');
-
-        $dataDir = $this->localFilesystem->getRootPath();
-        if (!file_exists($dataDir)) {
-            throw new \Exception("$dataDir not found");
-        }
-        if (!is_dir($dataDir)) {
-            throw new \Exception("$dataDir is not a directory");
-        }
 
         /*
          * Create git client according to parameters
@@ -123,7 +117,7 @@ class FetchAllCommand extends Command
                 $project->getHttpUrl()
             ));
             try {
-                $this->fetchOrClone($project, $dataDir, $token);
+                $this->fetchOrClone($project, $token);
             } catch (\Exception $e) {
                 $logger->error(sprintf(
                     '[%s] %s : "%s"',
@@ -139,15 +133,12 @@ class FetchAllCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token): void
+    protected function fetchOrClone(ProjectInterface $project, ?string $token): void
     {
+        /*
+         * Inject token in url to clone repository
+         */
         $projectUrl = $project->getHttpUrl();
-
-        // Compute local path according to url
-        $host = parse_url($projectUrl, PHP_URL_HOST);
-        $localPath = $dataDir.'/'.$host.'/'.$project->getName();
-
-        // Inject token in url to clone repository
         $cloneUrl = $projectUrl;
         if (!empty($token)) {
             $scheme = parse_url($projectUrl, PHP_URL_SCHEME);
@@ -155,8 +146,10 @@ class FetchAllCommand extends Command
         }
 
         /*
-         * fetch or clone repository to localPath
-         */
+        * fetch or clone repository to localPath
+        */
+        $fullName = $this->projectHelpers->getFullName($project);
+        $localPath = $this->localFilesystem->getRootPath().'/'.$fullName;
         if (file_exists($localPath)) {
             $gitRepository = new GitRepository($localPath);
             // use token to fetch
