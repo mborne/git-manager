@@ -2,8 +2,10 @@
 
 namespace MBO\GitManager\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ClientFactory;
@@ -28,6 +30,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class FetchAllCommand extends Command
 {
     public function __construct(
+        private EntityManagerInterface $em,
         private LocalFilesystem $localFilesystem,
         private ProjectHelpers $projectHelpers,
     ) {
@@ -118,6 +121,7 @@ class FetchAllCommand extends Command
             ));
             try {
                 $this->fetchOrClone($project, $token);
+                $this->createOrUpdateProjectEntity($project);
             } catch (\Exception $e) {
                 $logger->error(sprintf(
                     '[%s] %s : "%s"',
@@ -131,6 +135,31 @@ class FetchAllCommand extends Command
         $logger->info('[git:fetch-all] completed');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Create or update project entity based on the given project interface.
+     */
+    protected function createOrUpdateProjectEntity(ProjectInterface $project): Project
+    {
+        $fullName = $this->projectHelpers->getFullName($project);
+        $repository = $this->em->getRepository(Project::class);
+        /** @var Project|null */
+        $entity = $repository->findOneBy(['fullName' => $fullName]);
+        if (null === $entity) {
+            $entity = new Project();
+            $entity->setFullName($fullName);
+            $this->em->persist($entity);
+        }
+        $entity->setDefaultBranch($project->getDefaultBranch());
+        $entity->setHttpUrl($project->getHttpUrl());
+
+        $entity->setFetchedAt(new \DateTime('now'));
+
+        // save entity into DB
+        $this->em->flush();
+
+        return $entity;
     }
 
     protected function fetchOrClone(ProjectInterface $project, ?string $token): void

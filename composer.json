@@ -24,7 +24,9 @@
         "symfony/asset": "^6.4",
         "symfony/flex": "^2.4",
         "symfony/monolog-bundle": "^3.10",
-        "symfony/dotenv": "6.4.*"
+        "symfony/dotenv": "6.4.*",
+        "doctrine/doctrine-bundle": "*",
+        "doctrine/orm": "^3.3"
     },
     "require-dev": {
         "symfony/browser-kit": "^6.4",
@@ -33,7 +35,10 @@
         "phpunit/phpunit": "^12",
         "php-coveralls/php-coveralls": "^2.5",
         "phpstan/phpstan": "^2.1",
-        "friendsofphp/php-cs-fixer": "^3.75"
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "symfony/maker-bundle": "^1.63",
+        "phpstan/phpstan-doctrine": "^2.0",
+        "phpstan/extension-installer": "^1.4"
     },
     "scripts": {
         "auto-scripts": {
@@ -51,7 +56,8 @@
         "sort-packages": false,
         "allow-plugins": {
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "phpstan/extension-installer": true
         }
     },
     "conflict": {
