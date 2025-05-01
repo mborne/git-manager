@@ -1,5 +1,5 @@
 function getLastActivity(repository) {
-    const dates = Object.keys(repository.activity);
+    const dates = Object.keys(repository.metadata.activity);
     if (dates.length == 0) {
         return '0000-00-00';
     }
@@ -34,7 +34,7 @@ function loadRepositories() {
     }).then(function (items) {
         let dataSet = items.map(function (item) {
             const name = item.fullName;
-            const sizeMo = (item.size / (1024 * 1024)).toFixed(1);
+            const sizeMo = (item.metadata.size / (1024 * 1024)).toFixed(1);
             return [
                 `<a href="https://${name}">${name}</a>`,
                 `<span class="${item.checks.readme ? "text-success" : "text-danger"}">${item.checks.readme ? "FOUND" : "MISSING"}</span>`,

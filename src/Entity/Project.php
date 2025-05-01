@@ -25,25 +25,15 @@ class Project
     #[ORM\Column(type: 'datetime')]
     private \DateTime $fetchedAt;
 
-    #[ORM\Column(length: 512)]
-    private int $size;
-
     /**
-     * @var array<string>
-     */
-    #[ORM\Column(type: 'simple_array', nullable: true)]
-    private array $tags = [];
-
-    #[ORM\Column(type: 'simple_array', nullable: true)]
-    private array $branchNames = [];
-
-    /**
-     * @var array<string,int>
+     * Metadata about git repository (size, tags, branchNames, activity,...)
+     * @var array<string,mixed>
      */
     #[ORM\Column(type: 'json')]
-    private array $activity = [];
+    private array $metadata = [];
 
     /**
+     * Checker results (license, trivy, )
      * @var array<string,mixed>
      */
     #[ORM\Column(type: 'json')]
@@ -102,65 +92,20 @@ class Project
         return $this;
     }
 
-    public function getSize(): int
+    /**
+     * @return array<string,mixed>
+     */
+    public function getMetadata(): array
     {
-        return $this->size;
-    }
-
-    public function setSize(int $size): static
-    {
-        $this->size = $size;
-
-        return $this;
+        return $this->metadata;
     }
 
     /**
-     * @return array<string>
+     * @param array<string,mixed> $metadata
      */
-    public function getTags(): array
+    public function setMetadata(array $metadata): static
     {
-        return $this->tags;
-    }
-
-    /**
-     * @param array<string> $tags
-     */
-    public function setTags(array $tags): static
-    {
-        $this->tags = $tags;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getBranchNames(): array
-    {
-        return $this->branchNames;
-    }
-
-    public function setBranchNames(array $branchNames): static
-    {
-        $this->branchNames = $branchNames;
-
-        return $this;
-    }
-
-    /**
-     * @return array<string,int>
-     */
-    public function getActivity(): array
-    {
-        return $this->activity;
-    }
-
-    /**
-     * @param array<string,int> $activity
-     */
-    public function setActivity(array $activity): static
-    {
-        $this->activity = $activity;
+        $this->metadata = $metadata;
 
         return $this;
     }

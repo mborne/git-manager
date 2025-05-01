@@ -41,16 +41,36 @@ class Analyzer
         $gitRepository = new GitRepository(
             $this->localFilesystem->getRootPath().'/'.$fullName
         );
-        $project->setSize($gitRepository->getSize() * 1024);
-        $project->setTags($this->getTagNames($gitRepository));
-        $project->setBranchNames($this->getBranchNames($gitRepository));
-        $project->setActivity($this->getActivity($gitRepository));
 
+        $project->setMetadata($this->collectMetadata($gitRepository));
+        $project->setChecks($this->runChecks($gitRepository));
+    }
+
+    /**
+     * Collect repository metadata :
+     * - size : the size of the repository
+     * - tags : git tags
+     * - branches : the list of the branches
+     * - activity : number of commits per day
+     */
+    private function collectMetadata(GitRepository $gitRepository){
+        $metadata = [];
+        $metadata['size'] = $gitRepository->getSize() * 1024;
+        $metadata['tags'] = $this->getTagNames($gitRepository);
+        $metadata['branches'] = $this->getBranchNames($gitRepository);
+        $metadata['activity'] = $this->getActivity($gitRepository);
+        return $metadata;
+    }
+
+    /**
+     * Run checkers collecting results
+     */
+    private function runChecks(GitRepository $gitRepository){
         $checks = [];
         foreach ($this->checkers as $checker) {
             $checks[$checker->getName()] = $checker->check($gitRepository);
         }
-        $project->setChecks($checks);
+        return $checks;
     }
 
     /**
