@@ -49,12 +49,6 @@ bin/console git:fetch-all --users=_me_ https://github.com $GITHUB_TOKEN
 bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
-### Compute stats about repositories
-
-```bash
-bin/console git:stats -O stats.json
-```
-
 ## Usage with docker
 
 ```bash
@@ -66,9 +60,6 @@ docker compose up -d
 # Fetch repositories
 docker compose exec git-manager bin/console git:fetch-all https://github.com -u mborne
 #docker compose exec git-manager bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
-
-# Build stats
-docker compose exec git-manager bin/console git:stats
 ```
 
 ## License

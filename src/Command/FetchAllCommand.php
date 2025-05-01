@@ -3,10 +3,12 @@
 namespace MBO\GitManager\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Git\Analyzer;
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
@@ -30,9 +32,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class FetchAllCommand extends Command
 {
     public function __construct(
+        private ManagerRegistry $managerRegistry,
         private EntityManagerInterface $em,
         private LocalFilesystem $localFilesystem,
         private ProjectHelpers $projectHelpers,
+        private Analyzer $analyzer,
     ) {
         parent::__construct();
     }
@@ -121,7 +125,9 @@ class FetchAllCommand extends Command
             ));
             try {
                 $this->fetchOrClone($project, $token);
-                $this->createOrUpdateProjectEntity($project);
+                $entity = $this->createOrUpdateProjectEntity($project);
+                $this->em->persist($entity);
+                $this->em->flush();
             } catch (\Exception $e) {
                 $logger->error(sprintf(
                     '[%s] %s : "%s"',
@@ -129,6 +135,7 @@ class FetchAllCommand extends Command
                     $project->getHttpUrl(),
                     $e->getMessage()
                 ));
+                $this->managerRegistry->resetManager();
             }
         }
 
@@ -149,15 +156,13 @@ class FetchAllCommand extends Command
         if (null === $entity) {
             $entity = new Project();
             $entity->setFullName($fullName);
-            $this->em->persist($entity);
         }
         $entity->setDefaultBranch($project->getDefaultBranch());
         $entity->setHttpUrl($project->getHttpUrl());
 
-        $entity->setFetchedAt(new \DateTime('now'));
+        $this->analyzer->analyze($entity);
 
-        // save entity into DB
-        $this->em->flush();
+        $entity->setFetchedAt(new \DateTime('now'));
 
         return $entity;
     }

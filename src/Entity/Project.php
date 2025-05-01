@@ -4,7 +4,6 @@ namespace MBO\GitManager\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use MBO\GitManager\Repository\ProjectRepository;
-use PHPUnit\Metadata\Metadata;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 class Project
@@ -25,6 +24,30 @@ class Project
 
     #[ORM\Column(type: 'datetime')]
     private \DateTime $fetchedAt;
+
+    #[ORM\Column(length: 512)]
+    private int $size;
+
+    /**
+     * @var array<string>
+     */
+    #[ORM\Column(type: 'simple_array', nullable: true)]
+    private array $tags = [];
+
+    #[ORM\Column(type: 'simple_array', nullable: true)]
+    private array $branchNames = [];
+
+    /**
+     * @var array<string,int>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $activity = [];
+
+    /**
+     * @var array<string,mixed>
+     */
+    #[ORM\Column(type: 'json')]
+    private array $checks = [];
 
     public function getId(): int
     {
@@ -79,16 +102,84 @@ class Project
         return $this;
     }
 
-    public function getMetadata(): ?ProjectMetadata
+    public function getSize(): int
     {
-        return $this->metadata;
+        return $this->size;
     }
 
-    public function setMetadata(?ProjectMetadata $metadata): static
+    public function setSize(int $size): static
     {
-        $this->metadata = $metadata;
+        $this->size = $size;
 
         return $this;
     }
 
+    /**
+     * @return array<string>
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param array<string> $tags
+     */
+    public function setTags(array $tags): static
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getBranchNames(): array
+    {
+        return $this->branchNames;
+    }
+
+    public function setBranchNames(array $branchNames): static
+    {
+        $this->branchNames = $branchNames;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string,int>
+     */
+    public function getActivity(): array
+    {
+        return $this->activity;
+    }
+
+    /**
+     * @param array<string,int> $activity
+     */
+    public function setActivity(array $activity): static
+    {
+        $this->activity = $activity;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function getChecks(): array
+    {
+        return $this->checks;
+    }
+
+    /**
+     * @param array<string,mixed> $checks
+     */
+    public function setChecks(array $checks): static
+    {
+        $this->checks = $checks;
+
+        return $this;
+    }
 }

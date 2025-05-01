@@ -2,9 +2,6 @@
 
 namespace MBO\GitManager\Command;
 
-use Gitonomy\Git\Repository as GitRepository;
-use MBO\GitManager\Filesystem\LocalFilesystem;
-use MBO\GitManager\Git\Analyzer;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,18 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class StatsCommand extends Command
 {
-    public function __construct(
-        private LocalFilesystem $localFilesystem,
-        private Analyzer $analyzer,
-    ) {
-        parent::__construct();
-    }
-
     protected function configure(): void
     {
         $this
             ->setName('git:stats')
-            ->setDescription('Compute stats on local repositories')
+            ->setDescription('Compute stats on local repositories (DEPRECATED)')
         ;
     }
 
@@ -37,26 +27,7 @@ class StatsCommand extends Command
     {
         $logger = $this->createLogger($output);
 
-        $repositories = $this->localFilesystem->getRepositories();
-
-        $results = [];
-        foreach ($repositories as $repository) {
-            $logger->info(sprintf('%s ...', $repository));
-            try {
-                $gitRepository = new GitRepository(
-                    $this->localFilesystem->getRootPath().'/'.$repository
-                );
-                $results[$repository] = $this->analyzer->getMetadata($gitRepository);
-            } catch (\Exception $e) {
-                $logger->error(sprintf('%s : %s', $repository, $e->getMessage()));
-            }
-        }
-
-        $logger->info(sprintf('save stats : %s', $this->localFilesystem->getRootPath().'/repositories.json'));
-        $this->localFilesystem->write(
-            'repositories.json',
-            json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        );
+        $logger->warning('[git:stats] command is deprecated, no more need to run it to extract metadata and run checks');
 
         return self::SUCCESS;
     }

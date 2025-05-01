@@ -9,7 +9,10 @@ function getLastActivity(repository) {
 
 
 function renderTrivy(trivy){
-    console.log(trivy);
+    if ( ! trivy ){
+        return `<span class="text-warning">NO-DATA</span>`;
+    }
+
     if ( ! trivy.success ){
         return `<span class="text-danger">FAILURE</span>`
     }
@@ -29,16 +32,16 @@ function loadRepositories() {
         }
         return response.json();
     }).then(function (items) {
-        let dataSet = Object.keys(items).map(function (name) {
-            const item = items[name];
+        let dataSet = items.map(function (item) {
+            const name = item.fullName;
             const sizeMo = (item.size / (1024 * 1024)).toFixed(1);
             return [
                 `<a href="https://${name}">${name}</a>`,
-                `<span class="${item.readme ? "text-success" : "text-danger"}">${item.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${item.license ? "text-success" : "text-danger"}">${item.license ? item.license : "MISSING"}</span>`,
+                `<span class="${item.checks.readme ? "text-success" : "text-danger"}">${item.checks.readme ? "FOUND" : "MISSING"}</span>`,
+                `<span class="${item.checks.license ? "text-success" : "text-danger"}">${item.checks.license ? item.checks.license : "MISSING"}</span>`,
                 getLastActivity(item),
                 sizeMo,
-                item.trivy
+                item.checks.trivy
             ];
         });
         $('#repositories').DataTable({
@@ -53,7 +56,7 @@ function loadRepositories() {
                     title: "Trivy", 
                     render: function (trivy, type) {
                         if ( type === 'sort' || type === 'type' ) {
-                            return trivy.summary.CRITICAL + trivy.summary.HIGH;
+                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH : 0 ;
                         } else {
                             return renderTrivy(trivy);
                         }
@@ -64,6 +67,7 @@ function loadRepositories() {
             "info": false
         });
     }).catch(function (error) {
+        console.error(error);
         $('#repositories').DataTable({
             data: [[
                 `<span class="text-danger">fail to load repositories (run 'bin/console git:stats')</span>`,
