@@ -1,5 +1,10 @@
-function getLastActivity(repository) {
-    const dates = Object.keys(repository.metadata.activity);
+/**
+ * Extract last activity date from project.metadata.activity
+ * @param {object} project 
+ * @returns 
+ */
+function getLastActivity(project) {
+    const dates = Object.keys(project.metadata.activity);
     if (dates.length == 0) {
         return '0000-00-00';
     }
@@ -7,7 +12,12 @@ function getLastActivity(repository) {
     return `${lastDate.substring(0, 4)}-${lastDate.substring(4, 6)}-${lastDate.substring(6, 8)}`;
 }
 
-
+/**
+ * Render trivy report.
+ *
+ * @param {?object} trivy 
+ * @returns 
+ */
 function renderTrivy(trivy){
     if ( ! trivy ){
         return `<span class="text-warning">NO-DATA</span>`;
@@ -23,28 +33,29 @@ function renderTrivy(trivy){
 }
 
 /**
- * Load /api/repositories to #repositories tables.
+ * Load /api/projects to #projects tables.
  */
-function loadRepositories() {
-    fetch('/api/repositories').then(function (response) {
+function loadProjects() {
+    fetch('/api/projects').then(function (response) {
         if (response.status != 200) {
             throw new Error('fail to fetch repositories');
         }
         return response.json();
-    }).then(function (items) {
-        let dataSet = items.map(function (item) {
-            const name = item.fullName;
-            const sizeMo = (item.metadata.size / (1024 * 1024)).toFixed(1);
+    }).then(function (projects) {
+        let dataSet = projects.map(function (project) {
+            const name = project.fullName;
+            const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
+            const checks = project.checks;
             return [
                 `<a href="https://${name}">${name}</a>`,
-                `<span class="${item.checks.readme ? "text-success" : "text-danger"}">${item.checks.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${item.checks.license ? "text-success" : "text-danger"}">${item.checks.license ? item.checks.license : "MISSING"}</span>`,
-                getLastActivity(item),
+                `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
+                `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
+                getLastActivity(project),
                 sizeMo,
-                item.checks.trivy
+                checks.trivy
             ];
         });
-        $('#repositories').DataTable({
+        $('#projects').DataTable({
             data: dataSet,
             columns: [
                 { title: "Name"},
@@ -68,7 +79,7 @@ function loadRepositories() {
         });
     }).catch(function (error) {
         console.error(error);
-        $('#repositories').DataTable({
+        $('#projects').DataTable({
             data: [[
                 `<span class="text-danger">fail to load repositories (run 'bin/console git:stats')</span>`,
             ]],
