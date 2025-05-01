@@ -26,14 +26,16 @@ class Project
     private \DateTime $fetchedAt;
 
     /**
-     * Metadata about git repository (size, tags, branchNames, activity,...)
+     * Metadata about git repository (size, tags, branchNames, activity,...).
+     *
      * @var array<string,mixed>
      */
     #[ORM\Column(type: 'json')]
     private array $metadata = [];
 
     /**
-     * Checker results (license, trivy, )
+     * Checker results (license, trivy, ).
+     *
      * @var array<string,mixed>
      */
     #[ORM\Column(type: 'json')]

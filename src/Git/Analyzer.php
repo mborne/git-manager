@@ -53,23 +53,27 @@ class Analyzer
      * - branches : the list of the branches
      * - activity : number of commits per day
      */
-    private function collectMetadata(GitRepository $gitRepository){
+    private function collectMetadata(GitRepository $gitRepository)
+    {
         $metadata = [];
         $metadata['size'] = $gitRepository->getSize() * 1024;
         $metadata['tags'] = $this->getTagNames($gitRepository);
         $metadata['branches'] = $this->getBranchNames($gitRepository);
         $metadata['activity'] = $this->getActivity($gitRepository);
+
         return $metadata;
     }
 
     /**
-     * Run checkers collecting results
+     * Run checkers collecting results.
      */
-    private function runChecks(GitRepository $gitRepository){
+    private function runChecks(GitRepository $gitRepository)
+    {
         $checks = [];
         foreach ($this->checkers as $checker) {
             $checks[$checker->getName()] = $checker->check($gitRepository);
         }
+
         return $checks;
     }
 
