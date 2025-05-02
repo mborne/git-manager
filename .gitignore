@@ -3,6 +3,7 @@
 
 /.vscode/
 /.phpunit.cache
+/bin/phpunit
 
 ###> symfony/framework-bundle ###
 /.env.local

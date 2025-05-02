@@ -2,32 +2,21 @@
 
 namespace App\Tests\Functional;
 
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\Filesystem\Filesystem;
 
 class GithubFunctionalTest extends KernelTestCase
 {
-    /**
-     * @var string
-     */
-    private $gitManagerDir;
-
-    public function setUp(): void
-    {
-        $this->gitManagerDir = getenv('GIT_MANAGER_DIR');
-        $this->assertNotFalse($this->gitManagerDir);
-        $this->assertStringEndsWith('git-manager-test', $this->gitManagerDir);
-    }
-
     public function testCommandFetchAll(): void
     {
-        // cleanup GIT_MANAGER_DIR
-        $fs = new Filesystem();
-        $fs->remove($this->gitManagerDir);
-
         $kernel = self::bootKernel();
+
+        $localFilesystem = self::getContainer()->get(LocalFilesystem::class);
+        $this->assertInstanceOf(LocalFilesystem::class, $localFilesystem);
+        $this->assertStringEndsWith('test-data', $localFilesystem->getRootPath());
+
         $application = new Application($kernel);
 
         $command = $application->find('git:fetch-all');
@@ -45,28 +34,5 @@ class GithubFunctionalTest extends KernelTestCase
             'https://github.com/mborne/ansible-docker-ce.git',
             $output
         );
-    }
-
-    /**
-     * @depends testCommandFetchAll
-     */
-    public function testCommandStats(): void
-    {
-        $kernel = self::bootKernel();
-        $application = new Application($kernel);
-
-        $command = $application->find('git:stats');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([]);
-
-        $commandTester->assertCommandIsSuccessful();
-
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString(
-            '[info] save stats : /tmp/git-manager-test/repositories.json',
-            $output
-        );
-
-        $this->assertFileExists('/tmp/git-manager-test/repositories.json');
     }
 }

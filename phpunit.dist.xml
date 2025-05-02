@@ -11,9 +11,8 @@
          cacheDirectory=".phpunit.cache"
 >
     <php>
-        <server name="KERNEL_CLASS" value="App\Kernel"/>
-        <env name="APP_ENV" value="test" force="true" />
-        <env name="GIT_MANAGER_DIR" value="/tmp/git-manager-test" force="true" />
+        <server name="APP_ENV" value="test"/>
+        <server name="KERNEL_CLASS" value="MBO\GitManager\Kernel"/>
     </php>
 
     <testsuites>

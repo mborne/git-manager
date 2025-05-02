@@ -52,8 +52,10 @@ class Analyzer
      * - tags : git tags
      * - branches : the list of the branches
      * - activity : number of commits per day
+     *
+     * @return array<string,mixed>
      */
-    private function collectMetadata(GitRepository $gitRepository)
+    private function collectMetadata(GitRepository $gitRepository): array
     {
         $metadata = [];
         $metadata['size'] = $gitRepository->getSize() * 1024;
@@ -66,8 +68,10 @@ class Analyzer
 
     /**
      * Run checkers collecting results.
+     *
+     * @return array<string,mixed>
      */
-    private function runChecks(GitRepository $gitRepository)
+    private function runChecks(GitRepository $gitRepository): array
     {
         $checks = [];
         foreach ($this->checkers as $checker) {
