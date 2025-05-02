@@ -4,8 +4,8 @@
 FROM composer:2.8 AS builder
 
 WORKDIR /opt/git-manager
-COPY composer.json .env .
-RUN composer install
+COPY composer.json symfony.lock .env .
+RUN composer install --no-scripts --prefer-dist
 COPY bin bin/
 COPY config config/
 COPY public public/
@@ -32,6 +32,13 @@ RUN apt-get update \
 # see https://frankenphp.dev/docs/docker/
 #------------------------------------------------------
 FROM dunglas/frankenphp:1-php8.4-alpine
+
+RUN install-php-extensions \
+    pdo_sqlite \
+	pdo_pgsql \
+	intl \
+	zip \
+	opcache
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY .docker/php.ini $PHP_INI_DIR/conf.d/app.ini
@@ -64,14 +71,23 @@ VOLUME /app/var
 # prepare git-manager storage directory
 ENV GIT_MANAGER_DIR=/var/git-manager
 RUN mkdir -p /var/git-manager \
- && chown -R www-data:www-data /var/git-manager
+&& chown -R www-data:www-data /var/git-manager
 VOLUME /var/git-manager
+
+# configure database
+ENV DATABASE_URL=sqlite:////var/git-manager/database.db
 
 # fix permissions for caddy
 RUN chown -R www-data:www-data /data/caddy \
  && chown -R www-data:www-data /config/caddy	
 
+# customize entrypoint
+COPY .docker/run.sh /run.sh
+RUN chmod +x /run.sh
+
 # uid=82(www-data) gid=82(www-data) groups=82(www-data)
 USER www-data
 ENV SERVER_NAME=:8000
 EXPOSE 8000
+
+ENTRYPOINT ["/run.sh"]
