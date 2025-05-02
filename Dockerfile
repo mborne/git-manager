@@ -31,7 +31,7 @@ RUN apt-get update \
 #
 # see https://frankenphp.dev/docs/docker/
 #------------------------------------------------------
-FROM dunglas/frankenphp:1-php8.4-alpine
+FROM dunglas/frankenphp:1-php8.3-alpine
 
 RUN install-php-extensions \
     pdo_sqlite \
