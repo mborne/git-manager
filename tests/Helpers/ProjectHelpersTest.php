@@ -30,11 +30,10 @@ class ProjectHelpersTest extends TestCase
 
     public function testGetFullName(): void
     {
-        $projectHelpers = new ProjectHelpers();
         $project = $this->getMockProject();
         $this->assertEquals(
             'mborne.github.com/mborne/remote-git',
-            $projectHelpers->getFullName($project)
+            ProjectHelpers::getFullName($project)
         );
     }
 }

@@ -4,24 +4,58 @@ namespace MBO\GitManager\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use MBO\GitManager\Repository\ProjectRepository;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 class Project
 {
+    /**
+     * UUID V3 computed using project URL.
+     */
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private int $id;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $id;
 
+    /**
+     * The project name with namespaces (ex : mborne/git-manager).
+     */
     #[ORM\Column(length: 255)]
-    private string $fullName;
+    private string $name;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $defaultBranch = null;
-
+    /**
+     * The URL of the project (ex : "https://github.com/mborne/git-manager").
+     */
     #[ORM\Column(length: 512)]
     private string $httpUrl;
 
+    /**
+     * The full name of a project (ex : "github.com/mborne/git-manager").
+     */
+    #[ORM\Column(length: 255)]
+    private string $fullName;
+
+    /**
+     * The default branch.
+     */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $defaultBranch = null;
+
+    /**
+     * True if the repository is archived.
+     */
+    #[ORM\Column(nullable: false)]
+    private bool $archived;
+
+    /**
+     * public, private or internal.
+     */
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $visibility;
+
+    /**
+     * Last clone or fetch date.
+     */
     #[ORM\Column(type: 'datetime')]
     private \DateTime $fetchedAt;
 
@@ -41,19 +75,38 @@ class Project
     #[ORM\Column(type: 'json')]
     private array $checks = [];
 
-    public function getId(): int
+    public function getId(): Uuid
     {
         return $this->id;
     }
 
-    public function getFullName(): string
+    public function setId(Uuid $id): static
     {
-        return $this->fullName;
+        $this->id = $id;
+
+        return $this;
     }
 
-    public function setFullName(string $fullName): static
+    public function getName(): string
     {
-        $this->fullName = $fullName;
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getHttpUrl(): string
+    {
+        return $this->httpUrl;
+    }
+
+    public function setHttpUrl(string $httpUrl): static
+    {
+        $this->httpUrl = $httpUrl;
 
         return $this;
     }
@@ -70,14 +123,38 @@ class Project
         return $this;
     }
 
-    public function getHttpUrl(): string
+    public function isArchived(): bool
     {
-        return $this->httpUrl;
+        return $this->archived;
     }
 
-    public function setHttpUrl(string $httpUrl): static
+    public function setArchived(bool $archived): static
     {
-        $this->httpUrl = $httpUrl;
+        $this->archived = $archived;
+
+        return $this;
+    }
+
+    public function getVisibility(): ?string
+    {
+        return $this->visibility;
+    }
+
+    public function setVisibility(?string $visibility): static
+    {
+        $this->visibility = $visibility;
+
+        return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return $this->fullName;
+    }
+
+    public function setFullName(string $fullName): static
+    {
+        $this->fullName = $fullName;
 
         return $this;
     }

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mborne/git-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/mborne/git-manager/actions/workflows/ci.yml)
 
-CLI helpers to manage a set of git repositories.
+CLI helpers to backup and review a set of git repositories.
 
 ## Features
 

@@ -10,6 +10,7 @@ use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
 use MBO\GitManager\Helpers\ProjectHelpers;
+use MBO\GitManager\Repository\ProjectRepository;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
@@ -33,9 +34,9 @@ class FetchAllCommand extends Command
 {
     public function __construct(
         private ManagerRegistry $managerRegistry,
+        private ProjectRepository $projectRepository,
         private EntityManagerInterface $em,
         private LocalFilesystem $localFilesystem,
-        private ProjectHelpers $projectHelpers,
         private Analyzer $analyzer,
     ) {
         parent::__construct();
@@ -149,16 +150,21 @@ class FetchAllCommand extends Command
      */
     protected function createOrUpdateProjectEntity(ProjectInterface $project): Project
     {
-        $fullName = $this->projectHelpers->getFullName($project);
-        $repository = $this->em->getRepository(Project::class);
+        $uid = ProjectHelpers::getUid($project);
         /** @var Project|null */
-        $entity = $repository->findOneBy(['fullName' => $fullName]);
+        $entity = $this->projectRepository->findOneBy(['id' => $uid]);
         if (null === $entity) {
             $entity = new Project();
-            $entity->setFullName($fullName);
+            $entity->setId($uid);
         }
-        $entity->setDefaultBranch($project->getDefaultBranch());
-        $entity->setHttpUrl($project->getHttpUrl());
+        $entity
+            ->setName($project->getName())
+            ->setHttpUrl($project->getHttpUrl())
+            ->setDefaultBranch($project->getDefaultBranch())
+            ->setArchived($project->isArchived())
+            ->setVisibility($project->getVisibility()?->toString())
+            ->setFullName(ProjectHelpers::getFullName($project))
+        ;
 
         $this->analyzer->analyze($entity);
 
@@ -182,7 +188,7 @@ class FetchAllCommand extends Command
         /*
         * fetch or clone repository to localPath
         */
-        $fullName = $this->projectHelpers->getFullName($project);
+        $fullName = ProjectHelpers::getFullName($project);
         $localPath = $this->localFilesystem->getRootPath().'/'.$fullName;
         if (file_exists($localPath)) {
             $gitRepository = new GitRepository($localPath);

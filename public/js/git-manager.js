@@ -48,6 +48,8 @@ function loadProjects() {
             const checks = project.checks;
             return [
                 `<a href="https://${name}">${name}</a>`,
+                project.archived ? 'YES' : 'NO',
+                project.visibility ? project.visibility : 'unknown',
                 `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
                 `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
                 getLastActivity(project),
@@ -59,6 +61,8 @@ function loadProjects() {
             data: dataSet,
             columns: [
                 { title: "Name"},
+                { title: "Archived?"},
+                { title: "Visibility"},
                 { title: "README" },
                 { title: "LICENSE" },
                 { title: "Last Activity" },
