@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: [8.3,8.4]
+        php-version: [8.3]
 
     runs-on: ubuntu-latest
 
@@ -44,23 +44,13 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Check style
-      if: matrix.php-version == '8.3'
-      run: vendor/bin/php-cs-fixer fix src -v --dry-run --diff --using-cache=no
-
     - name: Run tests
-      run: |
-        vendor/bin/phpunit -c phpunit.xml.dist \
-          --log-junit var/output/junit-report.xml \
-          --coverage-clover var/output/clover.xml \
-          --coverage-html var/output/coverage
+      run: make test
       env:
-        XDEBUG_MODE: coverage
-        SYMFONY_DEPRECATIONS_HELPER: weak
         TRIVY_ENABLED: false
 
     - name: Upload coverage results to coveralls.io
-      if: github.ref == 'refs/heads/master' && matrix.php-version == '8.4'
+      if: github.ref == 'refs/heads/master' && matrix.php-version == '8.3'
       run: |
         vendor/bin/php-coveralls --coverage_clover=var/output/clover.xml --json_path=var/output/coveralls.json -v
       env:

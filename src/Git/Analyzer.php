@@ -3,6 +3,8 @@
 namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Checker\LicenseChecker;
 use MBO\GitManager\Git\Checker\ReadmeChecker;
 use MBO\GitManager\Git\Checker\TrivyChecker;
@@ -19,6 +21,7 @@ class Analyzer
     private $checkers;
 
     public function __construct(
+        private LocalFilesystem $localFilesystem,
         bool $trivyEnabled,
         private LoggerInterface $logger,
     ) {
@@ -29,29 +32,53 @@ class Analyzer
         ];
     }
 
+    public function analyze(Project $project): void
+    {
+        $fullName = $project->getFullName();
+        $this->logger->info('[analyze] start analysis for project: {fullName}', [
+            'fullName' => $fullName,
+        ]);
+        $gitRepository = new GitRepository(
+            $this->localFilesystem->getRootPath().'/'.$fullName
+        );
+
+        $project->setMetadata($this->collectMetadata($gitRepository));
+        $project->setChecks($this->runChecks($gitRepository));
+    }
+
     /**
-     * Get metadata for a given repository.
+     * Collect repository metadata :
+     * - size : the size of the repository
+     * - tags : git tags
+     * - branches : the list of the branches
+     * - activity : number of commits per day
      *
      * @return array<string,mixed>
      */
-    public function getMetadata(GitRepository $gitRepository): array
+    private function collectMetadata(GitRepository $gitRepository): array
     {
-        $this->logger->debug('[Analyser] retrieve git metadata...', [
-            'repository' => $gitRepository->getWorkingDir(),
-        ]);
-        $metadata = [
-            'size' => $gitRepository->getSize() * 1024,
-        ];
-
+        $metadata = [];
+        $metadata['size'] = $gitRepository->getSize() * 1024;
         $metadata['tags'] = $this->getTagNames($gitRepository);
-        $metadata['branch'] = $this->getBranchNames($gitRepository);
-        $metadata['activity'] = $this->getCommitDates($gitRepository);
-
-        foreach ($this->checkers as $checker) {
-            $metadata[$checker->getName()] = $checker->check($gitRepository);
-        }
+        $metadata['branches'] = $this->getBranchNames($gitRepository);
+        $metadata['activity'] = $this->getActivity($gitRepository);
 
         return $metadata;
+    }
+
+    /**
+     * Run checkers collecting results.
+     *
+     * @return array<string,mixed>
+     */
+    private function runChecks(GitRepository $gitRepository): array
+    {
+        $checks = [];
+        foreach ($this->checkers as $checker) {
+            $checks[$checker->getName()] = $checker->check($gitRepository);
+        }
+
+        return $checks;
     }
 
     /**
@@ -89,7 +116,7 @@ class Analyzer
      *
      * @return array<string,int>
      */
-    private function getCommitDates(GitRepository $gitRepository): array
+    private function getActivity(GitRepository $gitRepository): array
     {
         $result = [];
         foreach ($gitRepository->getReferences()->getAll() as $reference) {

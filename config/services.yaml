@@ -1,14 +1,10 @@
-parameters:
-    env(GIT_MANAGER_DIR): '%kernel.project_dir%/var/data'
-    env(TRIVY_ENABLED): 'true'
-
 services:
     _defaults:
         autowire: true
         autoconfigure: true
         public: false
         bind:
-            $dataDir: '%env(GIT_MANAGER_DIR)%'
+            $dataDir: '%env(resolve:GIT_MANAGER_DIR)%'
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
 
     MBO\GitManager\:

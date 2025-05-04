@@ -2,9 +2,15 @@
 
 namespace MBO\GitManager\Command;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Git\Analyzer;
+use MBO\GitManager\Helpers\ProjectHelpers;
+use MBO\GitManager\Repository\ProjectRepository;
 use MBO\RemoteGit\ClientFactory;
 use MBO\RemoteGit\ClientOptions;
 use MBO\RemoteGit\Filter\FilterCollection;
@@ -27,7 +33,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class FetchAllCommand extends Command
 {
     public function __construct(
+        private ManagerRegistry $managerRegistry,
+        private ProjectRepository $projectRepository,
+        private EntityManagerInterface $em,
         private LocalFilesystem $localFilesystem,
+        private Analyzer $analyzer,
     ) {
         parent::__construct();
     }
@@ -60,14 +70,6 @@ class FetchAllCommand extends Command
         $logger = $this->createLogger($output);
 
         $logger->info('[git:fetch-all] started...');
-
-        $dataDir = $this->localFilesystem->getRootPath();
-        if (!file_exists($dataDir)) {
-            throw new \Exception("$dataDir not found");
-        }
-        if (!is_dir($dataDir)) {
-            throw new \Exception("$dataDir is not a directory");
-        }
 
         /*
          * Create git client according to parameters
@@ -123,7 +125,10 @@ class FetchAllCommand extends Command
                 $project->getHttpUrl()
             ));
             try {
-                $this->fetchOrClone($project, $dataDir, $token);
+                $this->fetchOrClone($project, $token);
+                $entity = $this->createOrUpdateProjectEntity($project);
+                $this->em->persist($entity);
+                $this->em->flush();
             } catch (\Exception $e) {
                 $logger->error(sprintf(
                     '[%s] %s : "%s"',
@@ -131,6 +136,7 @@ class FetchAllCommand extends Command
                     $project->getHttpUrl(),
                     $e->getMessage()
                 ));
+                $this->managerRegistry->resetManager();
             }
         }
 
@@ -139,15 +145,40 @@ class FetchAllCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function fetchOrClone(ProjectInterface $project, string $dataDir, ?string $token): void
+    /**
+     * Create or update project entity based on the given project interface.
+     */
+    protected function createOrUpdateProjectEntity(ProjectInterface $project): Project
     {
+        $uid = ProjectHelpers::getUid($project);
+        /** @var Project|null */
+        $entity = $this->projectRepository->findOneBy(['id' => $uid]);
+        if (null === $entity) {
+            $entity = new Project();
+            $entity->setId($uid);
+        }
+        $entity
+            ->setName($project->getName())
+            ->setHttpUrl($project->getHttpUrl())
+            ->setDefaultBranch($project->getDefaultBranch())
+            ->setArchived($project->isArchived())
+            ->setVisibility($project->getVisibility()?->toString())
+            ->setFullName(ProjectHelpers::getFullName($project))
+        ;
+
+        $this->analyzer->analyze($entity);
+
+        $entity->setFetchedAt(new \DateTime('now'));
+
+        return $entity;
+    }
+
+    protected function fetchOrClone(ProjectInterface $project, ?string $token): void
+    {
+        /*
+         * Inject token in url to clone repository
+         */
         $projectUrl = $project->getHttpUrl();
-
-        // Compute local path according to url
-        $host = parse_url($projectUrl, PHP_URL_HOST);
-        $localPath = $dataDir.'/'.$host.'/'.$project->getName();
-
-        // Inject token in url to clone repository
         $cloneUrl = $projectUrl;
         if (!empty($token)) {
             $scheme = parse_url($projectUrl, PHP_URL_SCHEME);
@@ -155,8 +186,10 @@ class FetchAllCommand extends Command
         }
 
         /*
-         * fetch or clone repository to localPath
-         */
+        * fetch or clone repository to localPath
+        */
+        $fullName = ProjectHelpers::getFullName($project);
+        $localPath = $this->localFilesystem->getRootPath().'/'.$fullName;
         if (file_exists($localPath)) {
             $gitRepository = new GitRepository($localPath);
             // use token to fetch
