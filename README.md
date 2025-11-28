@@ -49,6 +49,12 @@ bin/console git:fetch-all --users=_me_ https://github.com $GITHUB_TOKEN
 bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
+* From gitlab :
+
+```bash
+bin/console git:fetch-all https://gitlab.com -u mborne $GITLAB_TOKEN
+```
+
 ## Usage with docker
 
 ```bash
