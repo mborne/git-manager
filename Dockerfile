@@ -7,6 +7,7 @@ WORKDIR /opt/git-manager
 COPY composer.json symfony.lock .env .
 RUN composer install --no-scripts --prefer-dist
 COPY bin bin/
+RUN chmod +x bin/*
 COPY config config/
 COPY public public/
 COPY src src/
