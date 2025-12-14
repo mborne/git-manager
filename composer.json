@@ -15,7 +15,7 @@
         "php": ">=8.3",
         "gitonomy/gitlib": "^1.5",
         "league/flysystem": "^3.30",
-        "mborne/remote-git": "^0.9.2",
+        "mborne/remote-git": "^0.10.0",
         "symfony/framework-bundle": "^6.4",
         "symfony/console": "^6.4",
         "symfony/runtime": "^6.4",

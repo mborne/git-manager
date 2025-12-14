@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+$prompt = $argv[1] ?? '';
+
+if (stripos($prompt, 'password') !== false) {
+    echo getenv('GIT_MANAGER_TOKEN');
+    exit(0);
+}
+
+if (stripos($prompt, 'username') !== false) {
+    echo 'x-access-token';
+    exit(0);
+}
+
+exit(1);
