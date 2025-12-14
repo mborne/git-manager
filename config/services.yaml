@@ -4,6 +4,7 @@ services:
         autoconfigure: true
         public: false
         bind:
+            $askPassPath: '%kernel.project_dir%/bin/git-askpass'
             $dataDir: '%env(resolve:GIT_MANAGER_DIR)%'
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
 

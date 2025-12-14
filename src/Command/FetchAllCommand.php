@@ -5,7 +5,6 @@ namespace MBO\GitManager\Command;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\Analyzer;
 use MBO\GitManager\Git\Synchronizer;
 use MBO\GitManager\Helpers\ProjectHelpers;
@@ -36,7 +35,6 @@ class FetchAllCommand extends Command
         private ProjectRepository $projectRepository,
         private Synchronizer $synchronizer,
         private EntityManagerInterface $em,
-        private LocalFilesystem $localFilesystem,
         private Analyzer $analyzer,
     ) {
         parent::__construct();
@@ -172,7 +170,6 @@ class FetchAllCommand extends Command
 
         return $entity;
     }
-
 
     /**
      * Create console logger.
