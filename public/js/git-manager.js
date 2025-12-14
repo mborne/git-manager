@@ -52,6 +52,7 @@ function loadProjects() {
                 project.visibility ? project.visibility : 'unknown',
                 `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
                 `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
+                project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
                 checks.trivy
@@ -65,6 +66,7 @@ function loadProjects() {
                 { title: "Visibility"},
                 { title: "README" },
                 { title: "LICENSE" },
+                { title: "Last Fetch" },
                 { title: "Last Activity" },
                 { title: "Size (Mo)" },
                 { 
@@ -85,7 +87,7 @@ function loadProjects() {
         console.error(error);
         $('#projects').DataTable({
             data: [[
-                `<span class="text-danger">fail to load repositories (run 'bin/console git:stats')</span>`,
+                `<span class="text-danger">fail to load repositories</span>`,
             ]],
             columns: [
                 { title: "Error" },
