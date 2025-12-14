@@ -73,7 +73,7 @@ function loadProjects() {
                     title: "Trivy", 
                     render: function (trivy, type) {
                         if ( type === 'sort' || type === 'type' ) {
-                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH : 0 ;
+                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH : -1 ;
                         } else {
                             return renderTrivy(trivy);
                         }
