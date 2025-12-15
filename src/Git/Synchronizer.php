@@ -42,7 +42,7 @@ class Synchronizer
         * fetch or clone repository to localPath
         */
         $fullName = ProjectHelpers::getFullName($project);
-        $localPath = $this->localFilesystem->getRootPath().'/'.$fullName;
+        $localPath = $this->localFilesystem->getGitRepositoryPath($fullName);
         if (file_exists($localPath)) {
             $this->logger->debug(sprintf('%s already exists -> fetch and reset', $fullName));
             $gitRepository = new GitRepository($localPath, $options);

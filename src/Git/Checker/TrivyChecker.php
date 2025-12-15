@@ -2,7 +2,8 @@
 
 namespace MBO\GitManager\Git\Checker;
 
-use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\CheckerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -19,6 +20,7 @@ class TrivyChecker implements CheckerInterface
 
     public function __construct(
         bool $trivyEnabled,
+        private LocalFilesystem $localFilesystem,
         private LoggerInterface $logger,
     ) {
         $this->enabled = $trivyEnabled && $this->isAvailable();
@@ -29,14 +31,14 @@ class TrivyChecker implements CheckerInterface
         return 'trivy';
     }
 
-    public function check(GitRepository $gitRepository): mixed
+    public function check(Project $project): mixed
     {
-        $workingDir = $gitRepository->getWorkingDir();
+        $repositoryPath = $this->localFilesystem->getGitRepositoryPath($project->getFullName());
 
         if (!$this->enabled) {
             $this->logger->debug('[{checker}] skipped (disabled)', [
                 'checker' => $this->getName(),
-                'repository' => $workingDir,
+                'repository' => $project->getFullName(),
             ]);
 
             return null;
@@ -44,10 +46,33 @@ class TrivyChecker implements CheckerInterface
 
         $this->logger->debug('[{checker}] run trivy fs on repository...', [
             'checker' => $this->getName(),
-            'repository' => $workingDir,
+            'repository' => $project->getFullName(),
         ]);
 
-        $trivyReportPath = $workingDir.'/.trivy.json';
+        $trivyReportPath = $this->localFilesystem->getTrivyReportPath($project);
+
+        $result = [
+            'success' => $this->runTrivy($repositoryPath, $trivyReportPath),
+            'vulnerabilities' => false,
+            'summary' => false,
+        ];
+        if (!$result['success']) {
+            return $result;
+        }
+
+        // read JSON report and count vulns
+        $report = json_decode(file_get_contents($trivyReportPath), true);
+        $result['vulnerabilities'] = $this->getVulnerabilities($report);
+        $result['summary'] = $this->getSummary($result['vulnerabilities']);
+
+        // convert JSON report to txt
+        $this->convertReportToTxt($trivyReportPath);
+
+        return $result;
+    }
+
+    private function runTrivy(string $repositoryPath, string $trivyReportPath): bool
+    {
         $process = new Process([
             'trivy',
             'fs',
@@ -55,28 +80,40 @@ class TrivyChecker implements CheckerInterface
             '--severity', implode(',', self::SEVERITIES),
             '--format', 'json',
             '--output', $trivyReportPath,
-            $workingDir,
+            $repositoryPath,
         ]);
         $process->setTimeout(1200);
         $process->run();
 
-        $result = [
-            'success' => $process->isSuccessful(),
-            'vulnerabilities' => false,
-            'summary' => false,
-        ];
         if (!$process->isSuccessful()) {
-            echo $process->getErrorOutput();
-        }
-        if (!file_exists($trivyReportPath)) {
-            return $result;
+            $this->logger->error($process->getErrorOutput());
+
+            return false;
         }
 
-        $report = json_decode(file_get_contents($trivyReportPath), true);
-        $result['vulnerabilities'] = $this->getVulnerabilities($report);
-        $result['summary'] = $this->getSummary($result['vulnerabilities']);
+        if (!file_exists(filename: $trivyReportPath)) {
+            return false;
+        }
 
-        return $result;
+        return true;
+    }
+
+    private function convertReportToTxt(string $trivyReportPath)
+    {
+        $trivyReportPathTxt = $trivyReportPath.'.txt';
+        $process = new Process([
+            'trivy',
+            'convert',
+            '--format', 'table',
+            '--output', $trivyReportPathTxt,
+            $trivyReportPath,
+        ]);
+        $process->setTimeout(1200);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->logger->error('fail to convert report to txt');
+            $this->logger->error($process->getErrorOutput());
+        }
     }
 
     /**

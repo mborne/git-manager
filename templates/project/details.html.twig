@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - {{ project.fullname }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>{{ project.fullname }}</h1>
+
+    <h2>Properties</h2>
+
+    <ul>
+        <li>URL : <a href="{{ project.httpUrl }}" target="_blank">{{ project.httpUrl }}</a></li>
+        <li>Archived : {{ project.archived ? 'YES' : 'NO' }}</li>
+    </ul>
+
+    <h2>Checks</h2>
+
+    <ul>
+        <li><b>README</b> :
+            {% if project.checks.readme %}
+                <span style="color: green">YES</span>
+            {% else %}
+                <span style="color: red">NO</span>
+            {% endif %}
+        </li>
+        <li><b>LICENSE</b> : 
+            {% if project.checks.license %}
+                <span style="color: green">{{project.checks.license}}</span>
+            {% else %}
+                <span style="color: red">MISSING</span>
+            {% endif %}
+        </li>
+    </ul>
+
+    <h2>Trivy report</h2>
+
+    <pre>
+        {{ trivyReportTxt }}
+    </pre>
+
+</div>
+{% endblock %}
+

@@ -26,9 +26,9 @@ class Analyzer
         private LoggerInterface $logger,
     ) {
         $this->checkers = [
-            new ReadmeChecker($logger),
-            new LicenseChecker($logger),
-            new TrivyChecker($trivyEnabled, $logger),
+            new ReadmeChecker($localFilesystem, $logger),
+            new LicenseChecker($localFilesystem, $logger),
+            new TrivyChecker($trivyEnabled, $localFilesystem, $logger),
         ];
     }
 
@@ -38,12 +38,10 @@ class Analyzer
         $this->logger->info('[analyze] start analysis for project: {fullName}', [
             'fullName' => $fullName,
         ]);
-        $gitRepository = new GitRepository(
-            $this->localFilesystem->getRootPath().'/'.$fullName
-        );
+        $gitRepository = $this->localFilesystem->getGitRepository($project->getFullName());
 
         $project->setMetadata($this->collectMetadata($gitRepository));
-        $project->setChecks($this->runChecks($gitRepository));
+        $project->setChecks($this->runChecks($project));
     }
 
     /**
@@ -71,11 +69,11 @@ class Analyzer
      *
      * @return array<string,mixed>
      */
-    private function runChecks(GitRepository $gitRepository): array
+    private function runChecks(Project $project): array
     {
         $checks = [];
         foreach ($this->checkers as $checker) {
-            $checks[$checker->getName()] = $checker->check($gitRepository);
+            $checks[$checker->getName()] = $checker->check($project);
         }
 
         return $checks;

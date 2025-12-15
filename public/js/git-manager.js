@@ -46,6 +46,7 @@ function loadProjects() {
             const name = project.fullName;
             const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
+            const detailsUrl = `/${project.id}`;
             return [
                 `<a href="https://${name}">${name}</a>`,
                 project.archived ? 'YES' : 'NO',
@@ -55,7 +56,8 @@ function loadProjects() {
                 project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
-                checks.trivy
+                checks.trivy,
+                `<a href="${detailsUrl}">show</a>`,
             ];
         });
         $('#projects').DataTable({
@@ -78,7 +80,8 @@ function loadProjects() {
                             return renderTrivy(trivy);
                         }
                     }
-                }
+                },
+                { title: 'Details'}
             ],
             "paging": false,
             "info": false
