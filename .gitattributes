@@ -1,0 +1,4 @@
+# LF for text files
+* text eol=lf
+# do not touch binary
+* -text
