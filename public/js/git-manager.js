@@ -28,7 +28,7 @@ function renderTrivy(trivy){
     }
     return ['CRITICAL','HIGH'].map(severity => {
         const count = trivy.summary[severity];
-        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}: ${count}`;
+        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}:&nbsp;${count}`;
     }).join('<br />');
 }
 
@@ -57,7 +57,7 @@ function loadProjects() {
                 getLastActivity(project),
                 sizeMo,
                 checks.trivy,
-                `<a href="${detailsUrl}">show</a>`,
+                `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
             ];
         });
         $('#projects').DataTable({
@@ -75,16 +75,20 @@ function loadProjects() {
                     title: "Trivy", 
                     render: function (trivy, type) {
                         if ( type === 'sort' || type === 'type' ) {
-                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH : -1 ;
+                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH / 100.0 : -1 ;
                         } else {
                             return renderTrivy(trivy);
                         }
                     }
                 },
-                { title: 'Details'}
+                { 
+                    title: 'Details',
+                    orderable: false,
+                    className: 'text-center'
+                }
             ],
-            "paging": false,
-            "info": false
+            paging: false,
+            info: false
         });
     }).catch(function (error) {
         console.error(error);
