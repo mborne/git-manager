@@ -98,7 +98,7 @@ class TrivyChecker implements CheckerInterface
         return true;
     }
 
-    private function convertReportToTxt(string $trivyReportPath)
+    private function convertReportToTxt(string $trivyReportPath): void
     {
         $trivyReportPathTxt = $trivyReportPath.'.txt';
         $process = new Process([
