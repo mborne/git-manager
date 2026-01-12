@@ -2,7 +2,8 @@
 
 namespace MBO\GitManager\Git\Checker;
 
-use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Entity\Project;
+use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Git\CheckerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -11,8 +12,10 @@ use Psr\Log\LoggerInterface;
  */
 class ReadmeChecker implements CheckerInterface
 {
-    public function __construct(private LoggerInterface $logger)
-    {
+    public function __construct(
+        private LocalFilesystem $localFilesystem,
+        private LoggerInterface $logger,
+    ) {
     }
 
     public function getName(): string
@@ -20,15 +23,15 @@ class ReadmeChecker implements CheckerInterface
         return 'readme';
     }
 
-    public function check(GitRepository $gitRepository): bool
+    public function check(Project $project): bool
     {
+        $repositoryPath = $this->localFilesystem->getGitRepositoryPath($project->getFullName());
         $this->logger->debug('[{checker}] look for README.md file...', [
             'checker' => $this->getName(),
-            'repository' => $gitRepository->getWorkingDir(),
+            'repository' => $project->getFullName(),
         ]);
 
-        $workingDir = $gitRepository->getWorkingDir();
-        $readmePath = $workingDir.DIRECTORY_SEPARATOR.'README.md';
+        $readmePath = $repositoryPath.DIRECTORY_SEPARATOR.'README.md';
 
         return file_exists($readmePath);
     }
