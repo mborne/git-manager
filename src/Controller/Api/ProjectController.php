@@ -11,7 +11,6 @@ use Symfony\Component\Uid\Uuid;
 
 class ProjectController extends AbstractController
 {
-
     #[Route('/api/projects', name: 'api_project_list')]
     public function list(
         ProjectRepository $repository,
