@@ -21,6 +21,10 @@ class LicenseChecker implements CheckerInterface
     public const LICENSE_FILENAMES = [
         'LICENSE',
         'LICENSE.md',
+        'LICENSE.txt',
+        'LICENCE',
+        'LICENCE.md',
+        'LICENCE.txt',
     ];
 
     public function getName(): string
@@ -40,7 +44,7 @@ class LicenseChecker implements CheckerInterface
         foreach (static::LICENSE_FILENAMES as $filename) {
             $expectedPath = $repositoryPath.DIRECTORY_SEPARATOR.$filename;
             if (file_exists($expectedPath)) {
-                return $filename;
+                return $expectedPath;
             }
         }
 
