@@ -18,21 +18,25 @@ class CSV
 
         fputcsv($handle, [
             'NAME',
+            'DESCRIPTION',
             'VISIBILITY',
             'ARCHIVED',
             'README',
             'LICENSE',
             'SIZE_MO',
+            'LAST_ACTIVITY',
         ]);
 
         foreach ($projects as $project) {
             fputcsv($handle, [
                 $project->getFullName(),
+                $project->getDescription() ?? '',
                 $project->getVisibility() ?? 'unknown',
                 $project->isArchived() ? '1' : '0',
-                ($project->getChecks()['readme'] ?? false) ? '1' : '0',
+                $this->readmeCsvValue($project),
                 $this->licenseCsvValue($project),
                 $this->sizeMo($project),
+                $this->lastActivityCsvValue($project),
             ]);
         }
 
@@ -46,11 +50,19 @@ class CSV
         return $content;
     }
 
+
+    private function readmeCsvValue(Project $project): string
+    {
+        $readme = $project->getChecks()['readme'] ?? false;
+
+        return $readme ? '1' : '0';
+    }
+    
     private function licenseCsvValue(Project $project): string
     {
         $license = $project->getChecks()['license'] ?? false;
 
-        return $license ? 'FOUND' : 'MISSING';
+        return $license ? $license : '0';
     }
 
     private function sizeMo(Project $project): string
@@ -61,5 +73,15 @@ class CSV
         }
 
         return number_format(((float) $sizeBytes) / (1024 * 1024), 1, '.', '');
+    }
+
+    private function lastActivityCsvValue(Project $project): string
+    {
+        $lastActivity = $project->getMetadata()['activity'] ?? [];
+        if (empty($lastActivity)) {
+            return '0000-00-00';
+        }
+
+        return max(array_keys($lastActivity));
     }
 }
