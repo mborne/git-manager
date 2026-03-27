@@ -159,6 +159,7 @@ class FetchAllCommand extends Command
             ->setName($project->getName())
             ->setHttpUrl($project->getHttpUrl())
             ->setDefaultBranch($project->getDefaultBranch())
+            ->setDescription($project->getDescription())
             ->setArchived($project->isArchived())
             ->setVisibility($project->getVisibility()?->toString())
             ->setFullName(ProjectHelpers::getFullName($project))

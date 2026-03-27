@@ -36,6 +36,12 @@ class Project
     private string $fullName;
 
     /**
+     * Optional project description (unbounded length).
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    /**
      * The default branch.
      */
     #[ORM\Column(length: 100, nullable: true)]
@@ -155,6 +161,18 @@ class Project
     public function setFullName(string $fullName): static
     {
         $this->fullName = $fullName;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }
