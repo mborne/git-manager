@@ -44,7 +44,7 @@ class LicenseChecker implements CheckerInterface
         foreach (static::LICENSE_FILENAMES as $filename) {
             $expectedPath = $repositoryPath.DIRECTORY_SEPARATOR.$filename;
             if (file_exists($expectedPath)) {
-                return $expectedPath;
+                return $filename;
             }
         }
 
