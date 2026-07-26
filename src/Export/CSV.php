@@ -50,14 +50,13 @@ class CSV
         return $content;
     }
 
-
     private function readmeCsvValue(Project $project): string
     {
         $readme = $project->getChecks()['readme'] ?? false;
 
         return $readme ? '1' : '0';
     }
-    
+
     private function licenseCsvValue(Project $project): string
     {
         $license = $project->getChecks()['license'] ?? false;
