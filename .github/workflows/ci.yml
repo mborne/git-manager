@@ -49,6 +49,16 @@ jobs:
       env:
         TRIVY_ENABLED: false
 
+    - name: Psalm Security Scan
+      run: |
+        vendor/bin/psalm --report=results.sarif --no-cache
+
+    - name: Upload Security Analysis results to GitHub
+      if: github.ref == 'refs/heads/master' && matrix.php-version == '8.3'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
+
     - name: Upload coverage results to coveralls.io
       if: github.ref == 'refs/heads/master' && matrix.php-version == '8.3'
       run: |

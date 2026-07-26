@@ -44,7 +44,9 @@
         "friendsofphp/php-cs-fixer": "^3.90",
         "symfony/maker-bundle": "^1.65",
         "phpstan/phpstan-doctrine": "^2.0",
-        "phpstan/extension-installer": "^1.4"
+        "phpstan/extension-installer": "^1.4",
+        "vimeo/psalm": "^6.16",
+        "psalm/plugin-symfony": "^5.3"
     },
     "scripts": {
         "auto-scripts": {
