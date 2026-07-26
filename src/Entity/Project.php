@@ -8,7 +8,7 @@ use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
-final class Project
+class Project
 {
     /**
      * UUID V3 computed using project URL.
