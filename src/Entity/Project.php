@@ -8,7 +8,7 @@ use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
-class Project
+final class Project
 {
     /**
      * UUID V3 computed using project URL.
@@ -81,6 +81,9 @@ class Project
     #[ORM\Column(type: 'json')]
     private array $checks = [];
 
+    /**
+     * @psalm-api
+     */
     public function getId(): Uuid
     {
         return $this->id;
@@ -93,6 +96,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getName(): string
     {
         return $this->name;
@@ -105,6 +111,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getHttpUrl(): string
     {
         return $this->httpUrl;
@@ -117,6 +126,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getDefaultBranch(): ?string
     {
         return $this->defaultBranch;
@@ -129,6 +141,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function isArchived(): bool
     {
         return $this->archived;
@@ -141,6 +156,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getVisibility(): ?string
     {
         return $this->visibility;
@@ -153,6 +171,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getFullName(): string
     {
         return $this->fullName;
@@ -165,6 +186,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getDescription(): ?string
     {
         return $this->description;
@@ -177,6 +201,9 @@ class Project
         return $this;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getFetchedAt(): \DateTime
     {
         return $this->fetchedAt;
@@ -190,6 +217,8 @@ class Project
     }
 
     /**
+     * @psalm-api
+     *
      * @return array<string,mixed>
      */
     public function getMetadata(): array
@@ -208,6 +237,8 @@ class Project
     }
 
     /**
+     * @psalm-api
+     *
      * @return array<string,mixed>
      */
     public function getChecks(): array

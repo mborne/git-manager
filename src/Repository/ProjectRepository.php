@@ -9,7 +9,7 @@ use MBO\GitManager\Entity\Project;
 /**
  * @extends ServiceEntityRepository<Project>
  */
-class ProjectRepository extends ServiceEntityRepository
+final class ProjectRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

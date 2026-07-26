@@ -9,7 +9,7 @@ use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ProjectInterface;
 use Psr\Log\LoggerInterface;
 
-class Synchronizer
+final class Synchronizer
 {
     public function __construct(
         private LocalFilesystem $localFilesystem,

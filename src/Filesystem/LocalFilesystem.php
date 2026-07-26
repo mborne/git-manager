@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Local data directory.
  */
-class LocalFilesystem extends LeagueFilesystem
+final class LocalFilesystem extends LeagueFilesystem
 {
     public function __construct(
         private string $dataDir,

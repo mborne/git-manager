@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author mborne
  */
-class StatsCommand extends Command
+final class StatsCommand extends Command
 {
     protected function configure(): void
     {

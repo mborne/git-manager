@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Ensure that LICENSE file is present.
  */
-class LicenseChecker implements CheckerInterface
+final class LicenseChecker implements CheckerInterface
 {
     public function __construct(
         private LocalFilesystem $localFilesystem,

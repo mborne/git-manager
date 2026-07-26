@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
 /**
  * Perform a scan with trivy.
  */
-class TrivyChecker implements CheckerInterface
+final class TrivyChecker implements CheckerInterface
 {
     public const SEVERITIES = ['HIGH', 'CRITICAL'];
 
@@ -154,7 +154,7 @@ class TrivyChecker implements CheckerInterface
         foreach (self::SEVERITIES as $severity) {
             $stats[$severity] = 0;
         }
-        foreach ($vulnerabilities as $id => $severity) {
+        foreach ($vulnerabilities as $severity) {
             ++$stats[$severity];
         }
 

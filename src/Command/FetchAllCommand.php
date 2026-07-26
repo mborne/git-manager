@@ -28,7 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author mborne
  */
-class FetchAllCommand extends Command
+final class FetchAllCommand extends Command
 {
     public function __construct(
         private ManagerRegistry $managerRegistry,

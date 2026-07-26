@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Analyze git repository to provide informations.
  */
-class Analyzer
+final class Analyzer
 {
     /**
      * @var CheckerInterface[]

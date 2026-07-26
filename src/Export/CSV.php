@@ -4,7 +4,7 @@ namespace MBO\GitManager\Export;
 
 use MBO\GitManager\Entity\Project;
 
-class CSV
+final class CSV
 {
     /**
      * @param iterable<Project> $projects
@@ -71,7 +71,7 @@ class CSV
             return '0.0';
         }
 
-        return number_format(((float) $sizeBytes) / (1024 * 1024), 1, '.', '');
+        return number_format(((float) $sizeBytes) / (1024.0 * 1024.0), 1, '.', '');
     }
 
     private function lastActivityCsvValue(Project $project): string

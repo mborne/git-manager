@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Ensure that README file is present.
  */
-class ReadmeChecker implements CheckerInterface
+final class ReadmeChecker implements CheckerInterface
 {
     public function __construct(
         private LocalFilesystem $localFilesystem,

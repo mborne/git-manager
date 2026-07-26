@@ -5,7 +5,7 @@ namespace MBO\GitManager\Helpers;
 use MBO\RemoteGit\ProjectInterface;
 use Symfony\Component\Uid\Uuid;
 
-class ProjectHelpers
+final class ProjectHelpers
 {
     /**
      * Get UID V3 according to project URL.
