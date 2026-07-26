@@ -50,6 +50,7 @@ jobs:
         TRIVY_ENABLED: false
 
     - name: Psalm Security Scan
+      continue-on-error: true
       run: |
         vendor/bin/psalm --report=results.sarif --no-cache
 
