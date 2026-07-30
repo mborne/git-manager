@@ -13,6 +13,23 @@ function getLastActivity(project) {
 }
 
 /**
+ * Render secret (gitleaks) report.
+ *
+ * @param {?object} secret
+ * @returns
+ */
+function renderSecret(secret) {
+    if (!secret) {
+        return `<span class="text-warning">NO-DATA</span>`;
+    }
+    if (!secret.success) {
+        return `<span class="text-danger">FAILURE</span>`;
+    }
+    const count = secret.summary.count;
+    return `<span class="${count > 0 ? 'text-danger' : 'text-success'}">SECRETS:&nbsp;${count}</span>`;
+}
+
+/**
  * Render trivy report.
  *
  * @param {?object} trivy 
@@ -57,6 +74,7 @@ function loadProjects() {
                 getLastActivity(project),
                 sizeMo,
                 checks.trivy,
+                checks.secret,
                 `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
             ];
         });
@@ -78,6 +96,16 @@ function loadProjects() {
                             return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH / 100.0 : -1 ;
                         } else {
                             return renderTrivy(trivy);
+                        }
+                    }
+                },
+                {
+                    title: "Secrets",
+                    render: function (secret, type) {
+                        if ( type === 'sort' || type === 'type' ) {
+                            return secret ? secret.summary.count : -1;
+                        } else {
+                            return renderSecret(secret);
                         }
                     }
                 },

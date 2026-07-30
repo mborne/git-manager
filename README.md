@@ -22,6 +22,7 @@ CLI helpers to backup and review a set of git repositories.
 | ----------------- | ------------------------------------- | ----------------------- |
 | `GIT_MANAGER_DIR` | Directory containing git repositories | `{projectDir}/var/data` |
 | `TRIVY_ENABLED`   | Enable/disable trivy scan             | `true`                  |
+| `GITLEAKS_ENABLED`   | Enable/disable gitleaks scan       | `true`                  |
 
 ## Setup
 

@@ -32,6 +32,35 @@
         </li>
     </ul>
 
+    <h2>Secrets (gitleaks)</h2>
+
+    {% if secretFindings is empty %}
+        <p style="color: green">No secret found.</p>
+    {% else %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rule</th>
+                    <th>File</th>
+                    <th>Line</th>
+                    <th>Match</th>
+                    <th>Commit</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for finding in secretFindings %}
+                <tr>
+                    <td>{{ finding.ruleId }}</td>
+                    <td>{{ finding.locations[0].physicalLocation.artifactLocation.uri ?? '-' }}</td>
+                    <td>{{ finding.locations[0].physicalLocation.region.startLine ?? '-' }}</td>
+                    <td><code>{{ finding.locations[0].physicalLocation.region.snippet.text ?? '-' }}</code></td>
+                    <td>{{ finding.partialFingerprints.commitSha ?? '-' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
     <h2>Trivy</h2>
 
     {% if trivyReportTxt is empty %}

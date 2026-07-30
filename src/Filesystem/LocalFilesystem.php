@@ -23,6 +23,10 @@ final class LocalFilesystem extends LeagueFilesystem
             $logger->info('create .trivy directory');
             $this->createDirectory('.trivy');
         }
+        if (!$this->directoryExists('.gitleaks')) {
+            $logger->info('create .gitleaks directory');
+            $this->createDirectory('.gitleaks');
+        }
     }
 
     /**
@@ -57,6 +61,17 @@ final class LocalFilesystem extends LeagueFilesystem
         return implode(
             DIRECTORY_SEPARATOR,
             [$this->getRootPath(), '.trivy', (string) $project->getId().'.json']
+        );
+    }
+
+    /**
+     * Get path for the gitleaks SARIF report.
+     */
+    public function getSecretReportPath(Project $project): string
+    {
+        return implode(
+            DIRECTORY_SEPARATOR,
+            [$this->getRootPath(), '.gitleaks', (string) $project->getId().'.sarif']
         );
     }
 }
