@@ -4,6 +4,9 @@
  * @returns 
  */
 function getLastActivity(project) {
+    if (!project.metadata || !project.metadata.activity) {
+        return '0000-00-00';
+    }
     const dates = Object.keys(project.metadata.activity);
     if (dates.length == 0) {
         return '0000-00-00';
