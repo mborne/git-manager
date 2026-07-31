@@ -64,6 +64,8 @@ function loadProjects() {
             const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
             const detailsUrl = `/${project.id}`;
+            const trivyOrder = checks.trivy ? checks.trivy.summary.CRITICAL + checks.trivy.summary.HIGH / 100.0 : -1;
+            const secretOrder = checks.secret && checks.secret.summary ? checks.secret.summary.count : -1;
             return [
                 `<a href="https://${name}">${name}</a>`,
                 project.archived ? 'YES' : 'NO',
@@ -73,8 +75,8 @@ function loadProjects() {
                 project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
-                checks.trivy,
-                checks.secret,
+                `<span data-order="${trivyOrder}">${renderTrivy(checks.trivy)}</span>`,
+                `<span data-order="${secretOrder}">${renderSecret(checks.secret)}</span>`,
                 `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
             ];
         });
@@ -89,26 +91,8 @@ function loadProjects() {
                 { title: "Last Fetch" },
                 { title: "Last Activity" },
                 { title: "Size (Mo)" },
-                { 
-                    title: "Trivy", 
-                    render: function (trivy, type) {
-                        if ( type === 'sort' || type === 'type' ) {
-                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH / 100.0 : -1 ;
-                        } else {
-                            return renderTrivy(trivy);
-                        }
-                    }
-                },
-                {
-                    title: "Secrets",
-                    render: function (secret, type) {
-                        if ( type === 'sort' || type === 'type' ) {
-                            return secret ? secret.summary.count : -1;
-                        } else {
-                            return renderSecret(secret);
-                        }
-                    }
-                },
+                { title: "Trivy" },
+                { title: "Secrets" },
                 { 
                     title: 'Details',
                     orderable: false,
