@@ -60,12 +60,15 @@ final class FetchAllCommand extends Command
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
 
             ->addOption('include', null, InputOption::VALUE_REQUIRED, 'Filter according to a given regexp, for ex : "(ansible)"')
+
+            ->addOption('skip-analyse', null, InputOption::VALUE_NONE, 'Skip analysis after fetching repositories')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $logger = $this->createLogger($output);
+        $skipAnalyse = $input->getOption('skip-analyse');
 
         $logger->info('[git:fetch-all] started...');
 
@@ -124,7 +127,7 @@ final class FetchAllCommand extends Command
             ));
             try {
                 $this->synchronizer->fetchOrClone($project, $token);
-                $entity = $this->createOrUpdateProjectEntity($project);
+                $entity = $this->createOrUpdateProjectEntity($project, $skipAnalyse);
                 $this->em->persist($entity);
                 $this->em->flush();
             } catch (\Exception $e) {
@@ -146,7 +149,7 @@ final class FetchAllCommand extends Command
     /**
      * Create or update project entity based on the given project interface.
      */
-    protected function createOrUpdateProjectEntity(ProjectInterface $project): Project
+    protected function createOrUpdateProjectEntity(ProjectInterface $project, bool $skipAnalyse = false): Project
     {
         $uid = ProjectHelpers::getUid($project);
         /** @var Project|null */
@@ -165,7 +168,9 @@ final class FetchAllCommand extends Command
             ->setFullName(ProjectHelpers::getFullName($project))
         ;
 
-        $this->analyzer->analyze($entity);
+        if (!$skipAnalyse) {
+            $this->analyzer->analyze($entity);
+        }
 
         $entity->setFetchedAt(new \DateTime('now'));
 

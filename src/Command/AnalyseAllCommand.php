@@ -1,0 +1,95 @@
+<?php
+
+namespace MBO\GitManager\Command;
+
+use Doctrine\ORM\EntityManagerInterface;
+use MBO\GitManager\Git\Analyzer;
+use MBO\GitManager\Repository\ProjectRepository;
+use Psr\Log\LogLevel;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Logger\ConsoleLogger;
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * Analyse all local git projects.
+ *
+ * @author mborne
+ */
+final class AnalyseAllCommand extends Command
+{
+    public function __construct(
+        private ProjectRepository $projectRepository,
+        private EntityManagerInterface $em,
+        private Analyzer $analyzer,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->setName('git:analyse-all')
+            ->setDescription('Run analysis on all fetched projects')
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Limit the number of projects to analyse')
+            ->addOption('host', null, InputOption::VALUE_REQUIRED, 'Filter projects by host (e.g. github.com)')
+        ;
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $logger = $this->createLogger($output);
+
+        $logger->info('[git:analyse-all] started...');
+
+        $limit = $input->getOption('limit');
+        $host = $input->getOption('host');
+
+        if (null !== $host) {
+            $projects = $this->projectRepository->findByHost($host);
+        } else {
+            $projects = $this->projectRepository->findAll();
+        }
+
+        $count = 0;
+        foreach ($projects as $project) {
+            if (null !== $limit && $count >= (int) $limit) {
+                break;
+            }
+            $logger->info(sprintf(
+                '[%s] analysing...',
+                $project->getFullName()
+            ));
+            try {
+                $this->analyzer->analyze($project);
+                $this->em->persist($project);
+                $this->em->flush();
+                ++$count;
+            } catch (\Exception $e) {
+                $logger->error(sprintf(
+                    '[%s] analysis failed : "%s"',
+                    $project->getFullName(),
+                    $e->getMessage()
+                ));
+            }
+        }
+
+        $logger->info('[git:analyse-all] completed');
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Create console logger.
+     */
+    private function createLogger(OutputInterface $output): ConsoleLogger
+    {
+        $verbosityLevelMap = [
+            LogLevel::NOTICE => OutputInterface::VERBOSITY_NORMAL,
+            LogLevel::INFO => OutputInterface::VERBOSITY_NORMAL,
+        ];
+
+        return new ConsoleLogger($output, $verbosityLevelMap);
+    }
+}

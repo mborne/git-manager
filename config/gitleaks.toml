@@ -2,7 +2,5 @@ title = "gitleaks config"
 
 [extend]
 useDefault = true
+disabledRules = [ "generic-api-key"]
 
-[allowlist]
-description = "Disable generic-api-key (too many false positives)"
-rules = ["generic-api-key"]

@@ -15,4 +15,16 @@ final class ProjectRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Project::class);
     }
+
+    /**
+     * @return Project[]
+     */
+    public function findByHost(string $host): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.fullName LIKE :host')
+            ->setParameter('host', $host.'/%')
+            ->getQuery()
+            ->getResult();
+    }
 }
