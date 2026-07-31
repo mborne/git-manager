@@ -7,6 +7,7 @@ services:
             $askPassPath: '%kernel.project_dir%/bin/git-askpass'
             $dataDir: '%env(resolve:GIT_MANAGER_DIR)%'
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
+            $trivyConfigPath: '%kernel.project_dir%/config/trivy.yaml'
             $gitleaksEnabled: '%env(bool:GITLEAKS_ENABLED)%'
 
     MBO\GitManager\:

@@ -24,13 +24,14 @@ final class Analyzer
     public function __construct(
         private LocalFilesystem $localFilesystem,
         bool $trivyEnabled,
+        string $trivyConfigPath,
         bool $gitleaksEnabled,
         private LoggerInterface $logger,
     ) {
         $this->checkers = [
             new ReadmeChecker($localFilesystem, $logger),
             new LicenseChecker($localFilesystem, $logger),
-            new TrivyChecker($trivyEnabled, $localFilesystem, $logger),
+            new TrivyChecker($trivyEnabled, $trivyConfigPath, $localFilesystem, $logger),
             new SecretChecker($gitleaksEnabled, $localFilesystem, $logger),
         ];
     }

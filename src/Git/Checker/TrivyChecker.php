@@ -20,6 +20,7 @@ final class TrivyChecker implements CheckerInterface
 
     public function __construct(
         bool $trivyEnabled,
+        private string $trivyConfigPath,
         private LocalFilesystem $localFilesystem,
         private LoggerInterface $logger,
     ) {
@@ -73,15 +74,22 @@ final class TrivyChecker implements CheckerInterface
 
     private function runTrivy(string $repositoryPath, string $trivyReportPath): bool
     {
-        $process = new Process([
+        $command = [
             'trivy',
             'fs',
             '--scanners', 'vuln',
             '--severity', implode(',', self::SEVERITIES),
+            '--offline-scan',
             '--format', 'json',
             '--output', $trivyReportPath,
-            $repositoryPath,
-        ]);
+        ];
+        if (file_exists($this->trivyConfigPath)) {
+            $command[] = '--config';
+            $command[] = $this->trivyConfigPath;
+        }
+        $command[] = $repositoryPath;
+
+        $process = new Process($command);
         $process->setTimeout(1200);
         $process->run();
 
