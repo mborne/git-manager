@@ -18,6 +18,7 @@ final class SecretChecker implements CheckerInterface
 
     public function __construct(
         bool $gitleaksEnabled,
+        private string $gitleaksConfigPath,
         private LocalFilesystem $localFilesystem,
         private LoggerInterface $logger,
     ) {
@@ -67,7 +68,7 @@ final class SecretChecker implements CheckerInterface
 
     private function runGitleaks(string $repositoryPath, string $secretReportPath): bool
     {
-        $process = new Process([
+        $command = [
             'gitleaks',
             'detect',
             '--source', '.',
@@ -75,7 +76,12 @@ final class SecretChecker implements CheckerInterface
             '--report-path', $secretReportPath,
             '--no-git',
             '--exit-code', '0',
-        ]);
+        ];
+        if (file_exists($this->gitleaksConfigPath)) {
+            $command[] = '--config';
+            $command[] = $this->gitleaksConfigPath;
+        }
+        $process = new Process($command);
         $process->setWorkingDirectory($repositoryPath);
         $process->setTimeout(1200);
         $process->run();
