@@ -5,7 +5,9 @@ namespace MBO\GitManager\Controller;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Git\Checker\Gitleaks\SarifReport;
+use MBO\GitManager\Git\Checker\SecretChecker;
 use MBO\GitManager\Repository\ProjectRepository;
+use MBO\GitManager\Storage\ReportStoreInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,6 +27,7 @@ final class ProjectController extends AbstractController
         Uuid $id,
         LocalFilesystemInterface $localFilesystem,
         FileReaderInterface $fileReader,
+        ReportStoreInterface $reportStore,
     ): Response {
         $project = $repository->find($id);
         if (is_null($project)) {
@@ -35,7 +38,7 @@ final class ProjectController extends AbstractController
         $trivyReportTxt = $fileReader->read($trivyReportPathTxt) ?? 'NO-DATA';
 
         $secretReport = SarifReport::fromJson(
-            $fileReader->read($localFilesystem->getSecretReportPath($project))
+            $reportStore->read(SecretChecker::TOOL_NAME, $project->getId())
         );
         $secretFindings = $secretReport->getFindings(
             $localFilesystem->getGitRepositoryPath($project->getFullName()).DIRECTORY_SEPARATOR

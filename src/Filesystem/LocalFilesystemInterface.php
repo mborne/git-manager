@@ -31,9 +31,4 @@ interface LocalFilesystemInterface
      * Get path for the trivy report.
      */
     public function getTrivyReportPath(Project $project): string;
-
-    /**
-     * Get path for the gitleaks SARIF report.
-     */
-    public function getSecretReportPath(Project $project): string;
 }

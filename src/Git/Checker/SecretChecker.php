@@ -3,12 +3,13 @@
 namespace MBO\GitManager\Git\Checker;
 
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Git\Checker\Gitleaks\GitleaksException;
 use MBO\GitManager\Git\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Git\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Git\CheckerInterface;
+use MBO\GitManager\Storage\ReportStoreException;
+use MBO\GitManager\Storage\ReportStoreInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -16,6 +17,11 @@ use Psr\Log\LoggerInterface;
  */
 final class SecretChecker implements CheckerInterface
 {
+    /**
+     * Name of the tool under which the reports are stored.
+     */
+    public const TOOL_NAME = 'gitleaks';
+
     /**
      * Availability of gitleaks, resolved on the first check.
      */
@@ -25,7 +31,7 @@ final class SecretChecker implements CheckerInterface
         private bool $gitleaksEnabled,
         private GitleaksRunner $gitleaksRunner,
         private LocalFilesystemInterface $localFilesystem,
-        private FileReaderInterface $fileReader,
+        private ReportStoreInterface $reportStore,
         private LoggerInterface $logger,
     ) {
     }
@@ -54,13 +60,12 @@ final class SecretChecker implements CheckerInterface
             'repository' => $project->getFullName(),
         ]);
 
-        $secretReportPath = $this->localFilesystem->getSecretReportPath($project);
         try {
-            $this->gitleaksRunner->detect(
-                $this->localFilesystem->getGitRepositoryPath($project->getFullName()),
-                $secretReportPath
+            $content = $this->gitleaksRunner->detect(
+                $this->localFilesystem->getGitRepositoryPath($project->getFullName())
             );
-        } catch (GitleaksException $e) {
+            $this->reportStore->write(self::TOOL_NAME, $project->getId(), $content);
+        } catch (GitleaksException|ReportStoreException $e) {
             $this->logger->error($e->getMessage(), [
                 'checker' => $this->getName(),
                 'repository' => $project->getFullName(),
@@ -73,7 +78,7 @@ final class SecretChecker implements CheckerInterface
             ];
         }
 
-        $report = SarifReport::fromJson($this->fileReader->read($secretReportPath));
+        $report = SarifReport::fromJson($content);
         $secrets = $report->countByRuleId();
 
         return [

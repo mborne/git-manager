@@ -3,6 +3,7 @@
 namespace MBO\GitManager\Git\Checker\Gitleaks;
 
 use MBO\GitManager\Filesystem\FileReaderInterface;
+use MBO\GitManager\Filesystem\TempFilesystem;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 
 /**
@@ -15,6 +16,7 @@ final class GitleaksRunner
     public function __construct(
         private ProcessRunnerInterface $processRunner,
         private FileReaderInterface $fileReader,
+        private TempFilesystem $tempFilesystem,
         private string $gitleaksConfigPath,
     ) {
     }
@@ -49,11 +51,29 @@ final class GitleaksRunner
     }
 
     /**
-     * Scan a repository producing a SARIF report.
+     * Scan a repository and get the content of the resulting SARIF report.
+     *
+     * Note that gitleaks writes its report to a file, hence the temporary file
+     * removed once its content has been read.
      *
      * @throws GitleaksException if the scan fails or if the report is not produced
      */
-    public function detect(string $repositoryPath, string $reportPath): void
+    public function detect(string $repositoryPath): string
+    {
+        $reportPath = $this->tempFilesystem->getPath('gitleaks', 'sarif');
+        try {
+            return $this->runDetect($repositoryPath, $reportPath);
+        } finally {
+            $this->tempFilesystem->remove($reportPath);
+        }
+    }
+
+    /**
+     * Run "gitleaks detect" and read the report it produces.
+     *
+     * @throws GitleaksException if the scan fails or if the report is not produced
+     */
+    private function runDetect(string $repositoryPath, string $reportPath): string
     {
         $command = [
             self::BINARY,
@@ -74,8 +94,11 @@ final class GitleaksRunner
             throw new GitleaksException(sprintf('gitleaks scan failed on %s : %s', $repositoryPath, trim($result->errorOutput)));
         }
 
-        if (!$this->fileReader->exists($reportPath)) {
+        $content = $this->fileReader->read($reportPath);
+        if (null === $content) {
             throw new GitleaksException(sprintf('gitleaks report not found : %s', $reportPath));
         }
+
+        return $content;
     }
 }
