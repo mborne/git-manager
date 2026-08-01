@@ -5,7 +5,6 @@ namespace MBO\GitManager\Filesystem;
 use Gitonomy\Git\Repository as GitRepository;
 use League\Flysystem\Filesystem as LeagueFilesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
-use MBO\GitManager\Entity\Project;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,10 +18,6 @@ final class LocalFilesystem extends LeagueFilesystem implements LocalFilesystemI
     ) {
         parent::__construct(new LocalFilesystemAdapter($dataDir));
         $logger->info(sprintf('[LocalFilesystem] %s ', $dataDir));
-        if (!$this->directoryExists('.trivy')) {
-            $logger->info('create .trivy directory');
-            $this->createDirectory('.trivy');
-        }
     }
 
     /**
@@ -47,16 +42,5 @@ final class LocalFilesystem extends LeagueFilesystem implements LocalFilesystemI
     public function getGitRepository(string $fullname): GitRepository
     {
         return new GitRepository($this->getGitRepositoryPath($fullname));
-    }
-
-    /**
-     * Get path for the trivy report.
-     */
-    public function getTrivyReportPath(Project $project): string
-    {
-        return implode(
-            DIRECTORY_SEPARATOR,
-            [$this->getRootPath(), '.trivy', (string) $project->getId().'.json']
-        );
     }
 }

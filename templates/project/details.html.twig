@@ -61,12 +61,43 @@
         </table>
     {% endif %}
 
-    <h2>Trivy</h2>
+    <h2>Vulnerabilities (trivy)</h2>
 
-    {% if trivyReportTxt is empty %}
-        <p>Trivy report is empty.</p>
+    {% if vulnerabilities is empty %}
+        <p style="color: green">No vulnerability found.</p>
     {% else %}
-        <pre>{{ trivyReportTxt }}</pre>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Severity</th>
+                    <th>ID</th>
+                    <th>Target</th>
+                    <th>Package</th>
+                    <th>Installed</th>
+                    <th>Fixed</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for vulnerability in vulnerabilities %}
+                <tr>
+                    <td>{{ vulnerability.Severity ?? '-' }}</td>
+                    <td>
+                        {% if vulnerability.PrimaryURL is defined %}
+                            <a href="{{ vulnerability.PrimaryURL }}" target="_blank">{{ vulnerability.VulnerabilityID ?? '-' }}</a>
+                        {% else %}
+                            {{ vulnerability.VulnerabilityID ?? '-' }}
+                        {% endif %}
+                    </td>
+                    <td>{{ vulnerability.Target ?? '-' }}</td>
+                    <td>{{ vulnerability.PkgName ?? '-' }}</td>
+                    <td>{{ vulnerability.InstalledVersion ?? '-' }}</td>
+                    <td>{{ vulnerability.FixedVersion ?? '-' }}</td>
+                    <td>{{ vulnerability.Title ?? '-' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 
 </div>

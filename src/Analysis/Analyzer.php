@@ -7,7 +7,7 @@ use MBO\GitManager\Analysis\Checker\CheckerInterface;
 use MBO\GitManager\Analysis\Checker\LicenseChecker;
 use MBO\GitManager\Analysis\Checker\ReadmeChecker;
 use MBO\GitManager\Analysis\Checker\SecretChecker;
-use MBO\GitManager\Analysis\Checker\TrivyChecker;
+use MBO\GitManager\Analysis\Checker\VulnChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use Psr\Log\LoggerInterface;
@@ -24,15 +24,14 @@ final class Analyzer
 
     public function __construct(
         private LocalFilesystem $localFilesystem,
-        bool $trivyEnabled,
-        string $trivyConfigPath,
+        VulnChecker $vulnChecker,
         SecretChecker $secretChecker,
         private LoggerInterface $logger,
     ) {
         $this->checkers = [
             new ReadmeChecker($localFilesystem, $logger),
             new LicenseChecker($localFilesystem, $logger),
-            new TrivyChecker($trivyEnabled, $trivyConfigPath, $localFilesystem, $logger),
+            $vulnChecker,
             $secretChecker,
         ];
     }

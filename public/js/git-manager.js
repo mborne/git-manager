@@ -67,7 +67,7 @@ function loadProjects() {
             const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
             const detailsUrl = `/${project.id}`;
-            const trivyOrder = checks.trivy ? checks.trivy.summary.CRITICAL + checks.trivy.summary.HIGH / 100.0 : -1;
+            const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL + checks.trivy.summary.HIGH / 100.0 : -1;
             const secretOrder = checks.secret && checks.secret.summary ? checks.secret.summary.count : -1;
             return [
                 `<a href="https://${name}">${name}</a>`,

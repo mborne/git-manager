@@ -62,6 +62,9 @@ final class MetricsController extends AbstractController
     private function getVulnerabilityTotal(array $checks): int
     {
         $summary = $checks['trivy']['summary'] ?? [];
+        if (!is_array($summary)) {
+            return 0;
+        }
         $total = 0;
         foreach ($summary as $count) {
             $total += (int) $count;

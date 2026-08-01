@@ -4,7 +4,8 @@ namespace MBO\GitManager\Controller;
 
 use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Analysis\Checker\SecretChecker;
-use MBO\GitManager\Filesystem\FileReaderInterface;
+use MBO\GitManager\Analysis\Checker\Trivy\TrivyReport;
+use MBO\GitManager\Analysis\Checker\VulnChecker;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Repository\ProjectRepository;
 use MBO\GitManager\Storage\ReportStoreInterface;
@@ -26,7 +27,6 @@ final class ProjectController extends AbstractController
         ProjectRepository $repository,
         Uuid $id,
         LocalFilesystemInterface $localFilesystem,
-        FileReaderInterface $fileReader,
         ReportStoreInterface $reportStore,
     ): Response {
         $project = $repository->find($id);
@@ -34,20 +34,24 @@ final class ProjectController extends AbstractController
             throw $this->createNotFoundException('project not found');
         }
 
-        $trivyReportPathTxt = $localFilesystem->getTrivyReportPath($project).'.txt';
-        $trivyReportTxt = $fileReader->read($trivyReportPathTxt) ?? 'NO-DATA';
+        $stripPrefix = $localFilesystem->getGitRepositoryPath(
+            $project->getFullName()
+        ).DIRECTORY_SEPARATOR;
 
         $secretReport = SarifReport::fromJson(
             $reportStore->read(SecretChecker::TOOL_NAME, $project->getId())
         );
-        $secretFindings = $secretReport->getFindings(
-            $localFilesystem->getGitRepositoryPath($project->getFullName()).DIRECTORY_SEPARATOR
+        $secretFindings = $secretReport->getFindings($stripPrefix);
+
+        $vulnReport = TrivyReport::fromJson(
+            $reportStore->read(VulnChecker::TOOL_NAME, $project->getId())
         );
+        $vulnerabilities = $vulnReport->getVulnerabilities($stripPrefix);
 
         return $this->render('project/details.html.twig', [
             'project' => $project,
-            'trivyReportTxt' => $trivyReportTxt,
             'secretFindings' => $secretFindings,
+            'vulnerabilities' => $vulnerabilities,
         ]);
     }
 }

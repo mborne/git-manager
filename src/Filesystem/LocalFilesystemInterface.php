@@ -3,7 +3,6 @@
 namespace MBO\GitManager\Filesystem;
 
 use Gitonomy\Git\Repository as GitRepository;
-use MBO\GitManager\Entity\Project;
 
 /**
  * Resolve paths in the local data directory.
@@ -26,9 +25,4 @@ interface LocalFilesystemInterface
      * Get GitRepository for a project given by its fullname.
      */
     public function getGitRepository(string $fullname): GitRepository;
-
-    /**
-     * Get path for the trivy report.
-     */
-    public function getTrivyReportPath(Project $project): string;
 }
