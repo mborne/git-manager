@@ -1,18 +1,19 @@
 <?php
 
-namespace MBO\GitManager\Git;
+namespace MBO\GitManager\Analysis;
 
 use Gitonomy\Git\Repository as GitRepository;
+use MBO\GitManager\Analysis\Checker\CheckerInterface;
+use MBO\GitManager\Analysis\Checker\LicenseChecker;
+use MBO\GitManager\Analysis\Checker\ReadmeChecker;
+use MBO\GitManager\Analysis\Checker\SecretChecker;
+use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
-use MBO\GitManager\Git\Checker\LicenseChecker;
-use MBO\GitManager\Git\Checker\ReadmeChecker;
-use MBO\GitManager\Git\Checker\SecretChecker;
-use MBO\GitManager\Git\Checker\TrivyChecker;
 use Psr\Log\LoggerInterface;
 
 /**
- * Analyze git repository to provide informations.
+ * Analyze git repository to provide information.
  */
 final class Analyzer
 {

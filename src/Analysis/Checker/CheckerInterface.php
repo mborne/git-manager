@@ -1,6 +1,6 @@
 <?php
 
-namespace MBO\GitManager\Git;
+namespace MBO\GitManager\Analysis\Checker;
 
 use MBO\GitManager\Entity\Project;
 

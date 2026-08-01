@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Tests\Unit\Git\Checker\Gitleaks;
+namespace App\Tests\Unit\Analysis\Checker\Gitleaks;
 
-use MBO\GitManager\Git\Checker\Gitleaks\SarifReport;
+use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

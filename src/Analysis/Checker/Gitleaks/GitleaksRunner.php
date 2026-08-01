@@ -1,6 +1,6 @@
 <?php
 
-namespace MBO\GitManager\Git\Checker\Gitleaks;
+namespace MBO\GitManager\Analysis\Checker\Gitleaks;
 
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\TempFilesystem;

@@ -4,8 +4,8 @@ namespace MBO\GitManager\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use MBO\GitManager\Analysis\Analyzer;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Git\Analyzer;
 use MBO\GitManager\Git\Synchronizer;
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\GitManager\Repository\ProjectRepository;

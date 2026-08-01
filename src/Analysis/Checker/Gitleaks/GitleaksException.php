@@ -1,6 +1,6 @@
 <?php
 
-namespace MBO\GitManager\Git\Checker\Gitleaks;
+namespace MBO\GitManager\Analysis\Checker\Gitleaks;
 
 /**
  * Thrown when a gitleaks invocation fails.

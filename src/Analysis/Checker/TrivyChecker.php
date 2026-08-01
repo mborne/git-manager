@@ -1,10 +1,9 @@
 <?php
 
-namespace MBO\GitManager\Git\Checker;
+namespace MBO\GitManager\Analysis\Checker;
 
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
-use MBO\GitManager\Git\CheckerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;

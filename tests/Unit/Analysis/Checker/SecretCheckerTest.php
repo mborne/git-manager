@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Tests\Unit\Git\Checker;
+namespace App\Tests\Unit\Analysis\Checker;
 
+use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
+use MBO\GitManager\Analysis\Checker\SecretChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Filesystem\TempFilesystem;
-use MBO\GitManager\Git\Checker\Gitleaks\GitleaksRunner;
-use MBO\GitManager\Git\Checker\SecretChecker;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use MBO\GitManager\Storage\ReportStoreException;

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Tests\Unit\Git\Checker\Gitleaks;
+namespace App\Tests\Unit\Analysis\Checker\Gitleaks;
 
+use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksException;
+use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFileReader;
 use MBO\GitManager\Filesystem\TempFilesystem;
-use MBO\GitManager\Git\Checker\Gitleaks\GitleaksException;
-use MBO\GitManager\Git\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use PHPUnit\Framework\TestCase;

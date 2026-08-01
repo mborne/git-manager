@@ -1,13 +1,12 @@
 <?php
 
-namespace MBO\GitManager\Git\Checker;
+namespace MBO\GitManager\Analysis\Checker;
 
+use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksException;
+use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
+use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
-use MBO\GitManager\Git\Checker\Gitleaks\GitleaksException;
-use MBO\GitManager\Git\Checker\Gitleaks\GitleaksRunner;
-use MBO\GitManager\Git\Checker\Gitleaks\SarifReport;
-use MBO\GitManager\Git\CheckerInterface;
 use MBO\GitManager\Storage\ReportStoreException;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use Psr\Log\LoggerInterface;

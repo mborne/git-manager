@@ -3,7 +3,7 @@
 namespace MBO\GitManager\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
-use MBO\GitManager\Git\Analyzer;
+use MBO\GitManager\Analysis\Analyzer;
 use MBO\GitManager\Repository\ProjectRepository;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
