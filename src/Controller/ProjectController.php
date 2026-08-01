@@ -2,7 +2,9 @@
 
 namespace MBO\GitManager\Controller;
 
-use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Filesystem\FileReaderInterface;
+use MBO\GitManager\Filesystem\LocalFilesystemInterface;
+use MBO\GitManager\Git\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +23,8 @@ final class ProjectController extends AbstractController
     public function details(
         ProjectRepository $repository,
         Uuid $id,
-        LocalFilesystem $localFilesystem,
+        LocalFilesystemInterface $localFilesystem,
+        FileReaderInterface $fileReader,
     ): Response {
         $project = $repository->find($id);
         if (is_null($project)) {
@@ -29,29 +32,14 @@ final class ProjectController extends AbstractController
         }
 
         $trivyReportPathTxt = $localFilesystem->getTrivyReportPath($project).'.txt';
-        $trivyReportTxt = file_exists($trivyReportPathTxt) ? file_get_contents($trivyReportPathTxt) : 'NO-DATA';
+        $trivyReportTxt = $fileReader->read($trivyReportPathTxt) ?? 'NO-DATA';
 
-        $secretReportPath = $localFilesystem->getSecretReportPath($project);
-        $secretFindings = [];
-        if (file_exists($secretReportPath)) {
-            $sarifContent = file_get_contents($secretReportPath);
-            if (false !== $sarifContent) {
-                $sarif = json_decode($sarifContent, true);
-                $repositoryPath = $localFilesystem->getGitRepositoryPath($project->getFullName()).DIRECTORY_SEPARATOR;
-                $rawFindings = $sarif['runs'][0]['results'] ?? [];
-                foreach ($rawFindings as &$finding) {
-                    foreach ($finding['locations'] ?? [] as &$location) {
-                        $uri = $location['physicalLocation']['artifactLocation']['uri'] ?? null;
-                        if (null !== $uri && str_starts_with($uri, $repositoryPath)) {
-                            $location['physicalLocation']['artifactLocation']['uri'] = substr($uri, strlen($repositoryPath));
-                        }
-                    }
-                    unset($location);
-                }
-                unset($finding);
-                $secretFindings = $rawFindings;
-            }
-        }
+        $secretReport = SarifReport::fromJson(
+            $fileReader->read($localFilesystem->getSecretReportPath($project))
+        );
+        $secretFindings = $secretReport->getFindings(
+            $localFilesystem->getGitRepositoryPath($project->getFullName()).DIRECTORY_SEPARATOR
+        );
 
         return $this->render('project/details.html.twig', [
             'project' => $project,

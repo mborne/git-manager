@@ -15,3 +15,7 @@ services:
         resource: '../src/*'
         exclude:
             - '../src/Kernel.php'
+
+    MBO\GitManager\Filesystem\LocalFilesystemInterface: '@MBO\GitManager\Filesystem\LocalFilesystem'
+    MBO\GitManager\Filesystem\FileReaderInterface: '@MBO\GitManager\Filesystem\LocalFileReader'
+    MBO\GitManager\Process\ProcessRunnerInterface: '@MBO\GitManager\Process\SymfonyProcessRunner'
