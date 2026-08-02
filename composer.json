@@ -87,8 +87,7 @@
         "phpunit": "Run unit tests with coverage reports in var/output",
         "phpstan": "Run static analysis using phpstan",
         "check-style": "Check coding style using php-cs-fixer",
-        "fix-style": "Fix coding style using php-cs-fixer",
-        "clean": "Remove vendor and dist/git-manager.phar"
+        "fix-style": "Fix coding style using php-cs-fixer"
     },
     "config": {
         "sort-packages": false,
