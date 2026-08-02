@@ -36,7 +36,7 @@ final class LocalReportStoreTest extends TestCase
     {
         $this->reportStore->write('gitleaks', $this->getProjectId(), '{"runs":[]}');
 
-        $this->assertFileExists($this->dataDir.'/gitleaks/'.self::PROJECT_ID.'.json');
+        $this->assertFileExists($this->dataDir.'/reports/gitleaks/'.self::PROJECT_ID.'.json');
     }
 
     public function testReadWrittenReport(): void
@@ -109,9 +109,9 @@ final class LocalReportStoreTest extends TestCase
         $this->reportStore->write('gitleaks', $this->getProjectId(), '{"runs":[]}');
 
         $symfonyFilesystem = new SymfonyFilesystem();
-        $symfonyFilesystem->dumpFile($this->dataDir.'/gitleaks/not-a-uuid.json', 'ignored');
-        $symfonyFilesystem->dumpFile($this->dataDir.'/gitleaks/'.self::OTHER_PROJECT_ID.'.txt', 'ignored');
-        $symfonyFilesystem->mkdir($this->dataDir.'/gitleaks/subdirectory');
+        $symfonyFilesystem->dumpFile($this->dataDir.'/reports/gitleaks/not-a-uuid.json', 'ignored');
+        $symfonyFilesystem->dumpFile($this->dataDir.'/reports/gitleaks/'.self::OTHER_PROJECT_ID.'.txt', 'ignored');
+        $symfonyFilesystem->mkdir($this->dataDir.'/reports/gitleaks/subdirectory');
 
         $projectIds = $this->reportStore->list('gitleaks');
 

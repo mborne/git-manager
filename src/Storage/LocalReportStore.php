@@ -11,10 +11,15 @@ use Symfony\Component\Uid\Uuid;
 
 /**
  * Store the reports as JSON files in the local data directory
- * ("{dataDir}/{toolName}/{projectId}.json").
+ * ("{dataDir}/reports/{toolName}/{projectId}.json").
  */
 final readonly class LocalReportStore implements ReportStoreInterface
 {
+    /**
+     * Name of the parent directory containing all the reports.
+     */
+    private const REPORTS_DIR = 'reports';
+
     /**
      * Extension of the report files.
      */
@@ -24,7 +29,9 @@ final readonly class LocalReportStore implements ReportStoreInterface
 
     public function __construct(string $dataDir)
     {
-        $this->filesystem = new Filesystem(new LocalFilesystemAdapter($dataDir));
+        $this->filesystem = new Filesystem(new LocalFilesystemAdapter(
+            $dataDir.DIRECTORY_SEPARATOR.self::REPORTS_DIR
+        ));
     }
 
     public function list(string $toolName): array
