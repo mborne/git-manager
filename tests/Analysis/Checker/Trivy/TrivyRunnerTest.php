@@ -93,12 +93,13 @@ final class TrivyRunnerTest extends TestCase
         );
     }
 
-    private function createRunner(ProcessRunnerInterface $processRunner): TrivyRunner
+    private function createRunner(ProcessRunnerInterface $processRunner, bool $offlineScan = true): TrivyRunner
     {
         return new TrivyRunner(
             $processRunner,
             new TempFilesystem(),
-            $this->configPath
+            $this->configPath,
+            $offlineScan
         );
     }
 
@@ -119,17 +120,21 @@ final class TrivyRunnerTest extends TestCase
      *
      * @return string[]
      */
-    private function getExpectedScanCommand(string $reportPath): array
+    private function getExpectedScanCommand(string $reportPath, bool $offlineScan = true): array
     {
-        return [
+        $command = [
             'trivy',
             'fs',
             '--scanners', 'vuln',
             '--severity', 'HIGH,CRITICAL,MEDIUM',
-            '--offline-scan',
             '--format', 'json',
             '--output', $reportPath,
         ];
+        if ($offlineScan) {
+            $command[] = '--offline-scan';
+        }
+
+        return $command;
     }
 
     public function testGetVersion(): void
@@ -199,6 +204,20 @@ final class TrivyRunnerTest extends TestCase
         $this->assertSame(
             [
                 [...$this->getExpectedScanCommand($this->getReportPath()), self::REPOSITORY_PATH],
+                null,
+            ],
+            end($this->commands)
+        );
+    }
+
+    public function testScanWithoutOfflineScan(): void
+    {
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT), false);
+        $runner->scan(self::REPOSITORY_PATH);
+
+        $this->assertSame(
+            [
+                [...$this->getExpectedScanCommand($this->getReportPath(), false), self::REPOSITORY_PATH],
                 null,
             ],
             end($this->commands)

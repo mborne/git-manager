@@ -22,12 +22,13 @@ CLI helpers to backup and review a set of git repositories.
 
 ## Parameters
 
-| Name               | Description                                                                                                                | Default                 |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `GIT_MANAGER_DIR`  | Directory containing git repositories                                                                                      | `{projectDir}/var/data` |
-| `TRIVY_ENABLED`    | Enable/disable trivy scan                                                                                                  | `true`                  |
-| `GITLEAKS_ENABLED` | Enable/disable gitleaks scan                                                                                               | `true`                  |
-| `TRUSTED_PROXIES`  | Comma separated list of reverse proxies allowed to define the `X-Forwarded-*` headers (ex : `10.0.0.0/8` or `REMOTE_ADDR`) | *(empty)*               |
+| Name                 | Description                                                                                                                | Default                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `GIT_MANAGER_DIR`    | Directory containing git repositories                                                                                      | `{projectDir}/var/data` |
+| `TRIVY_ENABLED`      | Enable/disable trivy scan                                                                                                  | `true`                  |
+| `TRIVY_OFFLINE_SCAN` | Add `--offline-scan` to the trivy scans (no external API call to resolve dependencies)                                     | `true`                  |
+| `GITLEAKS_ENABLED`   | Enable/disable gitleaks scan                                                                                               | `true`                  |
+| `TRUSTED_PROXIES`    | Comma separated list of reverse proxies allowed to define the `X-Forwarded-*` headers (ex : `10.0.0.0/8` or `REMOTE_ADDR`) | *(empty)*               |
 
 ## Setup
 

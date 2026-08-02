@@ -8,6 +8,7 @@ services:
             $dataDir: '%env(resolve:GIT_MANAGER_DIR)%'
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
             $trivyConfigPath: '%kernel.project_dir%/config/trivy.yaml'
+            $trivyOfflineScan: '%env(bool:TRIVY_OFFLINE_SCAN)%'
             $gitleaksEnabled: '%env(bool:GITLEAKS_ENABLED)%'
             $gitleaksDefaultConfigPath: '%kernel.project_dir%/config/gitleaks.toml'
             $openApiPath: '%kernel.project_dir%/docs/openapi.yaml'

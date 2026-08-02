@@ -21,6 +21,7 @@ final class TrivyRunner
         private ProcessRunnerInterface $processRunner,
         private TempFilesystem $tempFilesystem,
         private string $trivyConfigPath,
+        private bool $trivyOfflineScan = true,
     ) {
     }
 
@@ -83,10 +84,12 @@ final class TrivyRunner
             'fs',
             '--scanners', 'vuln',
             '--severity', implode(',', Severity::toValues(self::SEVERITIES)),
-            '--offline-scan',
             '--format', 'json',
             '--output', $reportPath,
         ];
+        if ($this->trivyOfflineScan) {
+            $command[] = '--offline-scan';
+        }
         if (file_exists($this->trivyConfigPath)) {
             $command[] = '--config';
             $command[] = $this->trivyConfigPath;
