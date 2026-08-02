@@ -15,7 +15,7 @@ final class TrivyRunner
     /**
      * The severities reported by the scans.
      */
-    public const SEVERITIES = ['HIGH', 'CRITICAL'];
+    public const SEVERITIES = [Severity::HIGH, Severity::CRITICAL, Severity::MEDIUM];
 
     public function __construct(
         private ProcessRunnerInterface $processRunner,
@@ -82,7 +82,7 @@ final class TrivyRunner
             self::BINARY,
             'fs',
             '--scanners', 'vuln',
-            '--severity', implode(',', self::SEVERITIES),
+            '--severity', implode(',', Severity::toValues(self::SEVERITIES)),
             '--offline-scan',
             '--format', 'json',
             '--output', $reportPath,

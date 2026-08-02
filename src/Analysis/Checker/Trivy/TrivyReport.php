@@ -10,12 +10,6 @@ namespace MBO\GitManager\Analysis\Checker\Trivy;
 final readonly class TrivyReport
 {
     /**
-     * The severities from the most to the least critical one, the unlisted ones
-     * being reported last.
-     */
-    private const SEVERITY_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
-
-    /**
      * @param array<int,array<string,mixed>> $vulnerabilities
      */
     private function __construct(
@@ -155,15 +149,16 @@ final readonly class TrivyReport
     }
 
     /**
-     * Get the rank of a vulnerability, the most critical ones coming first.
+     * Get the rank of a vulnerability, the most critical ones coming first and
+     * the unknown severities being reported last.
      *
      * @param array<string,mixed> $vulnerability
      */
     private static function getSeverityRank(array $vulnerability): int
     {
-        $rank = array_search(self::getSeverity($vulnerability), self::SEVERITY_ORDER, true);
+        $severity = Severity::tryFrom(self::getSeverity($vulnerability));
 
-        return false === $rank ? count(self::SEVERITY_ORDER) : $rank;
+        return null === $severity ? count(Severity::cases()) : $severity->getRank();
     }
 
     /**

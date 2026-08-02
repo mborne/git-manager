@@ -2,6 +2,7 @@
 
 namespace MBO\GitManager\Analysis\Checker;
 
+use MBO\GitManager\Analysis\Checker\Trivy\Severity;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyException;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyReport;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
@@ -83,7 +84,7 @@ final class TrivyChecker implements CheckerInterface
             'success' => true,
             'vulnerabilities' => $report->getSeverityById(),
             'summary' => array_merge(
-                array_fill_keys(TrivyRunner::SEVERITIES, 0),
+                array_fill_keys(Severity::toValues(TrivyRunner::SEVERITIES), 0),
                 $report->countBySeverity()
             ),
         ];

@@ -260,6 +260,7 @@ final class TrivyCheckerTest extends TestCase
             'summary' => [
                 'HIGH' => 2,
                 'CRITICAL' => 1,
+                'MEDIUM' => 0,
             ],
         ], $checker->check($this->createProject()));
     }
@@ -277,6 +278,7 @@ final class TrivyCheckerTest extends TestCase
             'summary' => [
                 'HIGH' => 0,
                 'CRITICAL' => 0,
+                'MEDIUM' => 0,
             ],
         ], $checker->check($this->createProject()));
     }

@@ -125,7 +125,7 @@ final class TrivyRunnerTest extends TestCase
             'trivy',
             'fs',
             '--scanners', 'vuln',
-            '--severity', 'HIGH,CRITICAL',
+            '--severity', 'HIGH,CRITICAL,MEDIUM',
             '--offline-scan',
             '--format', 'json',
             '--output', $reportPath,
