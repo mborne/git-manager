@@ -14,17 +14,12 @@ use Psr\Log\LoggerInterface;
 /**
  * Perform a scan with trivy producing a JSON report.
  */
-final class VulnChecker implements CheckerInterface
+final class TrivyChecker implements CheckerInterface
 {
     /**
      * Name of the checker, used as key in the check results.
      */
-    public const NAME = 'vuln';
-
-    /**
-     * Name of the tool under which the reports are stored.
-     */
-    public const TOOL_NAME = 'trivy';
+    public const NAME = 'trivy';
 
     /**
      * Availability of trivy, resolved on the first check.
@@ -68,7 +63,7 @@ final class VulnChecker implements CheckerInterface
             $content = $this->trivyRunner->scan(
                 $this->localFilesystem->getGitRepositoryPath($project->getFullName())
             );
-            $this->reportStore->write(self::TOOL_NAME, $project->getId(), $content);
+            $this->reportStore->write(self::NAME, $project->getId(), $content);
         } catch (TrivyException|ReportStoreException $e) {
             $this->logger->error($e->getMessage(), [
                 'checker' => $this->getName(),

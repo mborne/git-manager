@@ -16,19 +16,19 @@ function getLastActivity(project) {
 }
 
 /**
- * Render secret (gitleaks) report.
+ * Render gitleaks report.
  *
- * @param {?object} secret
+ * @param {?object} gitleaks
  * @returns
  */
-function renderSecret(secret) {
-    if (!secret) {
+function renderGitleaks(gitleaks) {
+    if (!gitleaks) {
         return `<span class="text-warning">NO-DATA</span>`;
     }
-    if (!secret.success) {
+    if (!gitleaks.success) {
         return `<span class="text-danger">FAILURE</span>`;
     }
-    const count = secret.summary.count;
+    const count = gitleaks.summary.count;
     return `<span class="${count > 0 ? 'text-danger' : 'text-success'}">SECRETS:&nbsp;${count}</span>`;
 }
 
@@ -48,8 +48,19 @@ function renderTrivy(trivy){
     }
     return ['CRITICAL','HIGH'].map(severity => {
         const count = trivy.summary[severity];
-        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}:&nbsp;${count}`;
+        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}:&nbsp;${count}</span>`;
     }).join('<br />');
+}
+
+/**
+ * Render a cell sorted on a numeric value instead of its HTML content.
+ *
+ * @param {object} data {display, order}
+ * @param {string} type
+ * @returns
+ */
+function renderOrdered(data, type) {
+    return type === 'display' || type === 'filter' ? data.display : data.order;
 }
 
 /**
@@ -67,8 +78,8 @@ function loadProjects() {
             const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
             const detailsUrl = `/${project.id}`;
-            const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL + checks.trivy.summary.HIGH / 100.0 : -1;
-            const secretOrder = checks.secret && checks.secret.summary ? checks.secret.summary.count : -1;
+            const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL * 1000000 + checks.trivy.summary.HIGH : -1;
+            const gitleaksOrder = checks.gitleaks && checks.gitleaks.summary ? checks.gitleaks.summary.count : -1;
             return [
                 `<a href="https://${name}">${name}</a>`,
                 project.archived ? 'YES' : 'NO',
@@ -78,8 +89,8 @@ function loadProjects() {
                 project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
-                `<span data-order="${trivyOrder}">${renderTrivy(checks.trivy)}</span>`,
-                `<span data-order="${secretOrder}">${renderSecret(checks.secret)}</span>`,
+                { display: renderTrivy(checks.trivy), order: trivyOrder },
+                { display: renderGitleaks(checks.gitleaks), order: gitleaksOrder },
                 `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
             ];
         });
@@ -94,8 +105,8 @@ function loadProjects() {
                 { title: "Last Fetch" },
                 { title: "Last Activity" },
                 { title: "Size (Mo)" },
-                { title: "Trivy" },
-                { title: "Secrets" },
+                { title: "Trivy", render: renderOrdered },
+                { title: "Secrets", render: renderOrdered },
                 { 
                     title: 'Details',
                     orderable: false,

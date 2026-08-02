@@ -81,7 +81,6 @@ final class GitleaksRunner
             '--source', '.',
             '--report-format', 'sarif',
             '--report-path', $reportPath,
-            #'--no-git',
             '--exit-code', '0',
         ];
         if ($this->fileReader->exists($this->gitleaksConfigPath)) {

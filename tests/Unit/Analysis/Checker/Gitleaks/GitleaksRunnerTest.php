@@ -119,7 +119,6 @@ final class GitleaksRunnerTest extends TestCase
             '--source', '.',
             '--report-format', 'sarif',
             '--report-path', $reportPath,
-            '--no-git',
             '--exit-code', '0',
         ];
     }

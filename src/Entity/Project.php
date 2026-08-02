@@ -74,7 +74,7 @@ class Project
     private array $metadata = [];
 
     /**
-     * Checker results (readme, license, vuln, secret).
+     * Checker results (readme, license, trivy, gitleaks).
      *
      * @var array<string,mixed>
      */

@@ -3,9 +3,9 @@
 namespace MBO\GitManager\Controller;
 
 use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
-use MBO\GitManager\Analysis\Checker\SecretChecker;
+use MBO\GitManager\Analysis\Checker\GitleaksChecker;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyReport;
-use MBO\GitManager\Analysis\Checker\VulnChecker;
+use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Repository\ProjectRepository;
 use MBO\GitManager\Storage\ReportStoreInterface;
@@ -39,12 +39,12 @@ final class ProjectController extends AbstractController
         ).DIRECTORY_SEPARATOR;
 
         $secretReport = SarifReport::fromJson(
-            $reportStore->read(SecretChecker::TOOL_NAME, $project->getId())
+            $reportStore->read(GitleaksChecker::NAME, $project->getId())
         );
         $secretFindings = $secretReport->getFindings($stripPrefix);
 
         $vulnReport = TrivyReport::fromJson(
-            $reportStore->read(VulnChecker::TOOL_NAME, $project->getId())
+            $reportStore->read(TrivyChecker::NAME, $project->getId())
         );
         $vulnerabilities = $vulnReport->getVulnerabilities($stripPrefix);
 

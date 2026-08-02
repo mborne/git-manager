@@ -3,7 +3,7 @@
 namespace App\Tests\Unit\Analysis\Checker;
 
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
-use MBO\GitManager\Analysis\Checker\VulnChecker;
+use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Uuid;
 
-final class VulnCheckerTest extends TestCase
+final class TrivyCheckerTest extends TestCase
 {
     private const CONFIG_PATH = '/app/config/trivy.yaml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
@@ -102,8 +102,8 @@ final class VulnCheckerTest extends TestCase
         ProcessRunnerInterface $processRunner,
         FileReaderInterface $fileReader,
         ?ReportStoreInterface $reportStore = null,
-    ): VulnChecker {
-        return new VulnChecker(
+    ): TrivyChecker {
+        return new TrivyChecker(
             $trivyEnabled,
             new TrivyRunner($processRunner, $fileReader, new TempFilesystem(), self::CONFIG_PATH),
             $this->createLocalFilesystem(),
@@ -174,7 +174,7 @@ final class VulnCheckerTest extends TestCase
             $this->createFileReader()
         );
 
-        $this->assertSame('vuln', $checker->getName());
+        $this->assertSame('trivy', $checker->getName());
     }
 
     public function testDisabledByConfiguration(): void

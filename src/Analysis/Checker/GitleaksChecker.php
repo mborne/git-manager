@@ -14,17 +14,12 @@ use Psr\Log\LoggerInterface;
 /**
  * Perform a scan with gitleaks producing a SARIF report.
  */
-final class SecretChecker implements CheckerInterface
+final class GitleaksChecker implements CheckerInterface
 {
     /**
      * Name of the checker, used as key in the check results.
      */
-    public const NAME = 'secret';
-
-    /**
-     * Name of the tool under which the reports are stored.
-     */
-    public const TOOL_NAME = 'gitleaks';
+    public const NAME = 'gitleaks';
 
     /**
      * Availability of gitleaks, resolved on the first check.
@@ -68,7 +63,7 @@ final class SecretChecker implements CheckerInterface
             $content = $this->gitleaksRunner->detect(
                 $this->localFilesystem->getGitRepositoryPath($project->getFullName())
             );
-            $this->reportStore->write(self::TOOL_NAME, $project->getId(), $content);
+            $this->reportStore->write(self::NAME, $project->getId(), $content);
         } catch (GitleaksException|ReportStoreException $e) {
             $this->logger->error($e->getMessage(), [
                 'checker' => $this->getName(),

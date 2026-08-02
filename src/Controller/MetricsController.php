@@ -2,8 +2,8 @@
 
 namespace MBO\GitManager\Controller;
 
-use MBO\GitManager\Analysis\Checker\SecretChecker;
-use MBO\GitManager\Analysis\Checker\VulnChecker;
+use MBO\GitManager\Analysis\Checker\GitleaksChecker;
+use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,7 +31,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_vulnerabilities_critical gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $critical = $checks[VulnChecker::NAME]['summary']['CRITICAL'] ?? 0;
+            $critical = $checks[TrivyChecker::NAME]['summary']['CRITICAL'] ?? 0;
             $lines[] = sprintf('gitmanager_vulnerabilities_critical{%s} %d', $this->getProjectLabels($project), $critical);
         }
 
@@ -39,7 +39,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_vulnerabilities_high gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $high = $checks[VulnChecker::NAME]['summary']['HIGH'] ?? 0;
+            $high = $checks[TrivyChecker::NAME]['summary']['HIGH'] ?? 0;
             $lines[] = sprintf('gitmanager_vulnerabilities_high{%s} %d', $this->getProjectLabels($project), $high);
         }
 
@@ -47,7 +47,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_secrets_total gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $secretCount = $checks[SecretChecker::NAME]['summary']['count'] ?? 0;
+            $secretCount = $checks[GitleaksChecker::NAME]['summary']['count'] ?? 0;
             $lines[] = sprintf('gitmanager_secrets_total{%s} %d', $this->getProjectLabels($project), $secretCount);
         }
 
@@ -63,7 +63,7 @@ final class MetricsController extends AbstractController
      */
     private function getVulnerabilityTotal(array $checks): int
     {
-        $summary = $checks[VulnChecker::NAME]['summary'] ?? [];
+        $summary = $checks[TrivyChecker::NAME]['summary'] ?? [];
         if (!is_array($summary)) {
             return 0;
         }

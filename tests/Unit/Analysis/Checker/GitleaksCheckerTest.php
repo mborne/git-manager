@@ -3,7 +3,7 @@
 namespace App\Tests\Unit\Analysis\Checker;
 
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
-use MBO\GitManager\Analysis\Checker\SecretChecker;
+use MBO\GitManager\Analysis\Checker\GitleaksChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Uuid;
 
-final class SecretCheckerTest extends TestCase
+final class GitleaksCheckerTest extends TestCase
 {
     private const CONFIG_PATH = '/app/config/gitleaks.toml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
@@ -101,8 +101,8 @@ final class SecretCheckerTest extends TestCase
         ProcessRunnerInterface $processRunner,
         FileReaderInterface $fileReader,
         ?ReportStoreInterface $reportStore = null,
-    ): SecretChecker {
-        return new SecretChecker(
+    ): GitleaksChecker {
+        return new GitleaksChecker(
             $gitleaksEnabled,
             new GitleaksRunner($processRunner, $fileReader, new TempFilesystem(), self::CONFIG_PATH),
             $this->createLocalFilesystem(),
@@ -163,7 +163,7 @@ final class SecretCheckerTest extends TestCase
             $this->createFileReader()
         );
 
-        $this->assertSame('secret', $checker->getName());
+        $this->assertSame('gitleaks', $checker->getName());
     }
 
     public function testDisabledByConfiguration(): void
