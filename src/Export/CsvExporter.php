@@ -126,11 +126,12 @@ final class CsvExporter
 
     private function lastActivityCsvValue(Project $project): string
     {
-        $lastActivity = $project->getMetadata()['activity'] ?? [];
-        if (empty($lastActivity)) {
+        $lastActivity = $project->getMetadata()['last_activity'] ?? null;
+        if (!\is_string($lastActivity)) {
             return '0000-00-00';
         }
 
-        return max(array_keys($lastActivity));
+        // the metadata is an RFC3339 date, only the day is exported
+        return substr($lastActivity, 0, 10);
     }
 }

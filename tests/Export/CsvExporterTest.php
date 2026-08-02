@@ -119,7 +119,7 @@ final class CsvExporterTest extends TestCase
                     ['readme' => true, 'license' => 'LICENSE.md'],
                     $this->createChecks(['HIGH' => 2, 'CRITICAL' => 1, 'MEDIUM' => 3], 4)
                 ),
-                metadata: ['size' => 2621440, 'activity' => ['20240201' => 1, '20240715' => 3]]
+                metadata: ['size' => 2621440, 'last_activity' => '2024-07-15T14:48:36+00:00']
             ),
             $this->createProject(
                 'github.com/mborne/legacy',
@@ -130,7 +130,7 @@ final class CsvExporterTest extends TestCase
 
         $expected = <<<'CSV'
             NAME,DESCRIPTION,VISIBILITY,ARCHIVED,README,LICENSE,SIZE_MO,LAST_ACTIVITY,TRIVY_CRITICAL,TRIVY_HIGH,TRIVY_LOW,GITLEAKS_COUNT
-            github.com/mborne/demo,"A demo project",public,0,1,LICENSE.md,2.5,20240715,1,2,0,4
+            github.com/mborne/demo,"A demo project",public,0,1,LICENSE.md,2.5,2024-07-15,1,2,0,4
             github.com/mborne/legacy,,private,1,0,0,0.0,0000-00-00,0,0,0,0
 
             CSV;
@@ -262,16 +262,15 @@ final class CsvExporterTest extends TestCase
     }
 
     /**
-     * The last activity is the most recent day of the activity histogram.
+     * The last activity is collected as an RFC3339 date and exported as a day.
      *
      * @return array<string,array{0:array<string,mixed>,1:string}>
      */
     public static function provideMetadataActivity(): array
     {
         return [
-            'unsorted activity' => [['activity' => ['20240715' => 3, '20190127' => 1, '20240201' => 1]], '20240715'],
-            'single day' => [['activity' => ['20190127' => 1]], '20190127'],
-            'empty activity' => [['activity' => []], '0000-00-00'],
+            'last activity' => [['last_activity' => '2024-07-15T14:48:36+00:00'], '2024-07-15'],
+            'repository without commit' => [['last_activity' => null], '0000-00-00'],
             'no metadata' => [[], '0000-00-00'],
         ];
     }

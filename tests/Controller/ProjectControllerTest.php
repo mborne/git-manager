@@ -39,6 +39,8 @@ class ProjectControllerTest extends WebTestCase
         $this->assertSelectorTextContains('h1', 'github.com/mborne/sample');
 
         $content = (string) $client->getResponse()->getContent();
+        // the last activity is displayed as a day (the fetch date being 2026-01-01)
+        $this->assertStringContainsString('2025-12-24', $content);
         // the secret and the vulnerability are reported with their location relative to the repository
         $this->assertStringContainsString('config/settings.yaml', $content);
         $this->assertStringNotContainsString($this->getRepositoryPath(), $content);
@@ -89,8 +91,9 @@ class ProjectControllerTest extends WebTestCase
             ->setFetchedAt(new \DateTime('2026-01-01 10:00:00'))
             ->setMetadata([
                 'size' => 1048576,
-                'tags' => ['v1.0.0'],
-                'activity' => ['20260101' => 3],
+                'tags_count' => 1,
+                'last_tag' => 'v1.0.0',
+                'last_activity' => '2025-12-24T09:32:11+00:00',
             ])
             ->setChecks([
                 'readme' => true,

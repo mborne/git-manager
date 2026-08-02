@@ -1,18 +1,14 @@
 /**
- * Extract last activity date from project.metadata.activity
- * @param {object} project 
- * @returns 
+ * Extract last activity day from project.metadata.last_activity
+ * @param {object} project
+ * @returns
  */
 function getLastActivity(project) {
-    if (!project.metadata || !project.metadata.activity) {
+    const lastDate = project.metadata ? project.metadata.last_activity : null;
+    if (!lastDate) {
         return '0000-00-00';
     }
-    const dates = Object.keys(project.metadata.activity);
-    if (dates.length == 0) {
-        return '0000-00-00';
-    }
-    const lastDate = dates[dates.length - 1];
-    return `${lastDate.substring(0, 4)}-${lastDate.substring(4, 6)}-${lastDate.substring(6, 8)}`;
+    return lastDate.split('T')[0];
 }
 
 /**

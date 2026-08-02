@@ -17,8 +17,7 @@
     {% set countBySeverity = countBySeverity|merge({ (severity): countBySeverity[severity]|default(0) + 1 }) %}
 {% endfor %}
 
-{% set activity = project.metadata.activity|default({}) %}
-{% set lastActivity = activity is empty ? null : (activity|keys|last) ~ '' %}
+{% set lastActivity = project.metadata.last_activity|default(null) %}
 {% set sizeMo = (project.metadata.size|default(0) / (1024 * 1024))|number_format(1) %}
 
 <div class="container-fluid">
@@ -92,7 +91,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <div class="text-secondary text-uppercase small">Last activity</div>
-                    <div class="fs-2 fw-semibold">{{ lastActivity ? lastActivity|slice(0, 4) ~ '-' ~ lastActivity|slice(4, 2) ~ '-' ~ lastActivity|slice(6, 2) : '-' }}</div>
+                    <div class="fs-2 fw-semibold">{{ lastActivity ? lastActivity|date('Y-m-d') : '-' }}</div>
                 </div>
             </div>
         </div>
@@ -124,9 +123,9 @@
                             <tr>
                                 <th scope="row" class="ps-3">Tags</th>
                                 <td>
-                                    {{ project.metadata.tags|default([])|length }}
-                                    {% if project.metadata.tags|default([]) is not empty %}
-                                        <span class="text-secondary">(latest : {{ project.metadata.tags|last }})</span>
+                                    {{ project.metadata.tags_count|default(0) }}
+                                    {% if project.metadata.last_tag|default(null) is not null %}
+                                        <span class="text-secondary">(latest : {{ project.metadata.last_tag }})</span>
                                     {% endif %}
                                 </td>
                             </tr>

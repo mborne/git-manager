@@ -38,17 +38,21 @@ final class Analyzer
     /**
      * Collect repository metadata :
      * - size : the size of the repository
-     * - tags : git tags
-     * - activity : number of commits per day
+     * - tags_count : the number of git tags
+     * - last_tag : the name of the last git tag
+     * - last_activity : the most recent day with a commit
      *
      * @return array<string,mixed>
      */
     private function collectMetadata(GitRepository $gitRepository): array
     {
+        $tagNames = $this->getTagNames($gitRepository);
+
         $metadata = [];
         $metadata['size'] = $gitRepository->getSize() * 1024;
-        $metadata['tags'] = $this->getTagNames($gitRepository);
-        $metadata['activity'] = $this->getActivity($gitRepository);
+        $metadata['tags_count'] = \count($tagNames);
+        $metadata['last_tag'] = empty($tagNames) ? null : end($tagNames);
+        $metadata['last_activity'] = $this->getLastActivity($gitRepository);
 
         return $metadata;
     }
@@ -69,7 +73,7 @@ final class Analyzer
     }
 
     /**
-     * Get tag names.
+     * Get tag names sorted by git (alphabetical order).
      *
      * @return string[]
      */
@@ -84,20 +88,21 @@ final class Analyzer
     }
 
     /**
-     * Get commit dates.
-     *
-     * @return array<string,int>
+     * Get the date of the most recent commit (format : RFC3339 as fetchedAt,
+     * null if there is no commit). Only the commits referenced by a branch or a
+     * tag are considered.
      */
-    private function getActivity(GitRepository $gitRepository): array
+    private function getLastActivity(GitRepository $gitRepository): ?string
     {
-        $result = [];
+        $result = null;
         foreach ($gitRepository->getReferences()->getAll() as $reference) {
-            $commit = $reference->getCommit();
-            $day = $commit->getAuthorDate()->format('Ymd');
-            $result[$day] = isset($result[$day]) ? $result[$day] + 1 : 1;
+            /* note that gitonomy parses the author dates in UTC */
+            $authorDate = $reference->getCommit()->getAuthorDate();
+            if (null === $result || $authorDate > $result) {
+                $result = $authorDate;
+            }
         }
-        ksort($result);
 
-        return $result;
+        return null === $result ? null : $result->format(\DateTimeInterface::RFC3339);
     }
 }

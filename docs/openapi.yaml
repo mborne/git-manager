@@ -94,7 +94,7 @@ paths:
         | `README`        | `1` if a `README.md` file is present, `0` otherwise          |
         | `LICENSE`       | Name of the license file (ex : `LICENSE`) or `0` if missing  |
         | `SIZE_MO`       | Size of the repository in megabytes (ex : `12.4`)            |
-        | `LAST_ACTIVITY` | Date of the last commit as `YYYYMMDD` (`0000-00-00` if none) |
+        | `LAST_ACTIVITY` | Day of the last commit as `YYYY-MM-DD` (`0000-00-00` if none) |
         | `TRIVY_CRITICAL` | Number of critical vulnerabilities reported by trivy (`0` if not scanned) |
         | `TRIVY_HIGH`    | Number of high vulnerabilities reported by trivy (`0` if not scanned) |
         | `TRIVY_LOW`     | Number of low vulnerabilities reported by trivy (`0` if not scanned) |
@@ -117,7 +117,7 @@ paths:
                 default:
                   value: |
                     NAME,DESCRIPTION,VISIBILITY,ARCHIVED,README,LICENSE,SIZE_MO,LAST_ACTIVITY,TRIVY_CRITICAL,TRIVY_HIGH,TRIVY_LOW,GITLEAKS_COUNT
-                    github.com/mborne/ansible-docker-ce,[DEV] Ansible playbook to deploy and configure docker-ce,public,0,1,LICENSE,0.1,20240715,0,2,0,1
+                    github.com/mborne/ansible-docker-ce,[DEV] Ansible playbook to deploy and configure docker-ce,public,0,1,LICENSE,0.1,2024-07-15,0,2,0,1
 
   /api/projects/{id}:
     get:
@@ -262,28 +262,31 @@ components:
     Metadata:
       type: object
       description: Metadata collected on the local copy of the git repository.
-      required: [size, tags, activity]
+      required: [size, tags_count, last_tag, last_activity]
       properties:
         size:
           type: integer
           minimum: 0
           description: Size of the repository in bytes.
           examples: [74752]
-        tags:
-          type: array
-          description: The git tag names.
-          items:
-            type: string
-          examples: [['v1.0.0', 'v1.1.0']]
-        activity:
-          type: object
+        tags_count:
+          type: integer
+          minimum: 0
+          description: The number of git tags.
+          examples: [3]
+        last_tag:
+          type: [string, 'null']
           description: |
-            Number of commits per day, indexed by day (`YYYYMMDD`). Only the
-            commits referenced by a branch or a tag are counted.
-          additionalProperties:
-            type: integer
-            minimum: 0
-          examples: [{ '20240201': 1, '20240715': 3 }]
+            The name of the last git tag (alphabetical order). Null when the
+            repository has no tag.
+          examples: ['v1.2.0']
+        last_activity:
+          type: [string, 'null']
+          format: date-time
+          description: |
+            The date of the most recent commit. Only the commits referenced by a
+            branch or a tag are considered. Null when the repository has no commit.
+          examples: ['2024-07-15T14:48:36+00:00']
 
     Checks:
       type: object
@@ -415,10 +418,9 @@ components:
         fetchedAt: '2026-08-02T10:51:00+00:00'
         metadata:
           size: 74752
-          tags: ['v0.1.0', 'v1.0.0', 'v1.2.0']
-          activity:
-            '20240201': 1
-            '20240715': 3
+          tags_count: 3
+          last_tag: 'v1.2.0'
+          last_activity: '2024-07-15T14:48:36+00:00'
         checks:
           readme: true
           license: LICENSE
@@ -448,9 +450,9 @@ components:
           fetchedAt: '2026-08-02T10:51:00+00:00'
           metadata:
             size: 74752
-            tags: ['v0.1.0', 'v1.0.0']
-            activity:
-              '20240715': 3
+            tags_count: 2
+            last_tag: 'v1.0.0'
+            last_activity: '2024-07-15T14:48:36+00:00'
           checks:
             readme: true
             license: LICENSE
@@ -476,9 +478,9 @@ components:
           fetchedAt: '2026-08-02T10:51:07+00:00'
           metadata:
             size: 4188160
-            tags: []
-            activity:
-              '20160317': 2
+            tags_count: 0
+            last_tag: null
+            last_activity: '2016-03-17T09:12:04+00:00'
           checks:
             readme: true
             license: false

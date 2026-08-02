@@ -68,37 +68,17 @@ class Project
     /**
      * Metadata about git repository :
      * - size : the size of the repository in octets
-     * - tags : the list of the tags
-     * - activity : the histogram of the activity per day
+     * - tags_count : the number of tags
+     * - last_tag : the name of the last tag (null if there is no tag)
+     * - last_activity : the date of the most recent commit (null if there is no commit)
      *
      * Example :
      *
      * {
      *   "size": 74752,
-     *   "tags": [
-     *     "v0.1.0",
-     *     "v0.1.1",
-     *     "v0.1.2",
-     *     "v0.2.0",
-     *     "v0.3.0",
-     *     "v1.0.0",
-     *     "v1.0.1",
-     *     "v1.0.2",
-     *     "v1.1.0",
-     *     "v1.2.0"
-     *   ],
-     *   "activity": {
-     *     "20190127": 1,
-     *     "20190615": 1,
-     *     "20190723": 1,
-     *     "20191006": 1,
-     *     "20191015": 1,
-     *     "20201023": 1,
-     *     "20211125": 1,
-     *     "20211203": 2,
-     *     "20240201": 1,
-     *     "20240715": 3
-     *   }
+     *   "tags_count": 10,
+     *   "last_tag": "v1.2.0",
+     *   "last_activity": "2024-07-15T14:48:36+00:00"
      * }
      *
      * @var array<string,mixed>
