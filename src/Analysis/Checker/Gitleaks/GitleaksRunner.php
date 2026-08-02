@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Analysis\Checker\Gitleaks;
 
-use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use MBO\GitManager\Storage\TempFilesystem;
 
@@ -20,7 +19,6 @@ final class GitleaksRunner
 
     public function __construct(
         private ProcessRunnerInterface $processRunner,
-        private FileReaderInterface $fileReader,
         private TempFilesystem $tempFilesystem,
         private string $gitleaksDefaultConfigPath,
     ) {
@@ -99,8 +97,8 @@ final class GitleaksRunner
             throw new GitleaksException(sprintf('gitleaks scan failed on %s : %s', $repositoryPath, trim($result->errorOutput)));
         }
 
-        $content = $this->fileReader->read($reportPath);
-        if (null === $content) {
+        $content = is_file($reportPath) ? file_get_contents($reportPath) : false;
+        if (false === $content) {
             throw new GitleaksException(sprintf('gitleaks report not found : %s', $reportPath));
         }
 
@@ -114,10 +112,10 @@ final class GitleaksRunner
     private function getConfigPath(string $repositoryPath): ?string
     {
         $repositoryConfigPath = $repositoryPath.'/'.self::REPOSITORY_CONFIG_NAME;
-        if ($this->fileReader->exists($repositoryConfigPath)) {
+        if (file_exists($repositoryConfigPath)) {
             return $repositoryConfigPath;
         }
 
-        return $this->fileReader->exists($this->gitleaksDefaultConfigPath) ? $this->gitleaksDefaultConfigPath : null;
+        return file_exists($this->gitleaksDefaultConfigPath) ? $this->gitleaksDefaultConfigPath : null;
     }
 }

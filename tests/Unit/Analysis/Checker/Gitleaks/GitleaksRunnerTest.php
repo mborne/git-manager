@@ -4,19 +4,26 @@ namespace App\Tests\Unit\Analysis\Checker\Gitleaks;
 
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksException;
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
-use MBO\GitManager\Filesystem\FileReaderInterface;
-use MBO\GitManager\Filesystem\LocalFileReader;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use MBO\GitManager\Storage\TempFilesystem;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class GitleaksRunnerTest extends TestCase
 {
-    private const DEFAULT_CONFIG_PATH = '/app/config/gitleaks.toml';
-    private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
-    private const REPOSITORY_CONFIG_PATH = self::REPOSITORY_PATH.'/.gitleaks.toml';
     private const SARIF_CONTENT = '{"runs":[]}';
+
+    /**
+     * Temporary directory containing the repository and the default config.
+     */
+    private string $workspace;
+
+    private string $repositoryPath;
+
+    private string $defaultConfigPath;
+
+    private string $repositoryConfigPath;
 
     /**
      * The commands run by the runner, as [command, workingDirectory] pairs.
@@ -28,45 +35,51 @@ final class GitleaksRunnerTest extends TestCase
     protected function setUp(): void
     {
         $this->commands = [];
+
+        $this->workspace = sys_get_temp_dir().'/git-manager-gitleaks-'.uniqid();
+        $this->repositoryPath = $this->workspace.'/github.com/mborne/demo';
+        (new Filesystem())->mkdir($this->repositoryPath);
+
+        $this->defaultConfigPath = $this->workspace.'/gitleaks.toml';
+        $this->repositoryConfigPath = $this->repositoryPath.'/'.GitleaksRunner::REPOSITORY_CONFIG_NAME;
+    }
+
+    protected function tearDown(): void
+    {
+        (new Filesystem())->remove($this->workspace);
     }
 
     /**
-     * FileReader providing the given existing gitleaks configs and reporting the
-     * same SARIF content whatever the temporary report path is.
-     *
-     * @param string[] $existingConfigPaths
+     * Create an empty gitleaks config file.
      */
-    private function createFileReader(?string $sarifContent = null, array $existingConfigPaths = []): FileReaderInterface
+    private function createConfig(string $path): void
     {
-        $fileReader = $this->createStub(FileReaderInterface::class);
-        $fileReader
-            ->method('exists')
-            ->willReturnCallback(fn (string $path): bool => in_array($path, $existingConfigPaths, true))
-        ;
-        $fileReader
-            ->method('read')
-            ->willReturnCallback(
-                fn (string $path): ?string => str_ends_with($path, '.sarif') ? $sarifContent : null
-            )
-        ;
-
-        return $fileReader;
+        (new Filesystem())->dumpFile($path, '');
     }
 
     /**
-     * ProcessRunner recording the commands and answering according to the
-     * gitleaks subcommand.
+     * ProcessRunner recording the commands, answering according to the gitleaks
+     * subcommand and writing the given SARIF content to the report path.
      */
-    private function createProcessRunner(ProcessResult $version, ProcessResult $detect): ProcessRunnerInterface
-    {
+    private function createProcessRunner(
+        ProcessResult $version,
+        ProcessResult $detect,
+        ?string $sarifContent = null,
+    ): ProcessRunnerInterface {
         $processRunner = $this->createStub(ProcessRunnerInterface::class);
         $processRunner
             ->method('run')
             ->willReturnCallback(
-                function (array $command, ?string $workingDirectory = null) use ($version, $detect): ProcessResult {
+                function (array $command, ?string $workingDirectory = null) use ($version, $detect, $sarifContent): ProcessResult {
                     $this->commands[] = [$command, $workingDirectory];
+                    if ('version' === $command[1]) {
+                        return $version;
+                    }
+                    if (null !== $sarifContent) {
+                        file_put_contents($this->getReportPath(), $sarifContent);
+                    }
 
-                    return 'version' === $command[1] ? $version : $detect;
+                    return $detect;
                 }
             )
         ;
@@ -77,23 +90,21 @@ final class GitleaksRunnerTest extends TestCase
     /**
      * ProcessRunner answering a successful scan.
      */
-    private function createSuccessfulProcessRunner(): ProcessRunnerInterface
+    private function createSuccessfulProcessRunner(?string $sarifContent = null): ProcessRunnerInterface
     {
         return $this->createProcessRunner(
             new ProcessResult(0, '8.18.4', ''),
-            new ProcessResult(0, '', '')
+            new ProcessResult(0, '', ''),
+            $sarifContent
         );
     }
 
-    private function createRunner(
-        ProcessRunnerInterface $processRunner,
-        ?FileReaderInterface $fileReader = null,
-    ): GitleaksRunner {
+    private function createRunner(ProcessRunnerInterface $processRunner): GitleaksRunner
+    {
         return new GitleaksRunner(
             $processRunner,
-            $fileReader ?? $this->createFileReader(),
             new TempFilesystem(),
-            self::DEFAULT_CONFIG_PATH
+            $this->defaultConfigPath
         );
     }
 
@@ -169,21 +180,15 @@ final class GitleaksRunnerTest extends TestCase
 
     public function testDetectReturnsTheReportContent(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT)
-        );
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
 
-        $this->assertSame(self::SARIF_CONTENT, $runner->detect(self::REPOSITORY_PATH));
+        $this->assertSame(self::SARIF_CONTENT, $runner->detect($this->repositoryPath));
     }
 
     public function testDetectUsesATemporaryReportPath(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT)
-        );
-        $runner->detect(self::REPOSITORY_PATH);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
+        $runner->detect($this->repositoryPath);
 
         $this->assertMatchesRegularExpression(
             '#^'.preg_quote(sys_get_temp_dir(), '#').'.gitleaks-[0-9a-f]{16}\.sarif$#',
@@ -193,30 +198,25 @@ final class GitleaksRunnerTest extends TestCase
 
     public function testDetectWithoutConfig(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT)
-        );
-        $runner->detect(self::REPOSITORY_PATH);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
+        $runner->detect($this->repositoryPath);
 
         $this->assertSame(
-            [$this->getExpectedDetectCommand($this->getReportPath()), self::REPOSITORY_PATH],
+            [$this->getExpectedDetectCommand($this->getReportPath()), $this->repositoryPath],
             end($this->commands)
         );
     }
 
     public function testDetectWithDefaultConfig(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT, [self::DEFAULT_CONFIG_PATH])
-        );
-        $runner->detect(self::REPOSITORY_PATH);
+        $this->createConfig($this->defaultConfigPath);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
+        $runner->detect($this->repositoryPath);
 
         $this->assertSame(
             [
-                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::DEFAULT_CONFIG_PATH],
-                self::REPOSITORY_PATH,
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', $this->defaultConfigPath],
+                $this->repositoryPath,
             ],
             end($this->commands)
         );
@@ -227,16 +227,15 @@ final class GitleaksRunnerTest extends TestCase
      */
     public function testDetectWithRepositoryConfig(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT, [self::DEFAULT_CONFIG_PATH, self::REPOSITORY_CONFIG_PATH])
-        );
-        $runner->detect(self::REPOSITORY_PATH);
+        $this->createConfig($this->defaultConfigPath);
+        $this->createConfig($this->repositoryConfigPath);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
+        $runner->detect($this->repositoryPath);
 
         $this->assertSame(
             [
-                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::REPOSITORY_CONFIG_PATH],
-                self::REPOSITORY_PATH,
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', $this->repositoryConfigPath],
+                $this->repositoryPath,
             ],
             end($this->commands)
         );
@@ -247,16 +246,14 @@ final class GitleaksRunnerTest extends TestCase
      */
     public function testDetectWithRepositoryConfigOnly(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT, [self::REPOSITORY_CONFIG_PATH])
-        );
-        $runner->detect(self::REPOSITORY_PATH);
+        $this->createConfig($this->repositoryConfigPath);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
+        $runner->detect($this->repositoryPath);
 
         $this->assertSame(
             [
-                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::REPOSITORY_CONFIG_PATH],
-                self::REPOSITORY_PATH,
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', $this->repositoryConfigPath],
+                $this->repositoryPath,
             ],
             end($this->commands)
         );
@@ -268,11 +265,11 @@ final class GitleaksRunnerTest extends TestCase
             new ProcessResult(0, '8.18.4', ''),
             new ProcessResult(1, '', 'unexpected failure')
         );
-        $runner = $this->createRunner($processRunner, $this->createFileReader(self::SARIF_CONTENT));
+        $runner = $this->createRunner($processRunner);
 
         $this->expectException(GitleaksException::class);
         $this->expectExceptionMessage('unexpected failure');
-        $runner->detect(self::REPOSITORY_PATH);
+        $runner->detect($this->repositoryPath);
     }
 
     public function testDetectMissingReport(): void
@@ -281,35 +278,17 @@ final class GitleaksRunnerTest extends TestCase
 
         $this->expectException(GitleaksException::class);
         $this->expectExceptionMessage('gitleaks report not found');
-        $runner->detect(self::REPOSITORY_PATH);
+        $runner->detect($this->repositoryPath);
     }
 
     /**
-     * The temporary report must not be left behind, hence a scan against a real
-     * temporary file written by the process.
+     * The temporary report must not be left behind.
      */
     public function testDetectRemovesTheTemporaryReport(): void
     {
-        $processRunner = $this->createStub(ProcessRunnerInterface::class);
-        $processRunner
-            ->method('run')
-            ->willReturnCallback(
-                function (array $command, ?string $workingDirectory = null): ProcessResult {
-                    $this->commands[] = [$command, $workingDirectory];
-                    file_put_contents($this->getReportPath(), self::SARIF_CONTENT);
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT));
 
-                    return new ProcessResult(0, '', '');
-                }
-            )
-        ;
-        $runner = new GitleaksRunner(
-            $processRunner,
-            new LocalFileReader(),
-            new TempFilesystem(),
-            self::DEFAULT_CONFIG_PATH
-        );
-
-        $this->assertSame(self::SARIF_CONTENT, $runner->detect(self::REPOSITORY_PATH));
+        $this->assertSame(self::SARIF_CONTENT, $runner->detect($this->repositoryPath));
         $this->assertFileDoesNotExist($this->getReportPath());
     }
 }

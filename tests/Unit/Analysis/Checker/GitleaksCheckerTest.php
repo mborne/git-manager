@@ -5,7 +5,6 @@ namespace App\Tests\Unit\Analysis\Checker;
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Analysis\Checker\GitleaksChecker;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
@@ -18,9 +17,14 @@ use Symfony\Component\Uid\Uuid;
 
 final class GitleaksCheckerTest extends TestCase
 {
-    private const DEFAULT_CONFIG_PATH = '/app/config/gitleaks.toml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
     private const PROJECT_ID = '0b7b2b2e-1e2a-3d4f-8a9b-0c1d2e3f4a5b';
+
+    /**
+     * A default config path that is guaranteed to be missing so that the
+     * commands are built without "--config".
+     */
+    private string $defaultConfigPath;
 
     /**
      * The reports written to the store, indexed by "{toolName}/{projectId}".
@@ -32,6 +36,7 @@ final class GitleaksCheckerTest extends TestCase
     protected function setUp(): void
     {
         $this->storedReports = [];
+        $this->defaultConfigPath = sys_get_temp_dir().'/git-manager-missing-'.uniqid().'.toml';
     }
 
     private function createProject(): Project
@@ -55,24 +60,15 @@ final class GitleaksCheckerTest extends TestCase
     }
 
     /**
-     * FileReader reporting the same SARIF content whatever the temporary
-     * report path is.
+     * Write a SARIF report to the path requested by a "gitleaks detect" command.
+     *
+     * @param string[] $command
      */
-    private function createFileReader(?string $sarifContent = null): FileReaderInterface
+    private function writeReport(array $command, string $sarifContent): void
     {
-        $fileReader = $this->createStub(FileReaderInterface::class);
-        $fileReader
-            ->method('exists')
-            ->willReturn(false)
-        ;
-        $fileReader
-            ->method('read')
-            ->willReturnCallback(
-                fn (string $path): ?string => str_ends_with($path, '.sarif') ? $sarifContent : null
-            )
-        ;
-
-        return $fileReader;
+        $index = array_search('--report-path', $command, true);
+        $this->assertIsInt($index);
+        file_put_contents($command[$index + 1], $sarifContent);
     }
 
     /**
@@ -99,12 +95,11 @@ final class GitleaksCheckerTest extends TestCase
     private function createChecker(
         bool $gitleaksEnabled,
         ProcessRunnerInterface $processRunner,
-        FileReaderInterface $fileReader,
         ?ReportStoreInterface $reportStore = null,
     ): GitleaksChecker {
         return new GitleaksChecker(
             $gitleaksEnabled,
-            new GitleaksRunner($processRunner, $fileReader, new TempFilesystem(), self::DEFAULT_CONFIG_PATH),
+            new GitleaksRunner($processRunner, new TempFilesystem(), $this->defaultConfigPath),
             $this->createLocalFilesystem(),
             $reportStore ?? $this->createReportStore(),
             new NullLogger()
@@ -112,15 +107,28 @@ final class GitleaksCheckerTest extends TestCase
     }
 
     /**
-     * ProcessRunner answering according to the gitleaks subcommand.
+     * ProcessRunner answering according to the gitleaks subcommand and writing
+     * the given SARIF content to the report path.
      */
-    private function createProcessRunner(ProcessResult $version, ProcessResult $detect): ProcessRunnerInterface
-    {
+    private function createProcessRunner(
+        ProcessResult $version,
+        ProcessResult $detect,
+        ?string $sarifContent = null,
+    ): ProcessRunnerInterface {
         $processRunner = $this->createStub(ProcessRunnerInterface::class);
         $processRunner
             ->method('run')
             ->willReturnCallback(
-                fn (array $command): ProcessResult => 'version' === $command[1] ? $version : $detect
+                function (array $command) use ($version, $detect, $sarifContent): ProcessResult {
+                    if ('version' === $command[1]) {
+                        return $version;
+                    }
+                    if (null !== $sarifContent) {
+                        $this->writeReport($command, $sarifContent);
+                    }
+
+                    return $detect;
+                }
             )
         ;
 
@@ -147,21 +155,18 @@ final class GitleaksCheckerTest extends TestCase
     /**
      * ProcessRunner reporting an available gitleaks and a successful scan.
      */
-    private function createSuccessfulProcessRunner(): ProcessRunnerInterface
+    private function createSuccessfulProcessRunner(?string $sarifContent = null): ProcessRunnerInterface
     {
         return $this->createProcessRunner(
             new ProcessResult(0, '8.18.4', ''),
-            new ProcessResult(0, '', '')
+            new ProcessResult(0, '', ''),
+            $sarifContent
         );
     }
 
     public function testGetName(): void
     {
-        $checker = $this->createChecker(
-            true,
-            $this->createStub(ProcessRunnerInterface::class),
-            $this->createFileReader()
-        );
+        $checker = $this->createChecker(true, $this->createStub(ProcessRunnerInterface::class));
 
         $this->assertSame('gitleaks', $checker->getName());
     }
@@ -173,7 +178,7 @@ final class GitleaksCheckerTest extends TestCase
             ->expects($this->never())
             ->method('run')
         ;
-        $checker = $this->createChecker(false, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(false, $processRunner);
 
         $this->assertNull($checker->check($this->createProject()));
     }
@@ -187,7 +192,7 @@ final class GitleaksCheckerTest extends TestCase
             ->with(['gitleaks', 'version'])
             ->willReturn(new ProcessResult(127, '', 'gitleaks: command not found'))
         ;
-        $checker = $this->createChecker(true, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertNull($checker->check($this->createProject()));
     }
@@ -198,7 +203,7 @@ final class GitleaksCheckerTest extends TestCase
             new ProcessResult(0, '8.18.4', ''),
             new ProcessResult(1, '', 'unexpected failure')
         );
-        $checker = $this->createChecker(true, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertSame([
             'success' => false,
@@ -209,11 +214,7 @@ final class GitleaksCheckerTest extends TestCase
 
     public function testMissingReport(): void
     {
-        $checker = $this->createChecker(
-            true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader()
-        );
+        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner());
 
         $this->assertSame([
             'success' => false,
@@ -226,8 +227,7 @@ final class GitleaksCheckerTest extends TestCase
     {
         $checker = $this->createChecker(
             true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($this->createSarifContent([])),
+            $this->createSuccessfulProcessRunner($this->createSarifContent([])),
             $this->createReportStore(writable: false)
         );
 
@@ -240,12 +240,12 @@ final class GitleaksCheckerTest extends TestCase
 
     public function testScanWithSecrets(): void
     {
-        $fileReader = $this->createFileReader($this->createSarifContent([
+        $processRunner = $this->createSuccessfulProcessRunner($this->createSarifContent([
             'aws-access-token',
             'generic-api-key',
             'aws-access-token',
         ]));
-        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner(), $fileReader);
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertSame([
             'success' => true,
@@ -261,8 +261,7 @@ final class GitleaksCheckerTest extends TestCase
     {
         $checker = $this->createChecker(
             true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($this->createSarifContent([]))
+            $this->createSuccessfulProcessRunner($this->createSarifContent([]))
         );
 
         $this->assertSame([
@@ -275,11 +274,7 @@ final class GitleaksCheckerTest extends TestCase
     public function testReportIsStored(): void
     {
         $sarifContent = $this->createSarifContent(['aws-access-token']);
-        $checker = $this->createChecker(
-            true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($sarifContent)
-        );
+        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner($sarifContent));
 
         $checker->check($this->createProject());
 
@@ -291,23 +286,25 @@ final class GitleaksCheckerTest extends TestCase
 
     public function testAvailabilityIsResolvedOnce(): void
     {
+        $sarifContent = $this->createSarifContent(['aws-access-token']);
         $subCommands = [];
         $processRunner = $this->createMock(ProcessRunnerInterface::class);
         $processRunner
             ->expects($this->exactly(3))
             ->method('run')
             ->willReturnCallback(
-                function (array $command) use (&$subCommands): ProcessResult {
+                function (array $command) use (&$subCommands, $sarifContent): ProcessResult {
                     $subCommands[] = $command[1];
+                    if ('version' === $command[1]) {
+                        return new ProcessResult(0, '8.18.4', '');
+                    }
+                    $this->writeReport($command, $sarifContent);
 
-                    return 'version' === $command[1]
-                        ? new ProcessResult(0, '8.18.4', '')
-                        : new ProcessResult(0, '', '');
+                    return new ProcessResult(0, '', '');
                 }
             )
         ;
-        $fileReader = $this->createFileReader($this->createSarifContent(['aws-access-token']));
-        $checker = $this->createChecker(true, $processRunner, $fileReader);
+        $checker = $this->createChecker(true, $processRunner);
 
         $project = $this->createProject();
         $checker->check($project);

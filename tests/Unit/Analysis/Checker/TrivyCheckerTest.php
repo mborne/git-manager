@@ -5,7 +5,6 @@ namespace App\Tests\Unit\Analysis\Checker;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
 use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
@@ -18,10 +17,15 @@ use Symfony\Component\Uid\Uuid;
 
 final class TrivyCheckerTest extends TestCase
 {
-    private const CONFIG_PATH = '/app/config/trivy.yaml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
     private const PROJECT_ID = '0b7b2b2e-1e2a-3d4f-8a9b-0c1d2e3f4a5b';
     private const VERSION_OUTPUT = 'Version: 0.58.1';
+
+    /**
+     * A config path that is guaranteed to be missing so that the commands are
+     * built without "--config".
+     */
+    private string $configPath;
 
     /**
      * The reports written to the store, indexed by "{toolName}/{projectId}".
@@ -33,6 +37,7 @@ final class TrivyCheckerTest extends TestCase
     protected function setUp(): void
     {
         $this->storedReports = [];
+        $this->configPath = sys_get_temp_dir().'/git-manager-missing-'.uniqid().'.yaml';
     }
 
     private function createProject(): Project
@@ -56,24 +61,15 @@ final class TrivyCheckerTest extends TestCase
     }
 
     /**
-     * FileReader reporting the same JSON content whatever the temporary
-     * report path is.
+     * Write a JSON report to the path requested by a "trivy fs" command.
+     *
+     * @param string[] $command
      */
-    private function createFileReader(?string $jsonContent = null): FileReaderInterface
+    private function writeReport(array $command, string $jsonContent): void
     {
-        $fileReader = $this->createStub(FileReaderInterface::class);
-        $fileReader
-            ->method('exists')
-            ->willReturn(false)
-        ;
-        $fileReader
-            ->method('read')
-            ->willReturnCallback(
-                fn (string $path): ?string => str_ends_with($path, '.json') ? $jsonContent : null
-            )
-        ;
-
-        return $fileReader;
+        $index = array_search('--output', $command, true);
+        $this->assertIsInt($index);
+        file_put_contents($command[$index + 1], $jsonContent);
     }
 
     /**
@@ -100,12 +96,11 @@ final class TrivyCheckerTest extends TestCase
     private function createChecker(
         bool $trivyEnabled,
         ProcessRunnerInterface $processRunner,
-        FileReaderInterface $fileReader,
         ?ReportStoreInterface $reportStore = null,
     ): TrivyChecker {
         return new TrivyChecker(
             $trivyEnabled,
-            new TrivyRunner($processRunner, $fileReader, new TempFilesystem(), self::CONFIG_PATH),
+            new TrivyRunner($processRunner, new TempFilesystem(), $this->configPath),
             $this->createLocalFilesystem(),
             $reportStore ?? $this->createReportStore(),
             new NullLogger()
@@ -113,15 +108,28 @@ final class TrivyCheckerTest extends TestCase
     }
 
     /**
-     * ProcessRunner answering according to the trivy subcommand.
+     * ProcessRunner answering according to the trivy subcommand and writing the
+     * given JSON content to the report path.
      */
-    private function createProcessRunner(ProcessResult $version, ProcessResult $scan): ProcessRunnerInterface
-    {
+    private function createProcessRunner(
+        ProcessResult $version,
+        ProcessResult $scan,
+        ?string $jsonContent = null,
+    ): ProcessRunnerInterface {
         $processRunner = $this->createStub(ProcessRunnerInterface::class);
         $processRunner
             ->method('run')
             ->willReturnCallback(
-                fn (array $command): ProcessResult => '--version' === $command[1] ? $version : $scan
+                function (array $command) use ($version, $scan, $jsonContent): ProcessResult {
+                    if ('--version' === $command[1]) {
+                        return $version;
+                    }
+                    if (null !== $jsonContent) {
+                        $this->writeReport($command, $jsonContent);
+                    }
+
+                    return $scan;
+                }
             )
         ;
 
@@ -158,21 +166,18 @@ final class TrivyCheckerTest extends TestCase
     /**
      * ProcessRunner reporting an available trivy and a successful scan.
      */
-    private function createSuccessfulProcessRunner(): ProcessRunnerInterface
+    private function createSuccessfulProcessRunner(?string $jsonContent = null): ProcessRunnerInterface
     {
         return $this->createProcessRunner(
             new ProcessResult(0, self::VERSION_OUTPUT, ''),
-            new ProcessResult(0, '', '')
+            new ProcessResult(0, '', ''),
+            $jsonContent
         );
     }
 
     public function testGetName(): void
     {
-        $checker = $this->createChecker(
-            true,
-            $this->createStub(ProcessRunnerInterface::class),
-            $this->createFileReader()
-        );
+        $checker = $this->createChecker(true, $this->createStub(ProcessRunnerInterface::class));
 
         $this->assertSame('trivy', $checker->getName());
     }
@@ -184,7 +189,7 @@ final class TrivyCheckerTest extends TestCase
             ->expects($this->never())
             ->method('run')
         ;
-        $checker = $this->createChecker(false, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(false, $processRunner);
 
         $this->assertNull($checker->check($this->createProject()));
     }
@@ -198,7 +203,7 @@ final class TrivyCheckerTest extends TestCase
             ->with(['trivy', '--version'])
             ->willReturn(new ProcessResult(127, '', 'trivy: command not found'))
         ;
-        $checker = $this->createChecker(true, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertNull($checker->check($this->createProject()));
     }
@@ -209,7 +214,7 @@ final class TrivyCheckerTest extends TestCase
             new ProcessResult(0, self::VERSION_OUTPUT, ''),
             new ProcessResult(1, '', 'unexpected failure')
         );
-        $checker = $this->createChecker(true, $processRunner, $this->createFileReader());
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertSame([
             'success' => false,
@@ -220,11 +225,7 @@ final class TrivyCheckerTest extends TestCase
 
     public function testMissingReport(): void
     {
-        $checker = $this->createChecker(
-            true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader()
-        );
+        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner());
 
         $this->assertSame([
             'success' => false,
@@ -237,8 +238,7 @@ final class TrivyCheckerTest extends TestCase
     {
         $checker = $this->createChecker(
             true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($this->createTrivyContent([])),
+            $this->createSuccessfulProcessRunner($this->createTrivyContent([])),
             $this->createReportStore(writable: false)
         );
 
@@ -251,12 +251,12 @@ final class TrivyCheckerTest extends TestCase
 
     public function testScanWithVulnerabilities(): void
     {
-        $fileReader = $this->createFileReader($this->createTrivyContent([
+        $processRunner = $this->createSuccessfulProcessRunner($this->createTrivyContent([
             'CVE-2024-0001' => 'HIGH',
             'CVE-2024-0002' => 'CRITICAL',
             'CVE-2024-0003' => 'HIGH',
         ]));
-        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner(), $fileReader);
+        $checker = $this->createChecker(true, $processRunner);
 
         $this->assertSame([
             'success' => true,
@@ -276,8 +276,7 @@ final class TrivyCheckerTest extends TestCase
     {
         $checker = $this->createChecker(
             true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($this->createTrivyContent([]))
+            $this->createSuccessfulProcessRunner($this->createTrivyContent([]))
         );
 
         $this->assertSame([
@@ -293,11 +292,7 @@ final class TrivyCheckerTest extends TestCase
     public function testReportIsStored(): void
     {
         $jsonContent = $this->createTrivyContent(['CVE-2024-0001' => 'HIGH']);
-        $checker = $this->createChecker(
-            true,
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader($jsonContent)
-        );
+        $checker = $this->createChecker(true, $this->createSuccessfulProcessRunner($jsonContent));
 
         $checker->check($this->createProject());
 
@@ -309,23 +304,25 @@ final class TrivyCheckerTest extends TestCase
 
     public function testAvailabilityIsResolvedOnce(): void
     {
+        $jsonContent = $this->createTrivyContent(['CVE-2024-0001' => 'HIGH']);
         $subCommands = [];
         $processRunner = $this->createMock(ProcessRunnerInterface::class);
         $processRunner
             ->expects($this->exactly(3))
             ->method('run')
             ->willReturnCallback(
-                function (array $command) use (&$subCommands): ProcessResult {
+                function (array $command) use (&$subCommands, $jsonContent): ProcessResult {
                     $subCommands[] = $command[1];
+                    if ('--version' === $command[1]) {
+                        return new ProcessResult(0, self::VERSION_OUTPUT, '');
+                    }
+                    $this->writeReport($command, $jsonContent);
 
-                    return '--version' === $command[1]
-                        ? new ProcessResult(0, self::VERSION_OUTPUT, '')
-                        : new ProcessResult(0, '', '');
+                    return new ProcessResult(0, '', '');
                 }
             )
         ;
-        $fileReader = $this->createFileReader($this->createTrivyContent(['CVE-2024-0001' => 'HIGH']));
-        $checker = $this->createChecker(true, $processRunner, $fileReader);
+        $checker = $this->createChecker(true, $processRunner);
 
         $project = $this->createProject();
         $checker->check($project);

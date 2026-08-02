@@ -4,19 +4,24 @@ namespace App\Tests\Unit\Analysis\Checker\Trivy;
 
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyException;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
-use MBO\GitManager\Filesystem\FileReaderInterface;
-use MBO\GitManager\Filesystem\LocalFileReader;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use MBO\GitManager\Storage\TempFilesystem;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class TrivyRunnerTest extends TestCase
 {
-    private const CONFIG_PATH = '/app/config/trivy.yaml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
     private const JSON_CONTENT = '{"Results":[]}';
     private const VERSION_OUTPUT = 'Version: 0.58.1';
+
+    /**
+     * Temporary directory containing the trivy config.
+     */
+    private string $workspace;
+
+    private string $configPath;
 
     /**
      * The commands run by the runner, as [command, workingDirectory] pairs.
@@ -28,43 +33,47 @@ final class TrivyRunnerTest extends TestCase
     protected function setUp(): void
     {
         $this->commands = [];
+
+        $this->workspace = sys_get_temp_dir().'/git-manager-trivy-'.uniqid();
+        $this->configPath = $this->workspace.'/trivy.yaml';
+    }
+
+    protected function tearDown(): void
+    {
+        (new Filesystem())->remove($this->workspace);
     }
 
     /**
-     * FileReader providing an optional trivy config and reporting the same
-     * JSON content whatever the temporary report path is.
+     * Create an empty trivy config file.
      */
-    private function createFileReader(?string $jsonContent = null, bool $withConfig = false): FileReaderInterface
+    private function createConfig(): void
     {
-        $fileReader = $this->createStub(FileReaderInterface::class);
-        $fileReader
-            ->method('exists')
-            ->willReturnCallback(fn (string $path): bool => $withConfig && self::CONFIG_PATH === $path)
-        ;
-        $fileReader
-            ->method('read')
-            ->willReturnCallback(
-                fn (string $path): ?string => str_ends_with($path, '.json') ? $jsonContent : null
-            )
-        ;
-
-        return $fileReader;
+        (new Filesystem())->dumpFile($this->configPath, '');
     }
 
     /**
-     * ProcessRunner recording the commands and answering according to the
-     * trivy subcommand.
+     * ProcessRunner recording the commands, answering according to the trivy
+     * subcommand and writing the given JSON content to the report path.
      */
-    private function createProcessRunner(ProcessResult $version, ProcessResult $scan): ProcessRunnerInterface
-    {
+    private function createProcessRunner(
+        ProcessResult $version,
+        ProcessResult $scan,
+        ?string $jsonContent = null,
+    ): ProcessRunnerInterface {
         $processRunner = $this->createStub(ProcessRunnerInterface::class);
         $processRunner
             ->method('run')
             ->willReturnCallback(
-                function (array $command, ?string $workingDirectory = null) use ($version, $scan): ProcessResult {
+                function (array $command, ?string $workingDirectory = null) use ($version, $scan, $jsonContent): ProcessResult {
                     $this->commands[] = [$command, $workingDirectory];
+                    if ('--version' === $command[1]) {
+                        return $version;
+                    }
+                    if (null !== $jsonContent) {
+                        file_put_contents($this->getReportPath(), $jsonContent);
+                    }
 
-                    return '--version' === $command[1] ? $version : $scan;
+                    return $scan;
                 }
             )
         ;
@@ -75,23 +84,21 @@ final class TrivyRunnerTest extends TestCase
     /**
      * ProcessRunner answering a successful scan.
      */
-    private function createSuccessfulProcessRunner(): ProcessRunnerInterface
+    private function createSuccessfulProcessRunner(?string $jsonContent = null): ProcessRunnerInterface
     {
         return $this->createProcessRunner(
             new ProcessResult(0, self::VERSION_OUTPUT, ''),
-            new ProcessResult(0, '', '')
+            new ProcessResult(0, '', ''),
+            $jsonContent
         );
     }
 
-    private function createRunner(
-        ProcessRunnerInterface $processRunner,
-        ?FileReaderInterface $fileReader = null,
-    ): TrivyRunner {
+    private function createRunner(ProcessRunnerInterface $processRunner): TrivyRunner
+    {
         return new TrivyRunner(
             $processRunner,
-            $fileReader ?? $this->createFileReader(),
             new TempFilesystem(),
-            self::CONFIG_PATH
+            $this->configPath
         );
     }
 
@@ -168,20 +175,14 @@ final class TrivyRunnerTest extends TestCase
 
     public function testScanReturnsTheReportContent(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::JSON_CONTENT)
-        );
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT));
 
         $this->assertSame(self::JSON_CONTENT, $runner->scan(self::REPOSITORY_PATH));
     }
 
     public function testScanUsesATemporaryReportPath(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::JSON_CONTENT)
-        );
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT));
         $runner->scan(self::REPOSITORY_PATH);
 
         $this->assertMatchesRegularExpression(
@@ -192,10 +193,7 @@ final class TrivyRunnerTest extends TestCase
 
     public function testScanWithoutConfig(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::JSON_CONTENT)
-        );
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT));
         $runner->scan(self::REPOSITORY_PATH);
 
         $this->assertSame(
@@ -209,17 +207,15 @@ final class TrivyRunnerTest extends TestCase
 
     public function testScanWithConfig(): void
     {
-        $runner = $this->createRunner(
-            $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::JSON_CONTENT, withConfig: true)
-        );
+        $this->createConfig();
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT));
         $runner->scan(self::REPOSITORY_PATH);
 
         $this->assertSame(
             [
                 [
                     ...$this->getExpectedScanCommand($this->getReportPath()),
-                    '--config', self::CONFIG_PATH,
+                    '--config', $this->configPath,
                     self::REPOSITORY_PATH,
                 ],
                 null,
@@ -234,7 +230,7 @@ final class TrivyRunnerTest extends TestCase
             new ProcessResult(0, self::VERSION_OUTPUT, ''),
             new ProcessResult(1, '', 'unexpected failure')
         );
-        $runner = $this->createRunner($processRunner, $this->createFileReader(self::JSON_CONTENT));
+        $runner = $this->createRunner($processRunner);
 
         $this->expectException(TrivyException::class);
         $this->expectExceptionMessage('unexpected failure');
@@ -251,29 +247,11 @@ final class TrivyRunnerTest extends TestCase
     }
 
     /**
-     * The temporary report must not be left behind, hence a scan against a real
-     * temporary file written by the process.
+     * The temporary report must not be left behind.
      */
     public function testScanRemovesTheTemporaryReport(): void
     {
-        $processRunner = $this->createStub(ProcessRunnerInterface::class);
-        $processRunner
-            ->method('run')
-            ->willReturnCallback(
-                function (array $command, ?string $workingDirectory = null): ProcessResult {
-                    $this->commands[] = [$command, $workingDirectory];
-                    file_put_contents($this->getReportPath(), self::JSON_CONTENT);
-
-                    return new ProcessResult(0, '', '');
-                }
-            )
-        ;
-        $runner = new TrivyRunner(
-            $processRunner,
-            new LocalFileReader(),
-            new TempFilesystem(),
-            self::CONFIG_PATH
-        );
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::JSON_CONTENT));
 
         $this->assertSame(self::JSON_CONTENT, $runner->scan(self::REPOSITORY_PATH));
         $this->assertFileDoesNotExist($this->getReportPath());

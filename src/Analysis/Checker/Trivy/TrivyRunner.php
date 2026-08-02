@@ -2,7 +2,6 @@
 
 namespace MBO\GitManager\Analysis\Checker\Trivy;
 
-use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Process\ProcessRunnerInterface;
 use MBO\GitManager\Storage\TempFilesystem;
 
@@ -20,7 +19,6 @@ final class TrivyRunner
 
     public function __construct(
         private ProcessRunnerInterface $processRunner,
-        private FileReaderInterface $fileReader,
         private TempFilesystem $tempFilesystem,
         private string $trivyConfigPath,
     ) {
@@ -89,7 +87,7 @@ final class TrivyRunner
             '--format', 'json',
             '--output', $reportPath,
         ];
-        if ($this->fileReader->exists($this->trivyConfigPath)) {
+        if (file_exists($this->trivyConfigPath)) {
             $command[] = '--config';
             $command[] = $this->trivyConfigPath;
         }
@@ -100,8 +98,8 @@ final class TrivyRunner
             throw new TrivyException(sprintf('trivy scan failed on %s : %s', $repositoryPath, trim($result->errorOutput)));
         }
 
-        $content = $this->fileReader->read($reportPath);
-        if (null === $content) {
+        $content = is_file($reportPath) ? file_get_contents($reportPath) : false;
+        if (false === $content) {
             throw new TrivyException(sprintf('trivy report not found : %s', $reportPath));
         }
 
