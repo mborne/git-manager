@@ -12,6 +12,8 @@ CLI helpers to backup and review a set of git repositories.
 
 ![screenshot](docs/screenshot.png)
 
+* Expose the results through an HTTP API described by [docs/openapi.yaml](docs/openapi.yaml)
+
 ## Requirements
 
 * [PHP >= 8.4](https://www.php.net/supported-versions)
@@ -20,11 +22,12 @@ CLI helpers to backup and review a set of git repositories.
 
 ## Parameters
 
-| Name              | Description                           | Default                 |
-| ----------------- | ------------------------------------- | ----------------------- |
-| `GIT_MANAGER_DIR` | Directory containing git repositories | `{projectDir}/var/data` |
-| `TRIVY_ENABLED`   | Enable/disable trivy scan             | `true`                  |
-| `GITLEAKS_ENABLED`   | Enable/disable gitleaks scan       | `true`                  |
+| Name               | Description                                                                                                                | Default                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `GIT_MANAGER_DIR`  | Directory containing git repositories                                                                                      | `{projectDir}/var/data` |
+| `TRIVY_ENABLED`    | Enable/disable trivy scan                                                                                                  | `true`                  |
+| `GITLEAKS_ENABLED` | Enable/disable gitleaks scan                                                                                               | `true`                  |
+| `TRUSTED_PROXIES`  | Comma separated list of reverse proxies allowed to define the `X-Forwarded-*` headers (ex : `10.0.0.0/8` or `REMOTE_ADDR`) | *(empty)*               |
 
 ## Setup
 
@@ -57,6 +60,13 @@ bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```bash
 bin/console git:fetch https://gitlab.com -u mborne $GITLAB_TOKEN
 ```
+
+### Browse the API
+
+Once the application is started (`docker compose up -d` or `symfony server:start`) :
+
+* http://localhost:8000/api/ renders [docs/openapi.yaml](docs/openapi.yaml) with [swagger-ui](https://swagger.io/tools/swagger-ui/)
+* http://localhost:8000/api/openapi.yaml serves the OpenAPI specification itself, with `servers` replaced by the URL of the instance
 
 ## Usage with docker
 

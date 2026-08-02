@@ -8,6 +8,7 @@ COPY composer.json symfony.lock .env .
 RUN composer install --no-scripts --prefer-dist
 COPY bin bin/
 COPY config config/
+COPY docs/openapi.yaml docs/openapi.yaml
 COPY public public/
 COPY src src/
 COPY templates templates/

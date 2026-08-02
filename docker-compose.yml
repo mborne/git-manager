@@ -10,6 +10,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
       HTTP_PROXY: ${HTTP_PROXY:-}
       HTTPS_PROXY: ${HTTPS_PROXY:-}
     ports:
