@@ -14,7 +14,7 @@ CLI helpers to backup and review a set of git repositories.
 
 ## Requirements
 
-* [PHP >= 8.3](https://www.php.net/supported-versions)
+* [PHP >= 8.4](https://www.php.net/supported-versions)
 
 ## Parameters
 
