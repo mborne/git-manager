@@ -17,13 +17,16 @@ final class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find projects with a full name starting with a given prefix
+     * (ex : "github.com" or "github.com/IGNF").
+     *
      * @return Project[]
      */
-    public function findByHost(string $host): array
+    public function findByPrefix(string $prefix): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.fullName LIKE :host')
-            ->setParameter('host', $host.'/%')
+            ->where('p.fullName LIKE :prefix')
+            ->setParameter('prefix', addcslashes($prefix, '%_\\').'%')
             ->getQuery()
             ->getResult();
     }

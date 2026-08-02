@@ -33,7 +33,7 @@ final class AnalyseCommand extends Command
             ->setName('git:analyse')
             ->setDescription('Run analysis on all fetched projects')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Limit the number of projects to analyse')
-            ->addOption('host', null, InputOption::VALUE_REQUIRED, 'Filter projects by host (e.g. github.com)')
+            ->addOption('prefix', null, InputOption::VALUE_REQUIRED, 'Filter projects by full name prefix (e.g. github.com/IGNF)')
         ;
     }
 
@@ -44,10 +44,10 @@ final class AnalyseCommand extends Command
         $logger->info('[git:analyse] started...');
 
         $limit = $input->getOption('limit');
-        $host = $input->getOption('host');
+        $prefix = $input->getOption('prefix');
 
-        if (null !== $host) {
-            $projects = $this->projectRepository->findByHost($host);
+        if (null !== $prefix) {
+            $projects = $this->projectRepository->findByPrefix($prefix);
         } else {
             $projects = $this->projectRepository->findAll();
         }
