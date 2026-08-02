@@ -68,16 +68,17 @@ class Project
     /**
      * Metadata about git repository :
      * - size : the size of the repository in octets
-     * - tags_count : the number of tags
-     * - last_tag : the name of the last tag (null if there is no tag)
+     * - tags : the number of tags and the latest one (null if there is no tag)
      * - last_activity : the date of the most recent commit (null if there is no commit)
      *
      * Example :
      *
      * {
      *   "size": 74752,
-     *   "tags_count": 10,
-     *   "last_tag": "v1.2.0",
+     *   "tags": {
+     *     "count": 10,
+     *     "latest": "v1.2.0"
+     *   },
      *   "last_activity": "2024-07-15T14:48:36+00:00"
      * }
      *

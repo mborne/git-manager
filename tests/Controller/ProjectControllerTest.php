@@ -91,8 +91,7 @@ class ProjectControllerTest extends WebTestCase
             ->setFetchedAt(new \DateTime('2026-01-01 10:00:00'))
             ->setMetadata([
                 'size' => 1048576,
-                'tags_count' => 1,
-                'last_tag' => 'v1.0.0',
+                'tags' => ['count' => 1, 'latest' => 'v1.0.0'],
                 'last_activity' => '2025-12-24T09:32:11+00:00',
             ])
             ->setChecks([

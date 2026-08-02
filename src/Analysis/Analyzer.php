@@ -38,20 +38,16 @@ final class Analyzer
     /**
      * Collect repository metadata :
      * - size : the size of the repository
-     * - tags_count : the number of git tags
-     * - last_tag : the name of the last git tag
+     * - tags : the number of git tags and the latest one
      * - last_activity : the most recent day with a commit
      *
      * @return array<string,mixed>
      */
     private function collectMetadata(GitRepository $gitRepository): array
     {
-        $tagNames = $this->getTagNames($gitRepository);
-
         $metadata = [];
         $metadata['size'] = $gitRepository->getSize() * 1024;
-        $metadata['tags_count'] = \count($tagNames);
-        $metadata['last_tag'] = empty($tagNames) ? null : end($tagNames);
+        $metadata['tags'] = $this->getTags($gitRepository);
         $metadata['last_activity'] = $this->getLastActivity($gitRepository);
 
         return $metadata;
@@ -73,18 +69,22 @@ final class Analyzer
     }
 
     /**
-     * Get tag names sorted by git (alphabetical order).
+     * Get the number of tags and the latest one, the tags being sorted by git
+     * (alphabetical order).
      *
-     * @return string[]
+     * @return array{count:int,latest:?string}
      */
-    private function getTagNames(GitRepository $gitRepository): array
+    private function getTags(GitRepository $gitRepository): array
     {
-        $result = [];
+        $tagNames = [];
         foreach ($gitRepository->getReferences()->getTags() as $tag) {
-            $result[] = $tag->getName();
+            $tagNames[] = $tag->getName();
         }
 
-        return $result;
+        return [
+            'count' => \count($tagNames),
+            'latest' => empty($tagNames) ? null : end($tagNames),
+        ];
     }
 
     /**

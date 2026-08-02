@@ -262,24 +262,29 @@ components:
     Metadata:
       type: object
       description: Metadata collected on the local copy of the git repository.
-      required: [size, tags_count, last_tag, last_activity]
+      required: [size, tags, last_activity]
       properties:
         size:
           type: integer
           minimum: 0
           description: Size of the repository in bytes.
           examples: [74752]
-        tags_count:
-          type: integer
-          minimum: 0
-          description: The number of git tags.
-          examples: [3]
-        last_tag:
-          type: [string, 'null']
-          description: |
-            The name of the last git tag (alphabetical order). Null when the
-            repository has no tag.
-          examples: ['v1.2.0']
+        tags:
+          type: object
+          description: Information about the git tags.
+          required: [count, latest]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              description: The number of git tags.
+              examples: [3]
+            latest:
+              type: [string, 'null']
+              description: |
+                The name of the latest git tag (alphabetical order). Null when
+                the repository has no tag.
+              examples: ['v1.2.0']
         last_activity:
           type: [string, 'null']
           format: date-time
@@ -418,8 +423,9 @@ components:
         fetchedAt: '2026-08-02T10:51:00+00:00'
         metadata:
           size: 74752
-          tags_count: 3
-          last_tag: 'v1.2.0'
+          tags:
+            count: 3
+            latest: 'v1.2.0'
           last_activity: '2024-07-15T14:48:36+00:00'
         checks:
           readme: true
@@ -450,8 +456,9 @@ components:
           fetchedAt: '2026-08-02T10:51:00+00:00'
           metadata:
             size: 74752
-            tags_count: 2
-            last_tag: 'v1.0.0'
+            tags:
+              count: 2
+              latest: 'v1.0.0'
             last_activity: '2024-07-15T14:48:36+00:00'
           checks:
             readme: true
@@ -478,8 +485,9 @@ components:
           fetchedAt: '2026-08-02T10:51:07+00:00'
           metadata:
             size: 4188160
-            tags_count: 0
-            last_tag: null
+            tags:
+              count: 0
+              latest: null
             last_activity: '2016-03-17T09:12:04+00:00'
           checks:
             readme: true
