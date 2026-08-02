@@ -5,7 +5,7 @@ namespace MBO\GitManager\Analysis;
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Analysis\Checker\CheckerInterface;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -17,7 +17,7 @@ final class Analyzer
      * @param CheckerInterface[] $checkers the checkers to run, configured in services.yaml
      */
     public function __construct(
-        private LocalFilesystem $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private array $checkers,
         private LoggerInterface $logger,
     ) {
@@ -29,7 +29,7 @@ final class Analyzer
         $this->logger->info('[analyze] start analysis for project: {fullName}', [
             'fullName' => $fullName,
         ]);
-        $gitRepository = $this->localFilesystem->getGitRepository($project->getFullName());
+        $gitRepository = $this->gitRepositoryStore->getGitRepository($project->getFullName());
 
         $project->setMetadata($this->collectMetadata($gitRepository));
         $project->setChecks($this->runChecks($project));

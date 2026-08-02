@@ -6,7 +6,7 @@ use MBO\GitManager\Analysis\Checker\Trivy\TrivyException;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyReport;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystemInterface;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\GitManager\Storage\ReportStoreException;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use Psr\Log\LoggerInterface;
@@ -29,7 +29,7 @@ final class TrivyChecker implements CheckerInterface
     public function __construct(
         private bool $trivyEnabled,
         private TrivyRunner $trivyRunner,
-        private LocalFilesystemInterface $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private ReportStoreInterface $reportStore,
         private LoggerInterface $logger,
     ) {
@@ -61,7 +61,7 @@ final class TrivyChecker implements CheckerInterface
 
         try {
             $content = $this->trivyRunner->scan(
-                $this->localFilesystem->getGitRepositoryPath($project->getFullName())
+                $this->gitRepositoryStore->getPath($project->getFullName())
             );
             $this->reportStore->write(self::NAME, $project->getId(), $content);
         } catch (TrivyException|ReportStoreException $e) {

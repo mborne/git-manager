@@ -2,7 +2,7 @@
 
 namespace App\Tests\Functional;
 
-use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -13,9 +13,12 @@ class GithubFunctionalTest extends KernelTestCase
     {
         $kernel = self::bootKernel();
 
-        $localFilesystem = self::getContainer()->get(LocalFilesystem::class);
-        $this->assertInstanceOf(LocalFilesystem::class, $localFilesystem);
-        $this->assertStringEndsWith('test-data', $localFilesystem->getRootPath());
+        $gitRepositoryStore = self::getContainer()->get(GitRepositoryStore::class);
+        $this->assertInstanceOf(GitRepositoryStore::class, $gitRepositoryStore);
+
+        $repositoryPath = $gitRepositoryStore->getPath('github.com/mborne/ansible-docker-ce');
+        // safety net : the tests must not write in the real data directory
+        $this->assertStringContainsString('var/test-data', $repositoryPath);
 
         $application = new Application($kernel);
 
@@ -34,5 +37,7 @@ class GithubFunctionalTest extends KernelTestCase
             'https://github.com/mborne/ansible-docker-ce.git',
             $output
         );
+
+        $this->assertDirectoryExists($repositoryPath.'/.git');
     }
 }

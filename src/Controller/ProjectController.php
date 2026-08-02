@@ -6,8 +6,8 @@ use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Analysis\Checker\GitleaksChecker;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyReport;
 use MBO\GitManager\Analysis\Checker\TrivyChecker;
-use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Repository\ProjectRepository;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +26,7 @@ final class ProjectController extends AbstractController
     public function details(
         ProjectRepository $repository,
         Uuid $id,
-        LocalFilesystemInterface $localFilesystem,
+        GitRepositoryStore $gitRepositoryStore,
         ReportStoreInterface $reportStore,
     ): Response {
         $project = $repository->find($id);
@@ -34,7 +34,7 @@ final class ProjectController extends AbstractController
             throw $this->createNotFoundException('project not found');
         }
 
-        $stripPrefix = $localFilesystem->getGitRepositoryPath(
+        $stripPrefix = $gitRepositoryStore->getPath(
             $project->getFullName()
         ).DIRECTORY_SEPARATOR;
 

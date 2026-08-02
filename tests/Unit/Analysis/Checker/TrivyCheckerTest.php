@@ -5,9 +5,9 @@ namespace App\Tests\Unit\Analysis\Checker;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
 use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\GitManager\Storage\ReportStoreException;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use MBO\GitManager\Storage\TempFilesystem;
@@ -17,7 +17,8 @@ use Symfony\Component\Uid\Uuid;
 
 final class TrivyCheckerTest extends TestCase
 {
-    private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
+    private const DATA_DIR = '/data';
+    private const REPOSITORY_PATH = self::DATA_DIR.'/github.com/mborne/demo';
     private const PROJECT_ID = '0b7b2b2e-1e2a-3d4f-8a9b-0c1d2e3f4a5b';
     private const VERSION_OUTPUT = 'Version: 0.58.1';
 
@@ -47,17 +48,6 @@ final class TrivyCheckerTest extends TestCase
         $project->setFullName('github.com/mborne/demo');
 
         return $project;
-    }
-
-    private function createLocalFilesystem(): LocalFilesystemInterface
-    {
-        $localFilesystem = $this->createStub(LocalFilesystemInterface::class);
-        $localFilesystem
-            ->method('getGitRepositoryPath')
-            ->willReturn(self::REPOSITORY_PATH)
-        ;
-
-        return $localFilesystem;
     }
 
     /**
@@ -101,7 +91,7 @@ final class TrivyCheckerTest extends TestCase
         return new TrivyChecker(
             $trivyEnabled,
             new TrivyRunner($processRunner, new TempFilesystem(), $this->configPath),
-            $this->createLocalFilesystem(),
+            new GitRepositoryStore(self::DATA_DIR, new NullLogger()),
             $reportStore ?? $this->createReportStore(),
             new NullLogger()
         );
@@ -124,6 +114,8 @@ final class TrivyCheckerTest extends TestCase
                     if ('--version' === $command[1]) {
                         return $version;
                     }
+                    // the scan must target the git repository of the project
+                    $this->assertContains(self::REPOSITORY_PATH, $command);
                     if (null !== $jsonContent) {
                         $this->writeReport($command, $jsonContent);
                     }

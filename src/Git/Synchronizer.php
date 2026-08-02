@@ -4,15 +4,15 @@ namespace MBO\GitManager\Git;
 
 use Gitonomy\Git\Admin as GitAdmin;
 use Gitonomy\Git\Repository as GitRepository;
-use MBO\GitManager\Filesystem\LocalFilesystem;
 use MBO\GitManager\Helpers\ProjectHelpers;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\RemoteGit\ProjectInterface;
 use Psr\Log\LoggerInterface;
 
 final class Synchronizer
 {
     public function __construct(
-        private LocalFilesystem $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private string $askPassPath,
         private LoggerInterface $logger,
     ) {
@@ -42,7 +42,7 @@ final class Synchronizer
         * fetch or clone repository to localPath
         */
         $fullName = ProjectHelpers::getFullName($project);
-        $localPath = $this->localFilesystem->getGitRepositoryPath($fullName);
+        $localPath = $this->gitRepositoryStore->getPath($fullName);
         if (file_exists($localPath)) {
             $this->logger->debug(sprintf('%s already exists -> fetch and reset', $fullName));
             $gitRepository = new GitRepository($localPath, $options);

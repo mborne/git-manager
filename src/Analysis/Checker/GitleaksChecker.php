@@ -6,7 +6,7 @@ use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksException;
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Analysis\Checker\Gitleaks\SarifReport;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystemInterface;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\GitManager\Storage\ReportStoreException;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use Psr\Log\LoggerInterface;
@@ -29,7 +29,7 @@ final class GitleaksChecker implements CheckerInterface
     public function __construct(
         private bool $gitleaksEnabled,
         private GitleaksRunner $gitleaksRunner,
-        private LocalFilesystemInterface $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private ReportStoreInterface $reportStore,
         private LoggerInterface $logger,
     ) {
@@ -61,7 +61,7 @@ final class GitleaksChecker implements CheckerInterface
 
         try {
             $content = $this->gitleaksRunner->detect(
-                $this->localFilesystem->getGitRepositoryPath($project->getFullName())
+                $this->gitRepositoryStore->getPath($project->getFullName())
             );
             $this->reportStore->write(self::NAME, $project->getId(), $content);
         } catch (GitleaksException|ReportStoreException $e) {

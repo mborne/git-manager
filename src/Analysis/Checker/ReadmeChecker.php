@@ -3,7 +3,7 @@
 namespace MBO\GitManager\Analysis\Checker;
 
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystem;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 final class ReadmeChecker implements CheckerInterface
 {
     public function __construct(
-        private LocalFilesystem $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private LoggerInterface $logger,
     ) {
     }
@@ -24,7 +24,7 @@ final class ReadmeChecker implements CheckerInterface
 
     public function check(Project $project): bool
     {
-        $repositoryPath = $this->localFilesystem->getGitRepositoryPath($project->getFullName());
+        $repositoryPath = $this->gitRepositoryStore->getPath($project->getFullName());
         $this->logger->debug('[{checker}] look for README.md file...', [
             'checker' => $this->getName(),
             'repository' => $project->getFullName(),

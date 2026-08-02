@@ -5,9 +5,9 @@ namespace App\Tests\Unit\Analysis\Checker;
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Analysis\Checker\GitleaksChecker;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystemInterface;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use MBO\GitManager\Storage\ReportStoreException;
 use MBO\GitManager\Storage\ReportStoreInterface;
 use MBO\GitManager\Storage\TempFilesystem;
@@ -17,7 +17,8 @@ use Symfony\Component\Uid\Uuid;
 
 final class GitleaksCheckerTest extends TestCase
 {
-    private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
+    private const DATA_DIR = '/data';
+    private const REPOSITORY_PATH = self::DATA_DIR.'/github.com/mborne/demo';
     private const PROJECT_ID = '0b7b2b2e-1e2a-3d4f-8a9b-0c1d2e3f4a5b';
 
     /**
@@ -46,17 +47,6 @@ final class GitleaksCheckerTest extends TestCase
         $project->setFullName('github.com/mborne/demo');
 
         return $project;
-    }
-
-    private function createLocalFilesystem(): LocalFilesystemInterface
-    {
-        $localFilesystem = $this->createStub(LocalFilesystemInterface::class);
-        $localFilesystem
-            ->method('getGitRepositoryPath')
-            ->willReturn(self::REPOSITORY_PATH)
-        ;
-
-        return $localFilesystem;
     }
 
     /**
@@ -100,7 +90,7 @@ final class GitleaksCheckerTest extends TestCase
         return new GitleaksChecker(
             $gitleaksEnabled,
             new GitleaksRunner($processRunner, new TempFilesystem(), $this->defaultConfigPath),
-            $this->createLocalFilesystem(),
+            new GitRepositoryStore(self::DATA_DIR, new NullLogger()),
             $reportStore ?? $this->createReportStore(),
             new NullLogger()
         );
@@ -119,10 +109,12 @@ final class GitleaksCheckerTest extends TestCase
         $processRunner
             ->method('run')
             ->willReturnCallback(
-                function (array $command) use ($version, $detect, $sarifContent): ProcessResult {
+                function (array $command, ?string $workingDirectory = null) use ($version, $detect, $sarifContent): ProcessResult {
                     if ('version' === $command[1]) {
                         return $version;
                     }
+                    // the scan must run in the git repository of the project
+                    $this->assertSame(self::REPOSITORY_PATH, $workingDirectory);
                     if (null !== $sarifContent) {
                         $this->writeReport($command, $sarifContent);
                     }
