@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Storage;
+namespace App\Tests\Storage;
 
 use MBO\GitManager\Storage\TempFilesystem;
 use PHPUnit\Framework\TestCase;

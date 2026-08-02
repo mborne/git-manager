@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Helpers;
+namespace App\Tests\Helpers;
 
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ProjectInterface;

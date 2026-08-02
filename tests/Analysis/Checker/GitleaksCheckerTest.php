@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Analysis\Checker;
+namespace App\Tests\Analysis\Checker;
 
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Analysis\Checker\GitleaksChecker;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Analysis\Checker\Trivy;
+namespace App\Tests\Analysis\Checker\Trivy;
 
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyException;
 use MBO\GitManager\Analysis\Checker\Trivy\TrivyRunner;
