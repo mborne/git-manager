@@ -16,6 +16,17 @@ function getLastActivity(project) {
 }
 
 /**
+ * Render a bootstrap badge.
+ *
+ * @param {string} label
+ * @param {string} variant bootstrap contextual color (ex : success, danger)
+ * @returns
+ */
+function renderBadge(label, variant) {
+    return `<span class="badge text-bg-${variant}">${label}</span>`;
+}
+
+/**
  * Render gitleaks report.
  *
  * @param {?object} gitleaks
@@ -23,33 +34,34 @@ function getLastActivity(project) {
  */
 function renderGitleaks(gitleaks) {
     if (!gitleaks) {
-        return `<span class="text-warning">NO-DATA</span>`;
+        return renderBadge('NO-DATA', 'warning');
     }
     if (!gitleaks.success) {
-        return `<span class="text-danger">FAILURE</span>`;
+        return renderBadge('FAILURE', 'danger');
     }
     const count = gitleaks.summary.count;
-    return `<span class="${count > 0 ? 'text-danger' : 'text-success'}">SECRETS:&nbsp;${count}</span>`;
+    return renderBadge(`SECRETS:&nbsp;${count}`, count > 0 ? 'danger' : 'success');
 }
 
 /**
  * Render trivy report.
  *
- * @param {?object} trivy 
- * @returns 
+ * @param {?object} trivy
+ * @returns
  */
 function renderTrivy(trivy){
     if ( ! trivy ){
-        return `<span class="text-warning">NO-DATA</span>`;
+        return renderBadge('NO-DATA', 'warning');
     }
 
     if ( ! trivy.success ){
-        return `<span class="text-danger">FAILURE</span>`
+        return renderBadge('FAILURE', 'danger');
     }
-    return ['CRITICAL','HIGH'].map(severity => {
+    return `<div class="d-flex flex-column gap-1 align-items-start">`+['CRITICAL','HIGH'].map(severity => {
         const count = trivy.summary[severity];
-        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}:&nbsp;${count}</span>`;
-    }).join('<br />');
+        const failureBadge = severity === 'CRITICAL' ? 'danger' : 'warning';
+        return renderBadge(`${severity}:&nbsp;${count}`, count > 0 ? failureBadge : 'success');
+    }).join('')+`</div>`;
 }
 
 /**
@@ -80,18 +92,19 @@ function loadProjects() {
             const detailsUrl = `/${project.id}`;
             const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL * 1000000 + checks.trivy.summary.HIGH : -1;
             const gitleaksOrder = checks.gitleaks && checks.gitleaks.summary ? checks.gitleaks.summary.count : -1;
+            const visibility = project.visibility ? project.visibility : 'unknown';
             return [
-                `<a href="https://${name}">${name}</a>`,
-                project.archived ? 'YES' : 'NO',
-                project.visibility ? project.visibility : 'unknown',
-                `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
+                `<a class="text-decoration-none fw-semibold" href="https://${name}" target="_blank" rel="noopener">${name}</a>`,
+                project.archived ? renderBadge('YES', 'secondary') : renderBadge('NO', 'light'),
+                renderBadge(visibility, visibility === 'public' ? 'success' : 'secondary'),
+                renderBadge(checks.readme ? 'FOUND' : 'MISSING', checks.readme ? 'success' : 'danger'),
+                renderBadge(checks.license ? checks.license : 'MISSING', checks.license ? 'success' : 'danger'),
                 project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
                 { display: renderTrivy(checks.trivy), order: trivyOrder },
                 { display: renderGitleaks(checks.gitleaks), order: gitleaksOrder },
-                `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
+                `<a class="btn btn-sm btn-outline-primary d-inline-flex" href="${detailsUrl}" title="View details"><span class="material-icons fs-6">info</span></a>`,
             ];
         });
         $('#projects').DataTable({
@@ -104,10 +117,10 @@ function loadProjects() {
                 { title: "LICENSE" },
                 { title: "Last Fetch" },
                 { title: "Last Activity" },
-                { title: "Size (Mo)" },
+                { title: "Size (Mo)", className: "text-end" },
                 { title: "Trivy", render: renderOrdered },
                 { title: "Secrets", render: renderOrdered },
-                { 
+                {
                     title: 'Details',
                     orderable: false,
                     className: 'text-center'
@@ -120,7 +133,7 @@ function loadProjects() {
         console.error(error);
         $('#projects').DataTable({
             data: [[
-                `<span class="text-danger">fail to load repositories</span>`,
+                `<div class="alert alert-danger mb-0" role="alert">fail to load repositories</div>`,
             ]],
             columns: [
                 { title: "Error" },
