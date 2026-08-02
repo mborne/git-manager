@@ -50,6 +50,7 @@ jobs:
       run: composer test
       env:
         TRIVY_ENABLED: false
+        GITLEAKS_ENABLED: false
 
     - name: Psalm Security Scan
       continue-on-error: true
