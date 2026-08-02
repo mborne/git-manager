@@ -6,9 +6,9 @@ use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksException;
 use MBO\GitManager\Analysis\Checker\Gitleaks\GitleaksRunner;
 use MBO\GitManager\Filesystem\FileReaderInterface;
 use MBO\GitManager\Filesystem\LocalFileReader;
-use MBO\GitManager\Filesystem\TempFilesystem;
 use MBO\GitManager\Process\ProcessResult;
 use MBO\GitManager\Process\ProcessRunnerInterface;
+use MBO\GitManager\Storage\TempFilesystem;
 use PHPUnit\Framework\TestCase;
 
 final class GitleaksRunnerTest extends TestCase

@@ -3,8 +3,8 @@
 namespace MBO\GitManager\Analysis\Checker\Gitleaks;
 
 use MBO\GitManager\Filesystem\FileReaderInterface;
-use MBO\GitManager\Filesystem\TempFilesystem;
 use MBO\GitManager\Process\ProcessRunnerInterface;
+use MBO\GitManager\Storage\TempFilesystem;
 
 /**
  * Wrapper around the gitleaks command line.

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Tests\Unit\Filesystem;
+namespace App\Tests\Unit\Storage;
 
-use MBO\GitManager\Filesystem\TempFilesystem;
+use MBO\GitManager\Storage\TempFilesystem;
 use PHPUnit\Framework\TestCase;
 
 final class TempFilesystemTest extends TestCase

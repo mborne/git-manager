@@ -1,6 +1,6 @@
 <?php
 
-namespace MBO\GitManager\Filesystem;
+namespace MBO\GitManager\Storage;
 
 /**
  * Temporary directory used by the tools writing their output to a file.
