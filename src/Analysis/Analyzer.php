@@ -39,7 +39,6 @@ final class Analyzer
      * Collect repository metadata :
      * - size : the size of the repository
      * - tags : git tags
-     * - branches : the list of the branches
      * - activity : number of commits per day
      *
      * @return array<string,mixed>
@@ -49,7 +48,6 @@ final class Analyzer
         $metadata = [];
         $metadata['size'] = $gitRepository->getSize() * 1024;
         $metadata['tags'] = $this->getTagNames($gitRepository);
-        $metadata['branches'] = $this->getBranchNames($gitRepository);
         $metadata['activity'] = $this->getActivity($gitRepository);
 
         return $metadata;
@@ -80,21 +78,6 @@ final class Analyzer
         $result = [];
         foreach ($gitRepository->getReferences()->getTags() as $tag) {
             $result[] = $tag->getName();
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get branch names.
-     *
-     * @return string[]
-     */
-    private function getBranchNames(GitRepository $gitRepository): array
-    {
-        $result = [];
-        foreach ($gitRepository->getReferences()->getBranches() as $branch) {
-            $result[] = $branch->getName();
         }
 
         return $result;

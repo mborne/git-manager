@@ -122,10 +122,6 @@
                                 <td>{{ project.defaultBranch|default('-') }}</td>
                             </tr>
                             <tr>
-                                <th scope="row" class="ps-3">Branches</th>
-                                <td>{{ project.metadata.branches|default([])|length }}</td>
-                            </tr>
-                            <tr>
                                 <th scope="row" class="ps-3">Tags</th>
                                 <td>
                                     {{ project.metadata.tags|default([])|length }}

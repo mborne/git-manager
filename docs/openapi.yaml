@@ -262,7 +262,7 @@ components:
     Metadata:
       type: object
       description: Metadata collected on the local copy of the git repository.
-      required: [size, tags, branches, activity]
+      required: [size, tags, activity]
       properties:
         size:
           type: integer
@@ -275,12 +275,6 @@ components:
           items:
             type: string
           examples: [['v1.0.0', 'v1.1.0']]
-        branches:
-          type: array
-          description: The git branch names (local and remote).
-          items:
-            type: string
-          examples: [['master', 'origin/master']]
         activity:
           type: object
           description: |
@@ -422,7 +416,6 @@ components:
         metadata:
           size: 74752
           tags: ['v0.1.0', 'v1.0.0', 'v1.2.0']
-          branches: ['master', 'origin/1.0', 'origin/master']
           activity:
             '20240201': 1
             '20240715': 3
@@ -456,7 +449,6 @@ components:
           metadata:
             size: 74752
             tags: ['v0.1.0', 'v1.0.0']
-            branches: ['master', 'origin/master']
             activity:
               '20240715': 3
           checks:
@@ -485,7 +477,6 @@ components:
           metadata:
             size: 4188160
             tags: []
-            branches: ['master', 'origin/master']
             activity:
               '20160317': 2
           checks:

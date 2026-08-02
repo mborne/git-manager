@@ -69,7 +69,6 @@ class Project
      * Metadata about git repository :
      * - size : the size of the repository in octets
      * - tags : the list of the tags
-     * - branches : the list of the branchs
      * - activity : the histogram of the activity per day
      *
      * Example :
@@ -87,11 +86,6 @@ class Project
      *     "v1.0.2",
      *     "v1.1.0",
      *     "v1.2.0"
-     *   ],
-     *   "branches": [
-     *     "master",
-     *     "origin/1.0",
-     *     "origin/master"
      *   ],
      *   "activity": {
      *     "20190127": 1,

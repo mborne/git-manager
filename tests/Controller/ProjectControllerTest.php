@@ -90,7 +90,6 @@ class ProjectControllerTest extends WebTestCase
             ->setMetadata([
                 'size' => 1048576,
                 'tags' => ['v1.0.0'],
-                'branches' => ['master'],
                 'activity' => ['20260101' => 3],
             ])
             ->setChecks([
