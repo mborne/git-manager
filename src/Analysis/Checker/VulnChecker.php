@@ -17,6 +17,11 @@ use Psr\Log\LoggerInterface;
 final class VulnChecker implements CheckerInterface
 {
     /**
+     * Name of the checker, used as key in the check results.
+     */
+    public const NAME = 'vuln';
+
+    /**
      * Name of the tool under which the reports are stored.
      */
     public const TOOL_NAME = 'trivy';
@@ -37,7 +42,7 @@ final class VulnChecker implements CheckerInterface
 
     public function getName(): string
     {
-        return 'trivy';
+        return self::NAME;
     }
 
     /**

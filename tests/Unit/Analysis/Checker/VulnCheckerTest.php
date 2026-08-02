@@ -174,7 +174,7 @@ final class VulnCheckerTest extends TestCase
             $this->createFileReader()
         );
 
-        $this->assertSame('trivy', $checker->getName());
+        $this->assertSame('vuln', $checker->getName());
     }
 
     public function testDisabledByConfiguration(): void

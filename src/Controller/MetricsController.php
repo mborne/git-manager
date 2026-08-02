@@ -2,6 +2,8 @@
 
 namespace MBO\GitManager\Controller;
 
+use MBO\GitManager\Analysis\Checker\SecretChecker;
+use MBO\GitManager\Analysis\Checker\VulnChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Repository\ProjectRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +31,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_vulnerabilities_critical gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $critical = $checks['trivy']['summary']['CRITICAL'] ?? 0;
+            $critical = $checks[VulnChecker::NAME]['summary']['CRITICAL'] ?? 0;
             $lines[] = sprintf('gitmanager_vulnerabilities_critical{%s} %d', $this->getProjectLabels($project), $critical);
         }
 
@@ -37,7 +39,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_vulnerabilities_high gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $high = $checks['trivy']['summary']['HIGH'] ?? 0;
+            $high = $checks[VulnChecker::NAME]['summary']['HIGH'] ?? 0;
             $lines[] = sprintf('gitmanager_vulnerabilities_high{%s} %d', $this->getProjectLabels($project), $high);
         }
 
@@ -45,7 +47,7 @@ final class MetricsController extends AbstractController
         $lines[] = '# TYPE gitmanager_secrets_total gauge';
         foreach ($projects as $project) {
             $checks = $project->getChecks();
-            $secretCount = $checks['secret']['summary']['count'] ?? 0;
+            $secretCount = $checks[SecretChecker::NAME]['summary']['count'] ?? 0;
             $lines[] = sprintf('gitmanager_secrets_total{%s} %d', $this->getProjectLabels($project), $secretCount);
         }
 
@@ -61,7 +63,7 @@ final class MetricsController extends AbstractController
      */
     private function getVulnerabilityTotal(array $checks): int
     {
-        $summary = $checks['trivy']['summary'] ?? [];
+        $summary = $checks[VulnChecker::NAME]['summary'] ?? [];
         if (!is_array($summary)) {
             return 0;
         }

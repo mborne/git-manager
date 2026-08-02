@@ -17,6 +17,11 @@ use Psr\Log\LoggerInterface;
 final class SecretChecker implements CheckerInterface
 {
     /**
+     * Name of the checker, used as key in the check results.
+     */
+    public const NAME = 'secret';
+
+    /**
      * Name of the tool under which the reports are stored.
      */
     public const TOOL_NAME = 'gitleaks';
@@ -37,7 +42,7 @@ final class SecretChecker implements CheckerInterface
 
     public function getName(): string
     {
-        return 'secret';
+        return self::NAME;
     }
 
     /**
