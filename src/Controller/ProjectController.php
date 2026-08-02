@@ -41,7 +41,6 @@ final class ProjectController extends AbstractController
         $secretReport = SarifReport::fromJson(
             $reportStore->read(GitleaksChecker::NAME, $project->getId())
         );
-        $secretFindings = $secretReport->getFindings($stripPrefix);
 
         $vulnReport = TrivyReport::fromJson(
             $reportStore->read(TrivyChecker::NAME, $project->getId())
@@ -50,8 +49,39 @@ final class ProjectController extends AbstractController
 
         return $this->render('project/details.html.twig', [
             'project' => $project,
-            'secretFindings' => $secretFindings,
+            'secretCount' => $secretReport->count(),
+            'secretCountByRuleId' => $secretReport->countByRuleId(),
             'vulnerabilities' => $vulnerabilities,
+        ]);
+    }
+
+    /**
+     * Display the secrets detected by gitleaks.
+     */
+    #[Route('/{id}/secrets', name: 'app_project_secrets')]
+    public function secrets(
+        ProjectRepository $repository,
+        Uuid $id,
+        GitRepositoryStore $gitRepositoryStore,
+        ReportStoreInterface $reportStore,
+    ): Response {
+        $project = $repository->find($id);
+        if (is_null($project)) {
+            throw $this->createNotFoundException('project not found');
+        }
+
+        $stripPrefix = $gitRepositoryStore->getPath(
+            $project->getFullName()
+        ).DIRECTORY_SEPARATOR;
+
+        $secretReport = SarifReport::fromJson(
+            $reportStore->read(GitleaksChecker::NAME, $project->getId())
+        );
+
+        return $this->render('project/secrets.html.twig', [
+            'project' => $project,
+            'secretFindings' => $secretReport->getFindings($stripPrefix),
+            'secretCountByRuleId' => $secretReport->countByRuleId(),
         ]);
     }
 }

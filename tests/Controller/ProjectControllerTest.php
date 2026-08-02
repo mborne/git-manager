@@ -16,6 +16,11 @@ class ProjectControllerTest extends WebTestCase
 {
     private const PROJECT_ID = '00000000-0000-3000-8000-000000000001';
 
+    /**
+     * A fake private key content which must never be rendered.
+     */
+    private const PRIVATE_KEY_CONTENT = 'MIIEowIBAAKCAQEAnotARealKey';
+
     public function testIndex(): void
     {
         $client = self::createClient();
@@ -41,8 +46,11 @@ class ProjectControllerTest extends WebTestCase
         $content = (string) $client->getResponse()->getContent();
         // the last activity is displayed as a day (the fetch date being 2026-01-01)
         $this->assertStringContainsString('2025-12-24', $content);
-        // the secret and the vulnerability are reported with their location relative to the repository
-        $this->assertStringContainsString('config/settings.yaml', $content);
+        // the secrets are only summarized by type, the details being on a dedicated page
+        $this->assertStringContainsString('generic-api-key', $content);
+        $this->assertStringNotContainsString('config/settings.yaml', $content);
+        $this->assertStringContainsString('/'.self::PROJECT_ID.'/secrets', $content);
+        // the vulnerability is reported with its location relative to the repository
         $this->assertStringNotContainsString($this->getRepositoryPath(), $content);
         $this->assertStringContainsString('composer.lock', $content);
         $this->assertStringContainsString('CVE-2024-0001', $content);
@@ -52,6 +60,43 @@ class ProjectControllerTest extends WebTestCase
     {
         $client = self::createClient();
         $client->request('GET', '/00000000-0000-3000-8000-00000000ffff');
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    /**
+     * Ensures that the secrets are rendered on a dedicated page.
+     */
+    public function testSecrets(): void
+    {
+        $client = self::createClient();
+        $this->createProject($client);
+
+        $client->request('GET', '/'.self::PROJECT_ID.'/secrets');
+
+        $this->assertResponseIsSuccessful();
+
+        $content = (string) $client->getResponse()->getContent();
+        $this->assertStringContainsString('generic-api-key', $content);
+        // the secret is reported with its location relative to the repository
+        $this->assertStringContainsString('config/settings.yaml', $content);
+        $this->assertStringContainsString('api_key: s3cr3t', $content);
+        $this->assertStringNotContainsString($this->getRepositoryPath(), $content);
+        // the file is linked to github.com for the exact commit
+        $this->assertStringContainsString(
+            'https://github.com/mborne/sample/blob/0123456789abcdef/config/settings.yaml#L12',
+            $content
+        );
+        // the private key is located but its content is masked
+        $this->assertStringContainsString('config/id_rsa', $content);
+        $this->assertStringContainsString('(masked)', $content);
+        $this->assertStringNotContainsString(self::PRIVATE_KEY_CONTENT, $content);
+    }
+
+    public function testSecretsNotFound(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/00000000-0000-3000-8000-00000000ffff/secrets');
 
         $this->assertResponseStatusCodeSame(404);
     }
@@ -120,6 +165,18 @@ class ProjectControllerTest extends WebTestCase
                         ],
                     ]],
                     'partialFingerprints' => ['commitSha' => '0123456789abcdef'],
+                ], [
+                    'ruleId' => 'private-key',
+                    'locations' => [[
+                        'physicalLocation' => [
+                            'artifactLocation' => ['uri' => $this->getRepositoryPath().DIRECTORY_SEPARATOR.'config/id_rsa'],
+                            'region' => [
+                                'startLine' => 1,
+                                'snippet' => ['text' => '-----BEGIN RSA PRIVATE KEY-----'.self::PRIVATE_KEY_CONTENT],
+                            ],
+                        ],
+                    ]],
+                    'partialFingerprints' => ['commitSha' => 'fedcba9876543210'],
                 ]],
             ]],
         ]));

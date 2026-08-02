@@ -59,10 +59,12 @@
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
         <div class="col">
-            <div class="card shadow-sm h-100 border-{{ secretFindings is empty ? 'success' : 'danger' }}">
+            <div class="card shadow-sm h-100 border-{{ secretCount == 0 ? 'success' : 'danger' }}">
                 <div class="card-body">
                     <div class="text-secondary text-uppercase small">Secrets</div>
-                    <div class="fs-2 fw-semibold text-{{ secretFindings is empty ? 'success' : 'danger' }}">{{ secretFindings|length }}</div>
+                    <div class="fs-2 fw-semibold text-{{ secretCount == 0 ? 'success' : 'danger' }}">
+                        <a class="text-reset text-decoration-none" href="{{ path('app_project_secrets', {'id': project.id}) }}">{{ secretCount }}</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,7 +167,9 @@
                         {% elseif not project.checks.gitleaks.success %}
                             <span class="badge text-bg-danger">FAILURE</span>
                         {% else %}
-                            <span class="badge text-bg-{{ secretFindings is empty ? 'success' : 'danger' }}">{{ secretFindings|length }} secret(s)</span>
+                            <a href="{{ path('app_project_secrets', {'id': project.id}) }}" class="text-decoration-none">
+                                <span class="badge text-bg-{{ secretCount == 0 ? 'success' : 'danger' }}">{{ secretCount }} secret(s)</span>
+                            </a>
                         {% endif %}
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -186,9 +190,9 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <span class="fw-semibold">Secrets <span class="text-secondary fw-normal">(gitleaks)</span></span>
-            <span class="badge text-bg-{{ secretFindings is empty ? 'success' : 'danger' }}">{{ secretFindings|length }}</span>
+            <span class="badge text-bg-{{ secretCount == 0 ? 'success' : 'danger' }}">{{ secretCount }}</span>
         </div>
-        {% if secretFindings is empty %}
+        {% if secretCountByRuleId is empty %}
             <div class="card-body text-success mb-0">No secret found.</div>
         {% else %}
             <div class="table-responsive">
@@ -196,26 +200,24 @@
                     <thead>
                         <tr>
                             <th scope="col">Rule</th>
-                            <th scope="col">File</th>
-                            <th scope="col" class="text-end">Line</th>
-                            <th scope="col">Match</th>
-                            <th scope="col">Commit</th>
+                            <th scope="col" class="text-end">Count</th>
                         </tr>
                     </thead>
                     <tbody>
-                    {% for finding in secretFindings %}
-                        {% set location = finding.locations[0].physicalLocation|default({}) %}
-                        {% set snippet = location.region.snippet.text|default('-') %}
+                    {% for ruleId, count in secretCountByRuleId %}
                         <tr>
-                            <td><span class="badge text-bg-danger">{{ finding.ruleId|default('-') }}</span></td>
-                            <td class="font-monospace small text-break">{{ location.artifactLocation.uri|default('-') }}</td>
-                            <td class="text-end">{{ location.region.startLine|default('-') }}</td>
-                            <td><code class="text-break">{{ snippet|slice(0, 120) }}{{ snippet|length > 120 ? '…' : '' }}</code></td>
-                            <td class="font-monospace small">{{ finding.partialFingerprints.commitSha|default('-')|slice(0, 8) }}</td>
+                            <td><span class="badge text-bg-danger">{{ ruleId }}</span></td>
+                            <td class="text-end">{{ count }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="card-body">
+                <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" href="{{ path('app_project_secrets', {'id': project.id}) }}">
+                    <span class="material-icons fs-6">list</span>
+                    View secrets
+                </a>
             </div>
         {% endif %}
     </div>
