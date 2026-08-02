@@ -16,6 +16,15 @@ services:
         exclude:
             - '../src/Kernel.php'
 
+    # The checkers to run on each repository, in order of appearance in the report.
+    MBO\GitManager\Analysis\Analyzer:
+        arguments:
+            $checkers:
+                - '@MBO\GitManager\Analysis\Checker\ReadmeChecker'
+                - '@MBO\GitManager\Analysis\Checker\LicenseChecker'
+                - '@MBO\GitManager\Analysis\Checker\TrivyChecker'
+                - '@MBO\GitManager\Analysis\Checker\GitleaksChecker'
+
     MBO\GitManager\Storage\LocalReportStore:
         arguments:
             $filesystem: '@MBO\GitManager\Filesystem\LocalFilesystem'

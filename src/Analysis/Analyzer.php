@@ -4,10 +4,6 @@ namespace MBO\GitManager\Analysis;
 
 use Gitonomy\Git\Repository as GitRepository;
 use MBO\GitManager\Analysis\Checker\CheckerInterface;
-use MBO\GitManager\Analysis\Checker\GitleaksChecker;
-use MBO\GitManager\Analysis\Checker\LicenseChecker;
-use MBO\GitManager\Analysis\Checker\ReadmeChecker;
-use MBO\GitManager\Analysis\Checker\TrivyChecker;
 use MBO\GitManager\Entity\Project;
 use MBO\GitManager\Filesystem\LocalFilesystem;
 use Psr\Log\LoggerInterface;
@@ -18,22 +14,13 @@ use Psr\Log\LoggerInterface;
 final class Analyzer
 {
     /**
-     * @var CheckerInterface[]
+     * @param CheckerInterface[] $checkers the checkers to run, configured in services.yaml
      */
-    private $checkers;
-
     public function __construct(
         private LocalFilesystem $localFilesystem,
-        TrivyChecker $trivyChecker,
-        GitleaksChecker $gitleaksChecker,
+        private array $checkers,
         private LoggerInterface $logger,
     ) {
-        $this->checkers = [
-            new ReadmeChecker($localFilesystem, $logger),
-            new LicenseChecker($localFilesystem, $logger),
-            $trivyChecker,
-            $gitleaksChecker,
-        ];
     }
 
     public function analyze(Project $project): void
