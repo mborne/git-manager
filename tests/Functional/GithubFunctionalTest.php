@@ -9,7 +9,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class GithubFunctionalTest extends KernelTestCase
 {
-    public function testCommandFetchAll(): void
+    public function testCommandFetch(): void
     {
         $kernel = self::bootKernel();
 
@@ -19,7 +19,7 @@ class GithubFunctionalTest extends KernelTestCase
 
         $application = new Application($kernel);
 
-        $command = $application->find('git:fetch-all');
+        $command = $application->find('git:fetch');
         $commandTester = new CommandTester($command);
         $commandTester->execute([
             'url' => 'https://github.com',

@@ -13,11 +13,11 @@ use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Analyse all local git projects.
+ * Analyse local git projects.
  *
  * @author mborne
  */
-final class AnalyseAllCommand extends Command
+final class AnalyseCommand extends Command
 {
     public function __construct(
         private ProjectRepository $projectRepository,
@@ -30,7 +30,7 @@ final class AnalyseAllCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('git:analyse-all')
+            ->setName('git:analyse')
             ->setDescription('Run analysis on all fetched projects')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Limit the number of projects to analyse')
             ->addOption('host', null, InputOption::VALUE_REQUIRED, 'Filter projects by host (e.g. github.com)')
@@ -41,7 +41,7 @@ final class AnalyseAllCommand extends Command
     {
         $logger = $this->createLogger($output);
 
-        $logger->info('[git:analyse-all] started...');
+        $logger->info('[git:analyse] started...');
 
         $limit = $input->getOption('limit');
         $host = $input->getOption('host');
@@ -75,7 +75,7 @@ final class AnalyseAllCommand extends Command
             }
         }
 
-        $logger->info('[git:analyse-all] completed');
+        $logger->info('[git:analyse] completed');
 
         return self::SUCCESS;
     }

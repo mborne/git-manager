@@ -28,7 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author mborne
  */
-final class FetchAllCommand extends Command
+final class FetchCommand extends Command
 {
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -44,10 +44,10 @@ final class FetchAllCommand extends Command
     {
         $this
             // the name of the command (the part after "bin/console")
-            ->setName('git:fetch-all')
+            ->setName('git:fetch')
 
             // the short description shown while running "php bin/console list"
-            ->setDescription('Fetch all repositories to local directory')
+            ->setDescription('Fetch repositories to local directory')
             /*
              * Git client options
              */
@@ -70,7 +70,7 @@ final class FetchAllCommand extends Command
         $logger = $this->createLogger($output);
         $skipAnalyse = $input->getOption('skip-analyse');
 
-        $logger->info('[git:fetch-all] started...');
+        $logger->info('[git:fetch] started...');
 
         /*
          * Create git client according to parameters
@@ -141,7 +141,7 @@ final class FetchAllCommand extends Command
             }
         }
 
-        $logger->info('[git:fetch-all] completed');
+        $logger->info('[git:fetch] completed');
 
         return self::SUCCESS;
     }

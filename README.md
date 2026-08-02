@@ -39,21 +39,21 @@ composer install
 * From github :
 
 ```bash
-bin/console git:fetch-all --orgs IGNF --users=mborne https://github.com $GITHUB_TOKEN
+bin/console git:fetch --orgs IGNF --users=mborne https://github.com $GITHUB_TOKEN
 # for private repositories, use "_me_" :
-bin/console git:fetch-all --users=_me_ https://github.com $GITHUB_TOKEN
+bin/console git:fetch --users=_me_ https://github.com $GITHUB_TOKEN
 ```
 
 * From gogs or gitea :
 
 ```bash
-bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
+bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
 * From gitlab :
 
 ```bash
-bin/console git:fetch-all https://gitlab.com -u mborne $GITLAB_TOKEN
+bin/console git:fetch https://gitlab.com -u mborne $GITLAB_TOKEN
 ```
 
 ## Usage with docker
@@ -65,8 +65,8 @@ docker compose build
 docker compose up -d
 
 # Fetch repositories
-docker compose exec git-manager bin/console git:fetch-all https://github.com -u mborne
-#docker compose exec git-manager bin/console git:fetch-all --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
+docker compose exec git-manager bin/console git:fetch https://github.com -u mborne
+#docker compose exec git-manager bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
 ## License
