@@ -18,7 +18,7 @@ use Symfony\Component\Uid\Uuid;
 
 final class GitleaksCheckerTest extends TestCase
 {
-    private const CONFIG_PATH = '/app/config/gitleaks.toml';
+    private const DEFAULT_CONFIG_PATH = '/app/config/gitleaks.toml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
     private const PROJECT_ID = '0b7b2b2e-1e2a-3d4f-8a9b-0c1d2e3f4a5b';
 
@@ -104,7 +104,7 @@ final class GitleaksCheckerTest extends TestCase
     ): GitleaksChecker {
         return new GitleaksChecker(
             $gitleaksEnabled,
-            new GitleaksRunner($processRunner, $fileReader, new TempFilesystem(), self::CONFIG_PATH),
+            new GitleaksRunner($processRunner, $fileReader, new TempFilesystem(), self::DEFAULT_CONFIG_PATH),
             $this->createLocalFilesystem(),
             $reportStore ?? $this->createReportStore(),
             new NullLogger()

@@ -15,6 +15,8 @@ CLI helpers to backup and review a set of git repositories.
 ## Requirements
 
 * [PHP >= 8.4](https://www.php.net/supported-versions)
+* [trivy](https://trivy.dev/docs/latest/getting-started/installation/) (**optional**)
+* [gitleaks](https://github.com/gitleaks/gitleaks#readme) (**optional**)
 
 ## Parameters
 

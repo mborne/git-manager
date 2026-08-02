@@ -13,8 +13,9 @@ use PHPUnit\Framework\TestCase;
 
 final class GitleaksRunnerTest extends TestCase
 {
-    private const CONFIG_PATH = '/app/config/gitleaks.toml';
+    private const DEFAULT_CONFIG_PATH = '/app/config/gitleaks.toml';
     private const REPOSITORY_PATH = '/data/github.com/mborne/demo';
+    private const REPOSITORY_CONFIG_PATH = self::REPOSITORY_PATH.'/.gitleaks.toml';
     private const SARIF_CONTENT = '{"runs":[]}';
 
     /**
@@ -30,15 +31,17 @@ final class GitleaksRunnerTest extends TestCase
     }
 
     /**
-     * FileReader providing an optional gitleaks config and reporting the same
-     * SARIF content whatever the temporary report path is.
+     * FileReader providing the given existing gitleaks configs and reporting the
+     * same SARIF content whatever the temporary report path is.
+     *
+     * @param string[] $existingConfigPaths
      */
-    private function createFileReader(?string $sarifContent = null, bool $withConfig = false): FileReaderInterface
+    private function createFileReader(?string $sarifContent = null, array $existingConfigPaths = []): FileReaderInterface
     {
         $fileReader = $this->createStub(FileReaderInterface::class);
         $fileReader
             ->method('exists')
-            ->willReturnCallback(fn (string $path): bool => $withConfig && self::CONFIG_PATH === $path)
+            ->willReturnCallback(fn (string $path): bool => in_array($path, $existingConfigPaths, true))
         ;
         $fileReader
             ->method('read')
@@ -90,7 +93,7 @@ final class GitleaksRunnerTest extends TestCase
             $processRunner,
             $fileReader ?? $this->createFileReader(),
             new TempFilesystem(),
-            self::CONFIG_PATH
+            self::DEFAULT_CONFIG_PATH
         );
     }
 
@@ -202,17 +205,57 @@ final class GitleaksRunnerTest extends TestCase
         );
     }
 
-    public function testDetectWithConfig(): void
+    public function testDetectWithDefaultConfig(): void
     {
         $runner = $this->createRunner(
             $this->createSuccessfulProcessRunner(),
-            $this->createFileReader(self::SARIF_CONTENT, withConfig: true)
+            $this->createFileReader(self::SARIF_CONTENT, [self::DEFAULT_CONFIG_PATH])
         );
         $runner->detect(self::REPOSITORY_PATH);
 
         $this->assertSame(
             [
-                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::CONFIG_PATH],
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::DEFAULT_CONFIG_PATH],
+                self::REPOSITORY_PATH,
+            ],
+            end($this->commands)
+        );
+    }
+
+    /**
+     * A config provided by the repository takes precedence over the default one.
+     */
+    public function testDetectWithRepositoryConfig(): void
+    {
+        $runner = $this->createRunner(
+            $this->createSuccessfulProcessRunner(),
+            $this->createFileReader(self::SARIF_CONTENT, [self::DEFAULT_CONFIG_PATH, self::REPOSITORY_CONFIG_PATH])
+        );
+        $runner->detect(self::REPOSITORY_PATH);
+
+        $this->assertSame(
+            [
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::REPOSITORY_CONFIG_PATH],
+                self::REPOSITORY_PATH,
+            ],
+            end($this->commands)
+        );
+    }
+
+    /**
+     * The repository config is used even if the default one is missing.
+     */
+    public function testDetectWithRepositoryConfigOnly(): void
+    {
+        $runner = $this->createRunner(
+            $this->createSuccessfulProcessRunner(),
+            $this->createFileReader(self::SARIF_CONTENT, [self::REPOSITORY_CONFIG_PATH])
+        );
+        $runner->detect(self::REPOSITORY_PATH);
+
+        $this->assertSame(
+            [
+                [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', self::REPOSITORY_CONFIG_PATH],
                 self::REPOSITORY_PATH,
             ],
             end($this->commands)
@@ -263,7 +306,7 @@ final class GitleaksRunnerTest extends TestCase
             $processRunner,
             new LocalFileReader(),
             new TempFilesystem(),
-            self::CONFIG_PATH
+            self::DEFAULT_CONFIG_PATH
         );
 
         $this->assertSame(self::SARIF_CONTENT, $runner->detect(self::REPOSITORY_PATH));

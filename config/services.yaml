@@ -9,7 +9,7 @@ services:
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
             $trivyConfigPath: '%kernel.project_dir%/config/trivy.yaml'
             $gitleaksEnabled: '%env(bool:GITLEAKS_ENABLED)%'
-            $gitleaksConfigPath: '%kernel.project_dir%/config/gitleaks.toml'
+            $gitleaksDefaultConfigPath: '%kernel.project_dir%/config/gitleaks.toml'
 
     MBO\GitManager\:
         resource: '../src/*'

@@ -13,11 +13,16 @@ final class GitleaksRunner
 {
     public const BINARY = 'gitleaks';
 
+    /**
+     * Name of the gitleaks config file that may be provided by a repository.
+     */
+    public const REPOSITORY_CONFIG_NAME = '.gitleaks.toml';
+
     public function __construct(
         private ProcessRunnerInterface $processRunner,
         private FileReaderInterface $fileReader,
         private TempFilesystem $tempFilesystem,
-        private string $gitleaksConfigPath,
+        private string $gitleaksDefaultConfigPath,
     ) {
     }
 
@@ -83,9 +88,10 @@ final class GitleaksRunner
             '--report-path', $reportPath,
             '--exit-code', '0',
         ];
-        if ($this->fileReader->exists($this->gitleaksConfigPath)) {
+        $configPath = $this->getConfigPath($repositoryPath);
+        if (null !== $configPath) {
             $command[] = '--config';
-            $command[] = $this->gitleaksConfigPath;
+            $command[] = $configPath;
         }
 
         $result = $this->processRunner->run($command, $repositoryPath);
@@ -99,5 +105,19 @@ final class GitleaksRunner
         }
 
         return $content;
+    }
+
+    /**
+     * Get the config to use for a repository : the one provided by the repository
+     * if any, the default one otherwise (null if neither is available).
+     */
+    private function getConfigPath(string $repositoryPath): ?string
+    {
+        $repositoryConfigPath = $repositoryPath.'/'.self::REPOSITORY_CONFIG_NAME;
+        if ($this->fileReader->exists($repositoryConfigPath)) {
+            return $repositoryConfigPath;
+        }
+
+        return $this->fileReader->exists($this->gitleaksDefaultConfigPath) ? $this->gitleaksDefaultConfigPath : null;
     }
 }
