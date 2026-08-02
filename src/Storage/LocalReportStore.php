@@ -2,8 +2,10 @@
 
 namespace MBO\GitManager\Storage;
 
+use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Flysystem\StorageAttributes;
 use Symfony\Component\Uid\Uuid;
 
@@ -18,9 +20,11 @@ final readonly class LocalReportStore implements ReportStoreInterface
      */
     private const EXTENSION = '.json';
 
-    public function __construct(
-        private FilesystemOperator $filesystem,
-    ) {
+    private FilesystemOperator $filesystem;
+
+    public function __construct(string $dataDir)
+    {
+        $this->filesystem = new Filesystem(new LocalFilesystemAdapter($dataDir));
     }
 
     public function list(string $toolName): array

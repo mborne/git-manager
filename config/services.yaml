@@ -25,10 +25,6 @@ services:
                 - '@MBO\GitManager\Analysis\Checker\TrivyChecker'
                 - '@MBO\GitManager\Analysis\Checker\GitleaksChecker'
 
-    MBO\GitManager\Storage\LocalReportStore:
-        arguments:
-            $filesystem: '@MBO\GitManager\Filesystem\LocalFilesystem'
-
     MBO\GitManager\Storage\ReportStoreInterface: '@MBO\GitManager\Storage\LocalReportStore'
 
     MBO\GitManager\Filesystem\LocalFilesystemInterface: '@MBO\GitManager\Filesystem\LocalFilesystem'

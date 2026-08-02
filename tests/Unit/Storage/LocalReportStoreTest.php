@@ -2,8 +2,6 @@
 
 namespace App\Tests\Unit\Storage;
 
-use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 use MBO\GitManager\Storage\LocalReportStore;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
@@ -21,9 +19,7 @@ final class LocalReportStoreTest extends TestCase
     protected function setUp(): void
     {
         $this->dataDir = sys_get_temp_dir().'/git-manager-report-store-'.uniqid();
-        $this->reportStore = new LocalReportStore(
-            new Filesystem(new LocalFilesystemAdapter($this->dataDir))
-        );
+        $this->reportStore = new LocalReportStore($this->dataDir);
     }
 
     protected function tearDown(): void
