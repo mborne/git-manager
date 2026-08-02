@@ -66,7 +66,46 @@ class Project
     private \DateTime $fetchedAt;
 
     /**
-     * Metadata about git repository (size, tags, branchNames, activity,...).
+     * Metadata about git repository :
+     * - size : the size of the repository in octets
+     * - tags : the list of the tags
+     * - branches : the list of the branchs
+     * - activity : the histogram of the activity per day
+     *
+     * Example :
+     *
+     * {
+     *   "size": 74752,
+     *   "tags": [
+     *     "v0.1.0",
+     *     "v0.1.1",
+     *     "v0.1.2",
+     *     "v0.2.0",
+     *     "v0.3.0",
+     *     "v1.0.0",
+     *     "v1.0.1",
+     *     "v1.0.2",
+     *     "v1.1.0",
+     *     "v1.2.0"
+     *   ],
+     *   "branches": [
+     *     "master",
+     *     "origin/1.0",
+     *     "origin/master"
+     *   ],
+     *   "activity": {
+     *     "20190127": 1,
+     *     "20190615": 1,
+     *     "20190723": 1,
+     *     "20191006": 1,
+     *     "20191015": 1,
+     *     "20201023": 1,
+     *     "20211125": 1,
+     *     "20211203": 2,
+     *     "20240201": 1,
+     *     "20240715": 3
+     *   }
+     * }
      *
      * @var array<string,mixed>
      */
