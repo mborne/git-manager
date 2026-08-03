@@ -66,7 +66,21 @@ class Project
     private \DateTime $fetchedAt;
 
     /**
-     * Metadata about git repository (size, tags, branchNames, activity,...).
+     * Metadata about git repository :
+     * - size : the size of the repository in octets
+     * - tags : the number of tags and the latest one (null if there is no tag)
+     * - last_activity : the date of the most recent commit (null if there is no commit)
+     *
+     * Example :
+     *
+     * {
+     *   "size": 74752,
+     *   "tags": {
+     *     "count": 10,
+     *     "latest": "v1.2.0"
+     *   },
+     *   "last_activity": "2024-07-15T14:48:36+00:00"
+     * }
      *
      * @var array<string,mixed>
      */
@@ -74,7 +88,7 @@ class Project
     private array $metadata = [];
 
     /**
-     * Checker results (license, trivy, ).
+     * Checker results (readme, license, trivy, gitleaks).
      *
      * @var array<string,mixed>
      */

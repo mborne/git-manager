@@ -1,10 +1,9 @@
 <?php
 
-namespace MBO\GitManager\Git\Checker;
+namespace MBO\GitManager\Analysis\Checker;
 
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Filesystem\LocalFilesystem;
-use MBO\GitManager\Git\CheckerInterface;
+use MBO\GitManager\Storage\GitRepositoryStore;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -13,7 +12,7 @@ use Psr\Log\LoggerInterface;
 final class LicenseChecker implements CheckerInterface
 {
     public function __construct(
-        private LocalFilesystem $localFilesystem,
+        private GitRepositoryStore $gitRepositoryStore,
         private LoggerInterface $logger,
     ) {
     }
@@ -34,7 +33,7 @@ final class LicenseChecker implements CheckerInterface
 
     public function check(Project $project): bool|string
     {
-        $repositoryPath = $this->localFilesystem->getGitRepositoryPath($project->getFullName());
+        $repositoryPath = $this->gitRepositoryStore->getPath($project->getFullName());
         $this->logger->debug('[{checker}] look for license file...', [
             'checker' => $this->getName(),
             'repository' => $project->getFullName(),

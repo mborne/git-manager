@@ -7,8 +7,26 @@ services:
             $askPassPath: '%kernel.project_dir%/bin/git-askpass'
             $dataDir: '%env(resolve:GIT_MANAGER_DIR)%'
             $trivyEnabled: '%env(bool:TRIVY_ENABLED)%'
+            $trivyConfigPath: '%kernel.project_dir%/config/trivy.yaml'
+            $trivyOfflineScan: '%env(bool:TRIVY_OFFLINE_SCAN)%'
+            $gitleaksEnabled: '%env(bool:GITLEAKS_ENABLED)%'
+            $gitleaksDefaultConfigPath: '%kernel.project_dir%/config/gitleaks.toml'
+            $openApiPath: '%kernel.project_dir%/docs/openapi.yaml'
 
     MBO\GitManager\:
         resource: '../src/*'
         exclude:
             - '../src/Kernel.php'
+
+    # The checkers to run on each repository, in order of appearance in the report.
+    MBO\GitManager\Analysis\Analyzer:
+        arguments:
+            $checkers:
+                - '@MBO\GitManager\Analysis\Checker\ReadmeChecker'
+                - '@MBO\GitManager\Analysis\Checker\LicenseChecker'
+                - '@MBO\GitManager\Analysis\Checker\TrivyChecker'
+                - '@MBO\GitManager\Analysis\Checker\GitleaksChecker'
+
+    MBO\GitManager\Storage\ReportStoreInterface: '@MBO\GitManager\Storage\LocalReportStore'
+
+    MBO\GitManager\Process\ProcessRunnerInterface: '@MBO\GitManager\Process\SymfonyProcessRunner'

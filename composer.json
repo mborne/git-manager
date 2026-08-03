@@ -58,7 +58,36 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "test": [
+            "@check-style",
+            "@phpstan",
+            "@phpunit"
+        ],
+        "phpunit": [
+            "mkdir -p var/test-data var/output",
+            "rm -rf var/test-data/* var/output/*",
+            "bin/console --env=test doctrine:schema:update --force",
+            "XDEBUG_MODE=coverage SYMFONY_DEPRECATIONS_HELPER='logFile=var/output/deprecations.log' vendor/bin/phpunit --log-junit var/output/junit-report.xml --coverage-clover var/output/clover.xml --coverage-html var/output/coverage"
+        ],
+        "phpstan": "vendor/bin/phpstan analyse -c phpstan.dist.neon --error-format=raw",
+        "check-style": [
+            "echo \"-- Checking coding style using php-cs-fixer (run 'composer fix-style' if it fails)\"",
+            "vendor/bin/php-cs-fixer fix src -v --dry-run --diff",
+            "vendor/bin/php-cs-fixer fix tests -v --dry-run --diff"
+        ],
+        "fix-style": [
+            "echo \"-- Fixing coding style using php-cs-fixer...\"",
+            "vendor/bin/php-cs-fixer fix src",
+            "vendor/bin/php-cs-fixer fix tests"
         ]
+    },
+    "scripts-descriptions": {
+        "test": "Run coding style check, static analysis and unit tests",
+        "phpunit": "Run unit tests with coverage reports in var/output",
+        "phpstan": "Run static analysis using phpstan",
+        "check-style": "Check coding style using php-cs-fixer",
+        "fix-style": "Fix coding style using php-cs-fixer"
     },
     "config": {
         "sort-packages": false,

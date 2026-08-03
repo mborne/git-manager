@@ -8,9 +8,22 @@ COPY composer.json symfony.lock .env .
 RUN composer install --no-scripts --prefer-dist
 COPY bin bin/
 COPY config config/
+COPY docs/openapi.yaml docs/openapi.yaml
 COPY public public/
 COPY src src/
 COPY templates templates/
+
+#------------------------------------------------------
+# Download /usr/bin/gitleaks in dedicated layer
+#------------------------------------------------------
+FROM ubuntu:24.04 AS gitleaks
+
+RUN apt-get update \
+ && apt-get install -y wget \
+ && wget -qO /tmp/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
+ && tar -xzf /tmp/gitleaks.tar.gz -C /usr/bin gitleaks \
+ && chmod +x /usr/bin/gitleaks \
+ && rm /tmp/gitleaks.tar.gz
 
 #------------------------------------------------------
 # Download /usr/bin/trivy in dedicated layer
@@ -31,7 +44,7 @@ RUN apt-get update \
 #
 # see https://frankenphp.dev/docs/docker/
 #------------------------------------------------------
-FROM dunglas/frankenphp:1-php8.3-alpine
+FROM dunglas/frankenphp:1-php8.4-alpine
 
 RUN install-php-extensions \
     pdo_sqlite \
@@ -51,6 +64,11 @@ COPY --from=trivy /usr/bin/trivy /usr/bin/trivy
 ENV TRIVY_CACHE_DIR=/var/trivy/cache
 RUN mkdir -p $TRIVY_CACHE_DIR \
  && chown -R www-data:www-data $TRIVY_CACHE_DIR
+
+#------------------------------------------------------
+# Install gitleaks
+#------------------------------------------------------
+COPY --from=gitleaks /usr/bin/gitleaks /usr/bin/gitleaks
 
 #------------------------------------------------------
 # Install git

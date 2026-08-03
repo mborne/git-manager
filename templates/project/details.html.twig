@@ -3,43 +3,270 @@
 {% block title %}{{ parent() }} - {{ project.fullname }}{% endblock %}
 
 {% block body %}
-<div class="container">
-    <h1>{{ project.fullname }}</h1>
+{% set severityVariants = {
+    'CRITICAL': 'danger',
+    'HIGH': 'warning',
+    'MEDIUM': 'info',
+    'LOW': 'secondary',
+    'UNKNOWN': 'light'
+} %}
 
-    <h2>Properties</h2>
+{% set countBySeverity = {} %}
+{% for vulnerability in vulnerabilities %}
+    {% set severity = vulnerability.Severity|default('UNKNOWN') %}
+    {% set countBySeverity = countBySeverity|merge({ (severity): countBySeverity[severity]|default(0) + 1 }) %}
+{% endfor %}
 
-    <ul>
-        <li>URL : <a href="{{ project.httpUrl }}" target="_blank">{{ project.httpUrl }}</a></li>
-        <li>Archived : {{ project.archived ? 'YES' : 'NO' }}</li>
-    </ul>
+{% set lastActivity = project.metadata.last_activity|default(null) %}
+{% set sizeMo = (project.metadata.size|default(0) / (1024 * 1024))|number_format(1) %}
 
-    <h2>Checks</h2>
+<div class="container-fluid">
 
-    <ul>
-        <li><b>README</b> :
-            {% if project.checks.readme %}
-                <span style="color: green">YES</span>
-            {% else %}
-                <span style="color: red">NO</span>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_project_index') }}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project.fullname }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-2">{{ project.fullname }}</h1>
+            {% if project.description %}
+                <p class="text-secondary mb-2">{{ project.description }}</p>
             {% endif %}
-        </li>
-        <li><b>LICENSE</b> : 
-            {% if project.checks.license %}
-                <span style="color: green">{{project.checks.license}}</span>
-            {% else %}
-                <span style="color: red">MISSING</span>
-            {% endif %}
-        </li>
-    </ul>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge text-bg-{{ project.visibility == 'public' ? 'success' : 'secondary' }}">{{ project.visibility|default('unknown') }}</span>
+                {% if project.archived %}
+                    <span class="badge text-bg-secondary">archived</span>
+                {% endif %}
+                {% if project.defaultBranch %}
+                    <span class="badge text-bg-light border">{{ project.defaultBranch }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" href="{{ path('api_project_get', {'id': project.id}) }}">
+                <span class="material-icons fs-6">data_object</span>
+                JSON
+            </a>
+            <a class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" href="{{ project.httpUrl }}" target="_blank" rel="noopener">
+                <span class="material-icons fs-6">open_in_new</span>
+                Open repository
+            </a>
+        </div>
+    </div>
 
-    <h2>Trivy</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+            <div class="card shadow-sm h-100 border-{{ secretCount == 0 ? 'success' : 'danger' }}">
+                <div class="card-body">
+                    <div class="text-secondary text-uppercase small">Secrets</div>
+                    <div class="fs-2 fw-semibold text-{{ secretCount == 0 ? 'success' : 'danger' }}">
+                        <a class="text-reset text-decoration-none" href="{{ path('app_project_secrets', {'id': project.id}) }}">{{ secretCount }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-secondary text-uppercase small">Vulnerabilities</div>
+                    <div class="fs-2 fw-semibold">{{ vulnerabilities|length }}</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for severity, count in countBySeverity %}
+                            <span class="badge text-bg-{{ severityVariants[severity]|default('light') }}">{{ severity }}&nbsp;: {{ count }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-secondary text-uppercase small">Size</div>
+                    <div class="fs-2 fw-semibold">{{ sizeMo }} <span class="fs-6 text-secondary">Mo</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-secondary text-uppercase small">Last activity</div>
+                    <div class="fs-2 fw-semibold">{{ lastActivity ? lastActivity|date('Y-m-d') : '-' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    {% if trivyReportTxt is empty %}
-        <p>Trivy report is empty.</p>
-    {% else %}
-        <pre>{{ trivyReportTxt }}</pre>
-    {% endif %}
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-semibold">Properties</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-striped mb-0 align-middle">
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="ps-3 w-25">URL</th>
+                                <td><a href="{{ project.httpUrl }}" target="_blank" rel="noopener">{{ project.httpUrl }}</a></td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Visibility</th>
+                                <td>{{ project.visibility|default('unknown') }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Archived</th>
+                                <td>{{ project.archived ? 'YES' : 'NO' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Default branch</th>
+                                <td>{{ project.defaultBranch|default('-') }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Tags</th>
+                                <td>
+                                    {{ project.metadata.tags.count|default(0) }}
+                                    {% if project.metadata.tags.latest|default(null) is not null %}
+                                        <span class="text-secondary">(latest : {{ project.metadata.tags.latest }})</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Last fetch</th>
+                                <td>{{ project.fetchedAt|date('Y-m-d H:i') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-semibold">Checks</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        README
+                        {% if project.checks.readme|default(false) %}
+                            <span class="badge text-bg-success">FOUND</span>
+                        {% else %}
+                            <span class="badge text-bg-danger">MISSING</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        LICENSE
+                        {% if project.checks.license|default(false) %}
+                            <span class="badge text-bg-success">{{ project.checks.license }}</span>
+                        {% else %}
+                            <span class="badge text-bg-danger">MISSING</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        gitleaks
+                        {% if project.checks.gitleaks|default(null) is null %}
+                            <span class="badge text-bg-warning">NO-DATA</span>
+                        {% elseif not project.checks.gitleaks.success %}
+                            <span class="badge text-bg-danger">FAILURE</span>
+                        {% else %}
+                            <a href="{{ path('app_project_secrets', {'id': project.id}) }}" class="text-decoration-none">
+                                <span class="badge text-bg-{{ secretCount == 0 ? 'success' : 'danger' }}">{{ secretCount }} secret(s)</span>
+                            </a>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        trivy
+                        {% if project.checks.trivy|default(null) is null %}
+                            <span class="badge text-bg-warning">NO-DATA</span>
+                        {% elseif not project.checks.trivy.success %}
+                            <span class="badge text-bg-danger">FAILURE</span>
+                        {% else %}
+                            <span class="badge text-bg-{{ vulnerabilities is empty ? 'success' : 'danger' }}">{{ vulnerabilities|length }} vulnerability(ies)</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Secrets <span class="text-secondary fw-normal">(gitleaks)</span></span>
+            <span class="badge text-bg-{{ secretCount == 0 ? 'success' : 'danger' }}">{{ secretCount }}</span>
+        </div>
+        {% if secretCountByRuleId is empty %}
+            <div class="card-body text-success mb-0">No secret found.</div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rule</th>
+                            <th scope="col" class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for ruleId, count in secretCountByRuleId %}
+                        <tr>
+                            <td><span class="badge text-bg-danger">{{ ruleId }}</span></td>
+                            <td class="text-end">{{ count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body">
+                <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" href="{{ path('app_project_secrets', {'id': project.id}) }}">
+                    <span class="material-icons fs-6">list</span>
+                    View secrets
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Vulnerabilities <span class="text-secondary fw-normal">(trivy)</span></span>
+            <span class="badge text-bg-{{ vulnerabilities is empty ? 'success' : 'danger' }}">{{ vulnerabilities|length }}</span>
+        </div>
+        {% if vulnerabilities is empty %}
+            <div class="card-body text-success mb-0">No vulnerability found.</div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Severity</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Target</th>
+                            <th scope="col">Package</th>
+                            <th scope="col">Installed</th>
+                            <th scope="col">Fixed</th>
+                            <th scope="col">Title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for vulnerability in vulnerabilities %}
+                        {% set severity = vulnerability.Severity|default('UNKNOWN') %}
+                        <tr>
+                            <td><span class="badge text-bg-{{ severityVariants[severity]|default('light') }}">{{ severity }}</span></td>
+                            <td class="text-nowrap">
+                                {% if vulnerability.PrimaryURL is defined %}
+                                    <a href="{{ vulnerability.PrimaryURL }}" target="_blank" rel="noopener">{{ vulnerability.VulnerabilityID|default('-') }}</a>
+                                {% else %}
+                                    {{ vulnerability.VulnerabilityID|default('-') }}
+                                {% endif %}
+                            </td>
+                            <td class="font-monospace small text-break">{{ vulnerability.Target|default('-') }}</td>
+                            <td class="font-monospace small text-break">{{ vulnerability.PkgName|default('-') }}</td>
+                            <td class="font-monospace small">{{ vulnerability.InstalledVersion|default('-') }}</td>
+                            <td class="font-monospace small">{{ vulnerability.FixedVersion|default('-') }}</td>
+                            <td>{{ vulnerability.Title|default('-') }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
 
 </div>
 {% endblock %}
-

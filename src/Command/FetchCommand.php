@@ -4,8 +4,8 @@ namespace MBO\GitManager\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use MBO\GitManager\Analysis\Analyzer;
 use MBO\GitManager\Entity\Project;
-use MBO\GitManager\Git\Analyzer;
 use MBO\GitManager\Git\Synchronizer;
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\GitManager\Repository\ProjectRepository;
@@ -28,7 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author mborne
  */
-final class FetchAllCommand extends Command
+final class FetchCommand extends Command
 {
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -44,10 +44,10 @@ final class FetchAllCommand extends Command
     {
         $this
             // the name of the command (the part after "bin/console")
-            ->setName('git:fetch-all')
+            ->setName('git:fetch')
 
             // the short description shown while running "php bin/console list"
-            ->setDescription('Fetch all repositories to local directory')
+            ->setDescription('Fetch repositories to local directory')
             /*
              * Git client options
              */
@@ -60,14 +60,17 @@ final class FetchAllCommand extends Command
             ->addOption('users', 'u', InputOption::VALUE_REQUIRED, 'Find projects according to given user names')
 
             ->addOption('include', null, InputOption::VALUE_REQUIRED, 'Filter according to a given regexp, for ex : "(ansible)"')
+
+            ->addOption('skip-analyse', null, InputOption::VALUE_NONE, 'Skip analysis after fetching repositories')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $logger = $this->createLogger($output);
+        $skipAnalyse = $input->getOption('skip-analyse');
 
-        $logger->info('[git:fetch-all] started...');
+        $logger->info('[git:fetch] started...');
 
         /*
          * Create git client according to parameters
@@ -124,7 +127,7 @@ final class FetchAllCommand extends Command
             ));
             try {
                 $this->synchronizer->fetchOrClone($project, $token);
-                $entity = $this->createOrUpdateProjectEntity($project);
+                $entity = $this->createOrUpdateProjectEntity($project, $skipAnalyse);
                 $this->em->persist($entity);
                 $this->em->flush();
             } catch (\Exception $e) {
@@ -138,7 +141,7 @@ final class FetchAllCommand extends Command
             }
         }
 
-        $logger->info('[git:fetch-all] completed');
+        $logger->info('[git:fetch] completed');
 
         return self::SUCCESS;
     }
@@ -146,7 +149,7 @@ final class FetchAllCommand extends Command
     /**
      * Create or update project entity based on the given project interface.
      */
-    protected function createOrUpdateProjectEntity(ProjectInterface $project): Project
+    protected function createOrUpdateProjectEntity(ProjectInterface $project, bool $skipAnalyse = false): Project
     {
         $uid = ProjectHelpers::getUid($project);
         /** @var Project|null */
@@ -165,7 +168,9 @@ final class FetchAllCommand extends Command
             ->setFullName(ProjectHelpers::getFullName($project))
         ;
 
-        $this->analyzer->analyze($entity);
+        if (!$skipAnalyse) {
+            $this->analyzer->analyze($entity);
+        }
 
         $entity->setFetchedAt(new \DateTime('now'));
 

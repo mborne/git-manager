@@ -1,0 +1,507 @@
+openapi: 3.1.0
+
+info:
+  title: git-manager API
+  version: '1.0.0'
+  description: |
+    HTTP API exposing the git repositories backed up and analyzed by
+    [git-manager](https://github.com/mborne/git-manager).
+
+    Projects are populated by the CLI commands (`bin/console git:fetch`,
+    `bin/console git:analyse`) and served read-only by this API.
+  license:
+    name: MIT
+    url: https://github.com/mborne/git-manager/blob/master/LICENSE
+
+# Replaced by the URL of the instance when the specification is served by
+# `GET /api/openapi.yaml`.
+servers:
+  - url: http://localhost:8000
+    description: Local instance (`docker compose up -d` or `symfony server:start`)
+
+# git-manager doesn't provide any authentication mechanism, access to the
+# instance is expected to be restricted at the infrastructure level.
+security: []
+
+tags:
+  - name: projects
+    description: Access to the analyzed git repositories
+  - name: monitoring
+    description: Prometheus metrics
+  - name: documentation
+    description: This OpenAPI specification and its rendering with swagger-ui
+
+paths:
+  /api:
+    get:
+      tags: [documentation]
+      summary: Browse the API documentation
+      description: Renders this specification with [swagger-ui](https://swagger.io/tools/swagger-ui/).
+      operationId: getApiDoc
+      responses:
+        '200':
+          description: The swagger-ui page
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/openapi.yaml:
+    get:
+      tags: [documentation]
+      summary: Get the OpenAPI specification
+      operationId: getOpenApi
+      responses:
+        '200':
+          description: This specification
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  /api/projects:
+    get:
+      tags: [projects]
+      summary: List projects
+      description: Returns all the projects with their metadata and check results.
+      operationId: listProjects
+      responses:
+        '200':
+          description: The list of the projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+              examples:
+                default:
+                  $ref: '#/components/examples/ProjectList'
+
+  /api/projects.csv:
+    get:
+      tags: [projects]
+      summary: Export projects as CSV
+      description: |
+        Returns a CSV report with a subset of the project properties. Columns :
+
+        | Column          | Description                                                  |
+        | --------------- | ------------------------------------------------------------ |
+        | `NAME`          | Full name of the project (ex : `github.com/mborne/git-manager`) |
+        | `DESCRIPTION`   | Project description (empty if not defined)                   |
+        | `VISIBILITY`    | `public`, `private`, `internal` or `unknown`                  |
+        | `ARCHIVED`      | `1` if the repository is archived, `0` otherwise             |
+        | `README`        | `1` if a `README.md` file is present, `0` otherwise          |
+        | `LICENSE`       | Name of the license file (ex : `LICENSE`) or `0` if missing  |
+        | `SIZE_MO`       | Size of the repository in megabytes (ex : `12.4`)            |
+        | `LAST_ACTIVITY` | Day of the last commit as `YYYY-MM-DD` (`0000-00-00` if none) |
+        | `TRIVY_CRITICAL` | Number of critical vulnerabilities reported by trivy (`0` if not scanned) |
+        | `TRIVY_HIGH`    | Number of high vulnerabilities reported by trivy (`0` if not scanned) |
+        | `TRIVY_LOW`     | Number of low vulnerabilities reported by trivy (`0` if not scanned) |
+        | `GITLEAKS_COUNT` | Number of secrets reported by gitleaks (`0` if not scanned) |
+      operationId: exportProjectsCsv
+      responses:
+        '200':
+          description: The CSV report (sent as an attachment named `projects.csv`)
+          headers:
+            Content-Disposition:
+              description: Attachment filename
+              schema:
+                type: string
+                examples: ['attachment; filename="projects.csv"']
+          content:
+            text/csv:
+              schema:
+                type: string
+              examples:
+                default:
+                  value: |
+                    NAME,DESCRIPTION,VISIBILITY,ARCHIVED,README,LICENSE,SIZE_MO,LAST_ACTIVITY,TRIVY_CRITICAL,TRIVY_HIGH,TRIVY_LOW,GITLEAKS_COUNT
+                    github.com/mborne/ansible-docker-ce,[DEV] Ansible playbook to deploy and configure docker-ce,public,0,1,LICENSE,0.1,2024-07-15,0,2,0,1
+
+  /api/projects/{id}:
+    get:
+      tags: [projects]
+      summary: Get a project by identifier
+      operationId: getProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: The requested project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+              examples:
+                default:
+                  $ref: '#/components/examples/Project'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                default:
+                  value:
+                    message: Not found
+
+  /metrics:
+    get:
+      tags: [monitoring]
+      summary: Prometheus metrics
+      description: |
+        Exposes the project statistics using the prometheus text exposition
+        format. Each metric is labeled with the project properties
+        (`project`, `archived`, `visibility`).
+
+        Available metrics :
+
+        | Metric                        | Description                                          |
+        | ----------------------------- | ---------------------------------------------------- |
+        | `gitmanager_trivy_total`      | Total number of vulnerabilities found by trivy       |
+        | `gitmanager_trivy_high`       | Number of `HIGH` vulnerabilities                     |
+        | `gitmanager_trivy_critical`   | Number of `CRITICAL` vulnerabilities                 |
+        | `gitmanager_trivy_medium`     | Number of `MEDIUM` vulnerabilities                   |
+        | `gitmanager_gitleaks_total`   | Number of secrets found by gitleaks                  |
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics using the prometheus text exposition format
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                default:
+                  value: |
+                    # HELP gitmanager_trivy_total Total number of vulnerabilities for a project
+                    # TYPE gitmanager_trivy_total gauge
+                    gitmanager_trivy_total{project="github.com/mborne/ansible-docker-ce",archived="false",visibility="public"} 0
+                    # HELP gitmanager_gitleaks_total Total number of secrets detected for a project
+                    # TYPE gitmanager_gitleaks_total gauge
+                    gitmanager_gitleaks_total{project="github.com/mborne/ansible-docker-ce",archived="false",visibility="public"} 0
+
+components:
+  parameters:
+    ProjectId:
+      name: id
+      in: path
+      required: true
+      description: The UUID (v3) of the project.
+      schema:
+        type: string
+        format: uuid
+      example: 08bd2d02-c2f8-3277-b0db-4cdb051531a1
+
+  schemas:
+    Project:
+      type: object
+      description: A git repository backed up and analyzed by git-manager.
+      required:
+        - id
+        - name
+        - httpUrl
+        - defaultBranch
+        - archived
+        - visibility
+        - fullName
+        - description
+        - fetchedAt
+        - metadata
+        - checks
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v3 computed from the project URL.
+          examples: ['08bd2d02-c2f8-3277-b0db-4cdb051531a1']
+        name:
+          type: string
+          maxLength: 255
+          description: The project name with namespaces.
+          examples: ['mborne/git-manager']
+        httpUrl:
+          type: string
+          format: uri
+          maxLength: 512
+          description: The clone URL of the project.
+          examples: ['https://github.com/mborne/git-manager.git']
+        fullName:
+          type: string
+          maxLength: 255
+          description: The full name of the project, including the host.
+          examples: ['github.com/mborne/git-manager']
+        description:
+          type: [string, 'null']
+          description: Optional project description.
+          examples: ['CLI helpers to backup and review a set of git repositories']
+        defaultBranch:
+          type: [string, 'null']
+          maxLength: 100
+          description: The default branch of the repository.
+          examples: ['master']
+        archived:
+          type: boolean
+          description: True if the repository is archived on the remote host.
+        visibility:
+          type: [string, 'null']
+          description: The visibility of the repository on the remote host.
+          enum: [public, private, internal, null]
+        fetchedAt:
+          type: string
+          format: date-time
+          description: Date of the last clone or fetch.
+          examples: ['2026-08-02T10:51:00+00:00']
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        checks:
+          $ref: '#/components/schemas/Checks'
+
+    Metadata:
+      type: object
+      description: Metadata collected on the local copy of the git repository.
+      required: [size, tags, last_activity]
+      properties:
+        size:
+          type: integer
+          minimum: 0
+          description: Size of the repository in bytes.
+          examples: [74752]
+        tags:
+          type: object
+          description: Information about the git tags.
+          required: [count, latest]
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              description: The number of git tags.
+              examples: [3]
+            latest:
+              type: [string, 'null']
+              description: |
+                The name of the latest git tag (alphabetical order). Null when
+                the repository has no tag.
+              examples: ['v1.2.0']
+        last_activity:
+          type: [string, 'null']
+          format: date-time
+          description: |
+            The date of the most recent commit. Only the commits referenced by a
+            branch or a tag are considered. Null when the repository has no commit.
+          examples: ['2024-07-15T14:48:36+00:00']
+
+    Checks:
+      type: object
+      description: |
+        Results of the checkers, indexed by checker name. A check is `null`
+        when the corresponding checker is disabled or unavailable
+        (see `TRIVY_ENABLED` and `GITLEAKS_ENABLED`).
+      properties:
+        readme:
+          type: [boolean, 'null']
+          description: True if a `README.md` file is present.
+        license:
+          description: |
+            The name of the license file found at the root of the repository
+            (`LICENSE`, `LICENSE.md`, `LICENSE.txt`, `LICENCE`, `LICENCE.md`,
+            `LICENCE.txt`), `false` if none is found.
+          oneOf:
+            - type: string
+              examples: ['LICENSE']
+            - const: false
+            - type: 'null'
+        trivy:
+          oneOf:
+            - $ref: '#/components/schemas/TrivyCheck'
+            - type: 'null'
+        gitleaks:
+          oneOf:
+            - $ref: '#/components/schemas/GitleaksCheck'
+            - type: 'null'
+
+    TrivyCheck:
+      type: object
+      description: |
+        Result of the [trivy](https://trivy.dev/) filesystem scan. When the
+        scan fails, `success` is `false` and both `vulnerabilities` and
+        `summary` are `false`.
+      required: [success, vulnerabilities, summary]
+      properties:
+        success:
+          type: boolean
+          description: True if the scan has been performed successfully.
+        vulnerabilities:
+          description: The severity of each vulnerability, indexed by identifier.
+          oneOf:
+            - type: object
+              additionalProperties:
+                $ref: '#/components/schemas/Severity'
+              examples: [{ 'CVE-2026-4926': 'HIGH' }]
+            - const: false
+        summary:
+          description: The number of distinct vulnerabilities per severity.
+          oneOf:
+            - type: object
+              additionalProperties:
+                type: integer
+                minimum: 0
+              examples: [{ 'HIGH': 1, 'CRITICAL': 0, 'MEDIUM': 3 }]
+            - const: false
+      examples:
+        - success: true
+          vulnerabilities:
+            CVE-2026-4926: HIGH
+          summary:
+            HIGH: 1
+            CRITICAL: 0
+
+    GitleaksCheck:
+      type: object
+      description: |
+        Result of the [gitleaks](https://github.com/gitleaks/gitleaks) scan.
+        When the scan fails, `success` is `false` and both `secrets` and
+        `summary` are `false`.
+      required: [success, secrets, summary]
+      properties:
+        success:
+          type: boolean
+          description: True if the scan has been performed successfully.
+        secrets:
+          description: The number of findings per gitleaks rule identifier.
+          oneOf:
+            - type: object
+              additionalProperties:
+                type: integer
+                minimum: 0
+              examples: [{ 'private-key': 15 }]
+            - const: false
+        summary:
+          description: The total number of findings.
+          oneOf:
+            - type: object
+              required: [count]
+              properties:
+                count:
+                  type: integer
+                  minimum: 0
+            - const: false
+      examples:
+        - success: true
+          secrets:
+            private-key: 15
+          summary:
+            count: 15
+
+    Severity:
+      type: string
+      description: Severity level of a vulnerability reported by trivy.
+      enum: [CRITICAL, HIGH, MEDIUM, LOW]
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          examples: ['Not found']
+
+  examples:
+    Project:
+      summary: A public github repository
+      value:
+        id: 08bd2d02-c2f8-3277-b0db-4cdb051531a1
+        name: mborne/ansible-docker-ce
+        httpUrl: https://github.com/mborne/ansible-docker-ce.git
+        defaultBranch: master
+        archived: false
+        visibility: public
+        fullName: github.com/mborne/ansible-docker-ce
+        description: '[DEV] Ansible playbook to deploy and configure docker-ce'
+        fetchedAt: '2026-08-02T10:51:00+00:00'
+        metadata:
+          size: 74752
+          tags:
+            count: 3
+            latest: 'v1.2.0'
+          last_activity: '2024-07-15T14:48:36+00:00'
+        checks:
+          readme: true
+          license: LICENSE
+          trivy:
+            success: true
+            vulnerabilities: {}
+            summary:
+              HIGH: 0
+              CRITICAL: 0
+          gitleaks:
+            success: true
+            secrets: {}
+            summary:
+              count: 0
+
+    ProjectList:
+      summary: Two projects
+      value:
+        - id: 08bd2d02-c2f8-3277-b0db-4cdb051531a1
+          name: mborne/ansible-docker-ce
+          httpUrl: https://github.com/mborne/ansible-docker-ce.git
+          defaultBranch: master
+          archived: false
+          visibility: public
+          fullName: github.com/mborne/ansible-docker-ce
+          description: '[DEV] Ansible playbook to deploy and configure docker-ce'
+          fetchedAt: '2026-08-02T10:51:00+00:00'
+          metadata:
+            size: 74752
+            tags:
+              count: 2
+              latest: 'v1.0.0'
+            last_activity: '2024-07-15T14:48:36+00:00'
+          checks:
+            readme: true
+            license: LICENSE
+            trivy:
+              success: true
+              vulnerabilities: {}
+              summary:
+                HIGH: 0
+                CRITICAL: 0
+            gitleaks:
+              success: true
+              secrets: {}
+              summary:
+                count: 0
+        - id: b1954029-d279-32d4-87bc-8e624d35e58a
+          name: mborne/apicarto-integration
+          httpUrl: https://github.com/mborne/apicarto-integration.git
+          defaultBranch: master
+          archived: true
+          visibility: private
+          fullName: github.com/mborne/apicarto-integration
+          description: Intégration de jeux de données pour APICARTO (expérimental)
+          fetchedAt: '2026-08-02T10:51:07+00:00'
+          metadata:
+            size: 4188160
+            tags:
+              count: 0
+              latest: null
+            last_activity: '2016-03-17T09:12:04+00:00'
+          checks:
+            readme: true
+            license: false
+            trivy:
+              success: true
+              vulnerabilities:
+                CVE-2026-4926: HIGH
+              summary:
+                HIGH: 1
+                CRITICAL: 0
+            gitleaks:
+              success: true
+              secrets:
+                private-key: 15
+              summary:
+                count: 15

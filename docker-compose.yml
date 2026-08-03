@@ -4,14 +4,29 @@ services:
     image: ghcr.io/mborne/git-manager:latest
     build:
       context: .
+      args:
+        - HTTP_PROXY
+        - HTTPS_PROXY
     environment:
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
     ports:
       - 8000:8000
     volumes:
       - git-manager-data:/var/git-manager
     restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+
 
 volumes:
   git-manager-data:

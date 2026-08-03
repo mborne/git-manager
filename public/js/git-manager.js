@@ -1,35 +1,74 @@
 /**
- * Extract last activity date from project.metadata.activity
- * @param {object} project 
- * @returns 
+ * Extract last activity day from project.metadata.last_activity
+ * @param {object} project
+ * @returns
  */
 function getLastActivity(project) {
-    const dates = Object.keys(project.metadata.activity);
-    if (dates.length == 0) {
+    const lastDate = project.metadata ? project.metadata.last_activity : null;
+    if (!lastDate) {
         return '0000-00-00';
     }
-    const lastDate = dates[dates.length - 1];
-    return `${lastDate.substring(0, 4)}-${lastDate.substring(4, 6)}-${lastDate.substring(6, 8)}`;
+    return lastDate.split('T')[0];
+}
+
+/**
+ * Render a bootstrap badge.
+ *
+ * @param {string} label
+ * @param {string} variant bootstrap contextual color (ex : success, danger)
+ * @returns
+ */
+function renderBadge(label, variant) {
+    return `<span class="badge text-bg-${variant}">${label}</span>`;
+}
+
+/**
+ * Render gitleaks report.
+ *
+ * @param {?object} gitleaks
+ * @returns
+ */
+function renderGitleaks(gitleaks) {
+    if (!gitleaks) {
+        return renderBadge('NO-DATA', 'warning');
+    }
+    if (!gitleaks.success) {
+        return renderBadge('FAILURE', 'danger');
+    }
+    const count = gitleaks.summary.count;
+    return renderBadge(`SECRETS:&nbsp;${count}`, count > 0 ? 'danger' : 'success');
 }
 
 /**
  * Render trivy report.
  *
- * @param {?object} trivy 
- * @returns 
+ * @param {?object} trivy
+ * @returns
  */
 function renderTrivy(trivy){
     if ( ! trivy ){
-        return `<span class="text-warning">NO-DATA</span>`;
+        return renderBadge('NO-DATA', 'warning');
     }
 
     if ( ! trivy.success ){
-        return `<span class="text-danger">FAILURE</span>`
+        return renderBadge('FAILURE', 'danger');
     }
-    return ['CRITICAL','HIGH'].map(severity => {
+    return `<div class="d-flex flex-column gap-1 align-items-start">`+['CRITICAL','HIGH'].map(severity => {
         const count = trivy.summary[severity];
-        return `<span class="${count > 0 ? "text-danger" : "text-success"}">${severity}:&nbsp;${count}`;
-    }).join('<br />');
+        const failureBadge = severity === 'CRITICAL' ? 'danger' : 'warning';
+        return renderBadge(`${severity}:&nbsp;${count}`, count > 0 ? failureBadge : 'success');
+    }).join('')+`</div>`;
+}
+
+/**
+ * Render a cell sorted on a numeric value instead of its HTML content.
+ *
+ * @param {object} data {display, order}
+ * @param {string} type
+ * @returns
+ */
+function renderOrdered(data, type) {
+    return type === 'display' || type === 'filter' ? data.display : data.order;
 }
 
 /**
@@ -47,17 +86,21 @@ function loadProjects() {
             const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
             const detailsUrl = `/${project.id}`;
+            const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL * 1000000 + checks.trivy.summary.HIGH : -1;
+            const gitleaksOrder = checks.gitleaks && checks.gitleaks.summary ? checks.gitleaks.summary.count : -1;
+            const visibility = project.visibility ? project.visibility : 'unknown';
             return [
-                `<a href="https://${name}">${name}</a>`,
-                project.archived ? 'YES' : 'NO',
-                project.visibility ? project.visibility : 'unknown',
-                `<span class="${checks.readme ? "text-success" : "text-danger"}">${checks.readme ? "FOUND" : "MISSING"}</span>`,
-                `<span class="${checks.license ? "text-success" : "text-danger"}">${checks.license ? checks.license : "MISSING"}</span>`,
+                `<a class="text-decoration-none fw-semibold" href="https://${name}" target="_blank" rel="noopener">${name}</a>`,
+                project.archived ? renderBadge('YES', 'secondary') : renderBadge('NO', 'light'),
+                renderBadge(visibility, visibility === 'public' ? 'success' : 'secondary'),
+                renderBadge(checks.readme ? 'FOUND' : 'MISSING', checks.readme ? 'success' : 'danger'),
+                renderBadge(checks.license ? checks.license : 'MISSING', checks.license ? 'success' : 'danger'),
                 project.fetchedAt.split('T')[0],
                 getLastActivity(project),
                 sizeMo,
-                checks.trivy,
-                `<a href="${detailsUrl}"><span class="material-icons">info</span></a>`,
+                { display: renderTrivy(checks.trivy), order: trivyOrder },
+                { display: renderGitleaks(checks.gitleaks), order: gitleaksOrder },
+                `<a class="btn btn-sm btn-outline-primary d-inline-flex" href="${detailsUrl}" title="View details"><span class="material-icons fs-6">info</span></a>`,
             ];
         });
         $('#projects').DataTable({
@@ -70,18 +113,10 @@ function loadProjects() {
                 { title: "LICENSE" },
                 { title: "Last Fetch" },
                 { title: "Last Activity" },
-                { title: "Size (Mo)" },
-                { 
-                    title: "Trivy", 
-                    render: function (trivy, type) {
-                        if ( type === 'sort' || type === 'type' ) {
-                            return trivy ? trivy.summary.CRITICAL + trivy.summary.HIGH / 100.0 : -1 ;
-                        } else {
-                            return renderTrivy(trivy);
-                        }
-                    }
-                },
-                { 
+                { title: "Size (Mo)", className: "text-end" },
+                { title: "Trivy", render: renderOrdered },
+                { title: "Secrets", render: renderOrdered },
+                {
                     title: 'Details',
                     orderable: false,
                     className: 'text-center'
@@ -94,7 +129,7 @@ function loadProjects() {
         console.error(error);
         $('#projects').DataTable({
             data: [[
-                `<span class="text-danger">fail to load repositories</span>`,
+                `<div class="alert alert-danger mb-0" role="alert">fail to load repositories</div>`,
             ]],
             columns: [
                 { title: "Error" },

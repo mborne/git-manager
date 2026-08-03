@@ -1,0 +1,8 @@
+# Configuration trivy pour git-manager
+# @see https://aquasecurity.github.io/trivy/latest/docs/references/configuration/config-file/
+
+cache:
+  dir: /tmp/trivy-cache
+
+java:
+  maven-local-repository: ~/.m2/repository

@@ -1,0 +1,6 @@
+title = "gitleaks config"
+
+[extend]
+useDefault = true
+disabledRules = [ "generic-api-key"]
+

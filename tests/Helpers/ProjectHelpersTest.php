@@ -4,17 +4,14 @@ namespace App\Tests\Helpers;
 
 use MBO\GitManager\Helpers\ProjectHelpers;
 use MBO\RemoteGit\ProjectInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 class ProjectHelpersTest extends TestCase
 {
-    private function getMockProject(): ProjectInterface|MockObject
+    private function getMockProject(): ProjectInterface|Stub
     {
-        $project = $this->getMockBuilder(ProjectInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $project = $this->createStub(ProjectInterface::class);
 
         $project
             ->method('getHttpUrl')
