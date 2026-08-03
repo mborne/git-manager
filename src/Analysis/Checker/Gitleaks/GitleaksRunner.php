@@ -21,6 +21,7 @@ final class GitleaksRunner
         private ProcessRunnerInterface $processRunner,
         private TempFilesystem $tempFilesystem,
         private string $gitleaksDefaultConfigPath,
+        private bool $gitleaksNoGit = false,
     ) {
     }
 
@@ -86,6 +87,9 @@ final class GitleaksRunner
             '--report-path', $reportPath,
             '--exit-code', '0',
         ];
+        if ($this->gitleaksNoGit) {
+            $command[] = '--no-git';
+        }
         $configPath = $this->getConfigPath($repositoryPath);
         if (null !== $configPath) {
             $command[] = '--config';

@@ -99,12 +99,13 @@ final class GitleaksRunnerTest extends TestCase
         );
     }
 
-    private function createRunner(ProcessRunnerInterface $processRunner): GitleaksRunner
+    private function createRunner(ProcessRunnerInterface $processRunner, bool $gitleaksNoGit = false): GitleaksRunner
     {
         return new GitleaksRunner(
             $processRunner,
             new TempFilesystem(),
-            $this->defaultConfigPath
+            $this->defaultConfigPath,
+            $gitleaksNoGit
         );
     }
 
@@ -255,6 +256,17 @@ final class GitleaksRunnerTest extends TestCase
                 [...$this->getExpectedDetectCommand($this->getReportPath()), '--config', $this->repositoryConfigPath],
                 $this->repositoryPath,
             ],
+            end($this->commands)
+        );
+    }
+
+    public function testDetectWithNoGit(): void
+    {
+        $runner = $this->createRunner($this->createSuccessfulProcessRunner(self::SARIF_CONTENT), true);
+        $runner->detect($this->repositoryPath);
+
+        $this->assertSame(
+            [[...$this->getExpectedDetectCommand($this->getReportPath()), '--no-git'], $this->repositoryPath],
             end($this->commands)
         );
     }
