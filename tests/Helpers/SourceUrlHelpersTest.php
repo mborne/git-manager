@@ -37,6 +37,22 @@ class SourceUrlHelpersTest extends TestCase
     }
 
     /**
+     * Markdown files use ?plain=1 so that line anchors work on GitHub.
+     */
+    public function testGetFileUrlMarkdownWithLine(): void
+    {
+        $this->assertEquals(
+            'https://github.com/mborne/git-manager/blob/0123456789abcdef/doc/conventions/manuals-tests.md?plain=1#L144',
+            SourceUrlHelpers::getFileUrl(
+                'https://github.com/mborne/git-manager',
+                'doc/conventions/manuals-tests.md',
+                '0123456789abcdef',
+                144
+            )
+        );
+    }
+
+    /**
      * The trailing slash and the ".git" suffix are removed, the path is encoded
      * and the windows separators are converted.
      */
@@ -54,14 +70,31 @@ class SourceUrlHelpersTest extends TestCase
     }
 
     /**
+     * When commitSha is null but defaultBranch is provided, the branch is used.
+     */
+    public function testGetFileUrlWithDefaultBranch(): void
+    {
+        $this->assertEquals(
+            'https://github.com/mborne/git-manager/blob/main/README.md?plain=1#L5',
+            SourceUrlHelpers::getFileUrl(
+                'https://github.com/mborne/git-manager',
+                'README.md',
+                null,
+                5,
+                'main'
+            )
+        );
+    }
+
+    /**
      * @return array<string,array<int,mixed>>
      */
     public static function provideUnsupportedCases(): array
     {
         return [
             'unsupported host' => ['https://gitlab.com/mborne/sample', 'README.md', '0123456789abcdef'],
-            'missing commit' => ['https://github.com/mborne/sample', 'README.md', null],
-            'empty commit' => ['https://github.com/mborne/sample', 'README.md', ''],
+            'missing commit and branch' => ['https://github.com/mborne/sample', 'README.md', null],
+            'empty commit and no branch' => ['https://github.com/mborne/sample', 'README.md', ''],
             'empty path' => ['https://github.com/mborne/sample', '', '0123456789abcdef'],
         ];
     }

@@ -10,6 +10,7 @@ services:
             $trivyConfigPath: '%kernel.project_dir%/config/trivy.yaml'
             $trivyOfflineScan: '%env(bool:TRIVY_OFFLINE_SCAN)%'
             $gitleaksEnabled: '%env(bool:GITLEAKS_ENABLED)%'
+            $gitleaksNoGit: '%env(bool:GITLEAKS_NO_GIT)%'
             $gitleaksDefaultConfigPath: '%kernel.project_dir%/config/gitleaks.toml'
             $openApiPath: '%kernel.project_dir%/docs/openapi.yaml'
 
