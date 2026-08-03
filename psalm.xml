@@ -18,6 +18,7 @@
     <issueHandlers>
         <MissingOverrideAttribute errorLevel="suppress"/>
         <UnnecessaryVarAnnotation errorLevel="suppress"/>
+        <ClassMustBeFinal errorLevel="suppress" />
     </issueHandlers>
 
     <plugins>
