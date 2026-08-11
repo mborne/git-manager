@@ -14,32 +14,6 @@ COPY src src/
 COPY templates templates/
 
 #------------------------------------------------------
-# Download /usr/bin/gitleaks in dedicated layer
-#------------------------------------------------------
-FROM ubuntu:24.04 AS gitleaks
-
-RUN apt-get update \
- && apt-get install -y wget \
- && wget -qO /tmp/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
- && tar -xzf /tmp/gitleaks.tar.gz -C /usr/bin gitleaks \
- && chmod +x /usr/bin/gitleaks \
- && rm /tmp/gitleaks.tar.gz
-
-#------------------------------------------------------
-# Download /usr/bin/trivy in dedicated layer
-#------------------------------------------------------
-FROM ubuntu:24.04 AS trivy
-
-RUN apt-get update \
- && apt-get install -y wget apt-transport-https gnupg lsb-release \
- # Install trivy
- && wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add - \
- && echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list \
- && apt-get update \
- && apt-get install -y trivy \
- && rm -rf /var/cache/apt/*
-
-#------------------------------------------------------
 # Build the final image using frankenphp.
 #
 # see https://frankenphp.dev/docs/docker/
@@ -57,18 +31,24 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY .docker/php.ini $PHP_INI_DIR/conf.d/app.ini
 
 #------------------------------------------------------
-# Install trivy
+# Install trivy (the official image provides linux/amd64 and linux/arm64
+# binaries, arm64 being required for raspberry pi)
+#
+# see https://github.com/aquasecurity/trivy/pkgs/container/trivy
 #------------------------------------------------------
-COPY --from=trivy /usr/bin/trivy /usr/bin/trivy
+COPY --from=ghcr.io/aquasecurity/trivy:0.73.0 /usr/local/bin/trivy /usr/bin/trivy
 
 ENV TRIVY_CACHE_DIR=/var/trivy/cache
 RUN mkdir -p $TRIVY_CACHE_DIR \
  && chown -R www-data:www-data $TRIVY_CACHE_DIR
 
 #------------------------------------------------------
-# Install gitleaks
+# Install gitleaks (the official image provides linux/amd64 and linux/arm64
+# binaries, arm64 being required for raspberry pi)
+#
+# see https://github.com/gitleaks/gitleaks/pkgs/container/gitleaks
 #------------------------------------------------------
-COPY --from=gitleaks /usr/bin/gitleaks /usr/bin/gitleaks
+COPY --from=ghcr.io/gitleaks/gitleaks:v8.30.1 /usr/bin/gitleaks /usr/bin/gitleaks
 
 #------------------------------------------------------
 # Install git
