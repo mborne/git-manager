@@ -63,6 +63,14 @@ bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 bin/console git:fetch https://gitlab.com -u mborne $GITLAB_TOKEN
 ```
 
+### Purge a repository
+
+Remove a repository from the database and from `GIT_MANAGER_DIR` (git clone and analysis reports), typically once it has been deleted on the remote git hosting service :
+
+```bash
+bin/console git:purge github.com/mborne/git-manager
+```
+
 ### Browse the API
 
 Once the application is started (`docker compose up -d` or `symfony server:start`) :

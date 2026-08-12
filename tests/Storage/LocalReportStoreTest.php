@@ -84,6 +84,29 @@ final class LocalReportStoreTest extends TestCase
         $this->assertFalse($this->reportStore->exists('trivy', $this->getProjectId()));
     }
 
+    public function testRemoveTheReportsOfAProject(): void
+    {
+        $this->reportStore->write('gitleaks', $this->getProjectId(), '{"runs":[]}');
+        $this->reportStore->write('trivy', $this->getProjectId(), '{"Results":[]}');
+        $this->reportStore->write('gitleaks', Uuid::fromString(self::OTHER_PROJECT_ID), '{"runs":[]}');
+
+        $this->reportStore->remove($this->getProjectId());
+
+        $this->assertFalse($this->reportStore->exists('gitleaks', $this->getProjectId()));
+        $this->assertFalse($this->reportStore->exists('trivy', $this->getProjectId()));
+        // the reports of the other projects are preserved
+        $this->assertTrue($this->reportStore->exists('gitleaks', Uuid::fromString(self::OTHER_PROJECT_ID)));
+    }
+
+    public function testRemoveMissingReports(): void
+    {
+        $this->reportStore->write('gitleaks', Uuid::fromString(self::OTHER_PROJECT_ID), '{"runs":[]}');
+
+        $this->reportStore->remove($this->getProjectId());
+
+        $this->assertTrue($this->reportStore->exists('gitleaks', Uuid::fromString(self::OTHER_PROJECT_ID)));
+    }
+
     public function testListUnknownTool(): void
     {
         $this->assertSame([], $this->reportStore->list('gitleaks'));
