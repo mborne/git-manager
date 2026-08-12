@@ -90,6 +90,24 @@ final readonly class LocalReportStore implements ReportStoreInterface
         }
     }
 
+    public function remove(Uuid $projectId): void
+    {
+        try {
+            $toolNames = $this->filesystem
+                ->listContents('')
+                ->filter(fn (StorageAttributes $item): bool => $item->isDir())
+                ->map(fn (StorageAttributes $item): string => basename($item->path()))
+                ->toArray()
+            ;
+            foreach ($toolNames as $toolName) {
+                /* note that flysystem ignores the missing files */
+                $this->filesystem->delete($this->getPath($toolName, $projectId));
+            }
+        } catch (FilesystemException $e) {
+            throw new ReportStoreException(sprintf('fail to remove the reports of %s : %s', (string) $projectId, $e->getMessage()), previous: $e);
+        }
+    }
+
     /**
      * Get the path of a report relative to the data directory.
      */

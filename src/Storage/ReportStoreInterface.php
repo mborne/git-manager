@@ -40,4 +40,12 @@ interface ReportStoreInterface
      * Note that the parsing is left to the caller as it is tool specific.
      */
     public function read(string $toolName, Uuid $projectId): ?string;
+
+    /**
+     * Remove the reports of a project for all the tools, ignoring the missing
+     * ones.
+     *
+     * @throws ReportStoreException if a report can't be removed
+     */
+    public function remove(Uuid $projectId): void;
 }
