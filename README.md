@@ -91,6 +91,15 @@ docker compose exec git-manager bin/console git:fetch https://github.com -u mbor
 #docker compose exec git-manager bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 ```
 
+The image is based on ubuntu with apache2 and `mod_php` (PHP from [ppa:ondrej/php](https://launchpad.net/~ondrej/+archive/ubuntu/php)). It runs as `www-data` and the access and error logs are available with `docker compose logs git-manager`.
+
+> [!WARNING]
+> Upgrading from an image up to v0.10.0 (based on alpine where `www-data` was `uid=82`, it is `uid=33` on ubuntu) requires to fix the ownership of the existing volume :
+>
+> ```bash
+> docker compose run --rm --user root --entrypoint chown git-manager -R www-data:www-data /var/git-manager
+> ```
+
 ## License
 
 [MIT](LICENSE)
