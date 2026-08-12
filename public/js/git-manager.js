@@ -83,14 +83,16 @@ function loadProjects() {
     }).then(function (projects) {
         let dataSet = projects.map(function (project) {
             const name = project.fullName;
-            const sizeMo = (project.metadata.size / (1024 * 1024)).toFixed(1);
+            /* the empty repositories are not cloned, they have no metadata and no check */
+            const sizeMo = ((project.metadata.size || 0) / (1024 * 1024)).toFixed(1);
             const checks = project.checks;
             const detailsUrl = `/${project.id}`;
             const trivyOrder = checks.trivy && checks.trivy.summary ? checks.trivy.summary.CRITICAL * 1000000 + checks.trivy.summary.HIGH : -1;
             const gitleaksOrder = checks.gitleaks && checks.gitleaks.summary ? checks.gitleaks.summary.count : -1;
             const visibility = project.visibility ? project.visibility : 'unknown';
             return [
-                `<a class="text-decoration-none fw-semibold" href="https://${name}" target="_blank" rel="noopener">${name}</a>`,
+                `<a class="text-decoration-none fw-semibold" href="https://${name}" target="_blank" rel="noopener">${name}</a>`
+                    + (project.empty ? ' ' + renderBadge('EMPTY', 'warning') : ''),
                 project.archived ? renderBadge('YES', 'secondary') : renderBadge('NO', 'light'),
                 renderBadge(visibility, visibility === 'public' ? 'success' : 'secondary'),
                 renderBadge(checks.readme ? 'FOUND' : 'MISSING', checks.readme ? 'success' : 'danger'),
@@ -114,8 +116,9 @@ function loadProjects() {
                 { title: "Last Fetch" },
                 { title: "Last Activity" },
                 { title: "Size (Mo)", className: "text-end" },
-                { title: "Trivy", render: renderOrdered },
-                { title: "Secrets", render: renderOrdered },
+                /* text-start : the columns are detected as numeric by DataTables (see renderOrdered) */
+                { title: "Trivy", render: renderOrdered, className: "text-start" },
+                { title: "Secrets", render: renderOrdered, className: "text-start" },
                 {
                     title: 'Details',
                     orderable: false,

@@ -205,6 +205,7 @@ components:
         - httpUrl
         - defaultBranch
         - archived
+        - empty
         - visibility
         - fullName
         - description
@@ -245,6 +246,9 @@ components:
         archived:
           type: boolean
           description: True if the repository is archived on the remote host.
+        empty:
+          type: boolean
+          description: True if the repository has no commit (such repositories are not cloned and not analyzed).
         visibility:
           type: [string, 'null']
           description: The visibility of the repository on the remote host.

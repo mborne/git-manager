@@ -63,6 +63,9 @@ bin/console git:fetch --type gogs-v1 https://codes.quadtreeworld.net $QTW_TOKEN
 bin/console git:fetch https://gitlab.com -u mborne $GITLAB_TOKEN
 ```
 
+> [!NOTE]
+> The empty repositories (without any commit) are reported with a warning. They are registered in the database and flagged as `empty` but they are neither cloned nor analyzed.
+
 ### Purge a repository
 
 Remove a repository from the database and from `GIT_MANAGER_DIR` (git clone and analysis reports), typically once it has been deleted on the remote git hosting service. The project is designated by its id, as displayed in the URL of the project :

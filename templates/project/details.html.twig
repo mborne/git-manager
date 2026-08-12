@@ -40,6 +40,9 @@
                 {% if project.archived %}
                     <span class="badge text-bg-secondary">archived</span>
                 {% endif %}
+                {% if project.empty %}
+                    <span class="badge text-bg-warning">empty</span>
+                {% endif %}
                 {% if project.defaultBranch %}
                     <span class="badge text-bg-light border">{{ project.defaultBranch }}</span>
                 {% endif %}
@@ -117,6 +120,10 @@
                             <tr>
                                 <th scope="row" class="ps-3">Archived</th>
                                 <td>{{ project.archived ? 'YES' : 'NO' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="ps-3">Empty</th>
+                                <td>{{ project.empty ? 'YES' : 'NO' }}</td>
                             </tr>
                             <tr>
                                 <th scope="row" class="ps-3">Default branch</th>

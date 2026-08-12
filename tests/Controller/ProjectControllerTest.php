@@ -56,6 +56,20 @@ class ProjectControllerTest extends WebTestCase
         $this->assertStringContainsString('CVE-2024-0001', $content);
     }
 
+    /**
+     * Ensures that an empty repository is highlighted on the details page.
+     */
+    public function testDetailsEmptyProject(): void
+    {
+        $client = self::createClient();
+        $this->createProject($client, empty: true);
+
+        $client->request('GET', '/'.self::PROJECT_ID);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('.badge.text-bg-warning', 'empty');
+    }
+
     public function testDetailsNotFound(): void
     {
         $client = self::createClient();
@@ -115,7 +129,7 @@ class ProjectControllerTest extends WebTestCase
     /**
      * Create a project with a gitleaks and a trivy report.
      */
-    private function createProject(KernelBrowser $client): void
+    private function createProject(KernelBrowser $client, bool $empty = false): void
     {
         $container = $client->getContainer();
 
@@ -132,6 +146,7 @@ class ProjectControllerTest extends WebTestCase
             ->setDescription('A sample project')
             ->setDefaultBranch('master')
             ->setArchived(false)
+            ->setEmpty($empty)
             ->setVisibility('public')
             ->setFetchedAt(new \DateTime('2026-01-01 10:00:00'))
             ->setMetadata([
