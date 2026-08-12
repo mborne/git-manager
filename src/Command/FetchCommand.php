@@ -126,8 +126,22 @@ final class FetchCommand extends Command
                 $project->getHttpUrl()
             ));
             try {
-                $this->synchronizer->fetchOrClone($project, $token);
-                $entity = $this->createOrUpdateProjectEntity($project, $skipAnalyse);
+                /*
+                 * Empty repositories are not cloned as there is nothing to
+                 * fetch and to analyze (note that a fetch would fail on the
+                 * missing default branch).
+                 */
+                $empty = $client->isEmpty($project);
+                if ($empty) {
+                    $logger->warning(sprintf(
+                        '[%s] %s : empty repository (no commit), skipping fetch and analysis',
+                        $project->getName(),
+                        $project->getHttpUrl()
+                    ));
+                } else {
+                    $this->synchronizer->fetchOrClone($project, $token);
+                }
+                $entity = $this->createOrUpdateProjectEntity($project, $empty, $skipAnalyse);
                 $this->em->persist($entity);
                 $this->em->flush();
             } catch (\Exception $e) {
@@ -149,7 +163,7 @@ final class FetchCommand extends Command
     /**
      * Create or update project entity based on the given project interface.
      */
-    protected function createOrUpdateProjectEntity(ProjectInterface $project, bool $skipAnalyse = false): Project
+    protected function createOrUpdateProjectEntity(ProjectInterface $project, bool $empty = false, bool $skipAnalyse = false): Project
     {
         $uid = ProjectHelpers::getUid($project);
         /** @var Project|null */
@@ -164,11 +178,13 @@ final class FetchCommand extends Command
             ->setDefaultBranch($project->getDefaultBranch())
             ->setDescription($project->getDescription())
             ->setArchived($project->isArchived())
+            ->setEmpty($empty)
             ->setVisibility($project->getVisibility()?->toString())
             ->setFullName(ProjectHelpers::getFullName($project))
         ;
 
-        if (!$skipAnalyse) {
+        /* an empty repository is not cloned, there is nothing to analyze */
+        if (!$skipAnalyse && !$empty) {
             $this->analyzer->analyze($entity);
         }
 

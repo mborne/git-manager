@@ -54,6 +54,15 @@ class Project
     private bool $archived;
 
     /**
+     * True if the remote repository has no commit.
+     *
+     * Note that the column is named "is_empty" as "empty" is a reserved word on
+     * some database engines (ex : MySQL 8).
+     */
+    #[ORM\Column(name: 'is_empty', nullable: false, options: ['default' => false])]
+    private bool $empty = false;
+
+    /**
      * public, private or internal.
      */
     #[ORM\Column(length: 30, nullable: true)]
@@ -166,6 +175,21 @@ class Project
     public function setArchived(bool $archived): static
     {
         $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * @psalm-api
+     */
+    public function isEmpty(): bool
+    {
+        return $this->empty;
+    }
+
+    public function setEmpty(bool $empty): static
+    {
+        $this->empty = $empty;
 
         return $this;
     }

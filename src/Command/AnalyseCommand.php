@@ -57,6 +57,14 @@ final class AnalyseCommand extends Command
             if (null !== $limit && $count >= (int) $limit) {
                 break;
             }
+            /* an empty repository is not cloned, there is nothing to analyze */
+            if ($project->isEmpty()) {
+                $logger->warning(sprintf(
+                    '[%s] empty repository (no commit), skipping analysis',
+                    $project->getFullName()
+                ));
+                continue;
+            }
             $logger->info(sprintf(
                 '[%s] analysing...',
                 $project->getFullName()
