@@ -65,10 +65,10 @@ bin/console git:fetch https://gitlab.com -u mborne $GITLAB_TOKEN
 
 ### Purge a repository
 
-Remove a repository from the database and from `GIT_MANAGER_DIR` (git clone and analysis reports), typically once it has been deleted on the remote git hosting service :
+Remove a repository from the database and from `GIT_MANAGER_DIR` (git clone and analysis reports), typically once it has been deleted on the remote git hosting service. The project is designated by its id, as displayed in the URL of the project :
 
 ```bash
-bin/console git:purge github.com/mborne/git-manager
+bin/console git:purge 3a5e9492-b20d-3558-9e6f-30561851a5d3
 ```
 
 ### Browse the API

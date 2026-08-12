@@ -29,7 +29,7 @@ final class PurgeCommandTest extends KernelTestCase
         $repositoryPath = $this->getGitRepositoryStore()->getPath(self::FULL_NAME);
         $this->assertDirectoryExists($repositoryPath);
 
-        $commandTester->execute(['fullName' => self::FULL_NAME]);
+        $commandTester->execute(['projectId' => self::PROJECT_ID]);
 
         $commandTester->assertCommandIsSuccessful();
 
@@ -58,43 +58,31 @@ final class PurgeCommandTest extends KernelTestCase
         $this->createProject();
         (new SymfonyFilesystem())->remove($this->getGitRepositoryStore()->getPath(self::FULL_NAME));
 
-        $commandTester->execute(['fullName' => self::FULL_NAME]);
+        $commandTester->execute(['projectId' => self::PROJECT_ID]);
 
         $commandTester->assertCommandIsSuccessful();
         $this->assertStringContainsString('no git repository', $commandTester->getDisplay());
         $this->assertNull($this->findProject(self::FULL_NAME));
     }
 
-    /**
-     * Ensures that a git repository which is not referenced in the database can
-     * be removed from the data directory.
-     */
-    public function testPurgeGitRepositoryWithoutProject(): void
-    {
-        $commandTester = $this->createCommandTester();
-
-        $fullName = 'github.com/mborne/purge-orphan';
-        $repositoryPath = $this->getGitRepositoryStore()->getPath($fullName);
-        $this->createGitRepository($fullName);
-
-        $commandTester->execute(['fullName' => $fullName]);
-
-        $commandTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('not found in the database', $commandTester->getDisplay());
-        $this->assertDirectoryDoesNotExist($repositoryPath);
-    }
-
     public function testPurgeUnknownProject(): void
     {
         $commandTester = $this->createCommandTester();
 
-        $commandTester->execute(['fullName' => 'github.com/mborne/purge-unknown']);
+        $commandTester->execute(['projectId' => '00000000-0000-3000-8000-0000000000ff']);
 
         $this->assertSame(1, $commandTester->getStatusCode());
-        $this->assertStringContainsString(
-            'neither found in the database nor in the data directory',
-            $commandTester->getDisplay()
-        );
+        $this->assertStringContainsString('project not found in the database', $commandTester->getDisplay());
+    }
+
+    public function testPurgeInvalidProjectId(): void
+    {
+        $commandTester = $this->createCommandTester();
+
+        $commandTester->execute(['projectId' => self::FULL_NAME]);
+
+        $this->assertSame(1, $commandTester->getStatusCode());
+        $this->assertStringContainsString('is not a valid project id', $commandTester->getDisplay());
     }
 
     private function createCommandTester(): CommandTester

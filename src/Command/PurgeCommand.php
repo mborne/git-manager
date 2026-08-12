@@ -14,6 +14,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Remove a project from the database and the data directory, typically when the
@@ -38,9 +39,9 @@ final class PurgeCommand extends Command
             ->setName('git:purge')
             ->setDescription('Remove a repository from the database and the filesystem')
             ->addArgument(
-                'fullName',
+                'projectId',
                 InputArgument::REQUIRED,
-                'The full name of the repository (ex : github.com/mborne/git-manager)'
+                'The id of the project, as displayed in the URL of the project'
             )
         ;
     }
@@ -49,37 +50,29 @@ final class PurgeCommand extends Command
     {
         $logger = $this->createLogger($output);
 
-        $fullName = $input->getArgument('fullName');
+        $projectId = $input->getArgument('projectId');
 
-        $logger->info(sprintf('[git:purge] %s ...', $fullName));
+        $logger->info(sprintf('[git:purge] %s ...', $projectId));
 
-        /** @var Project|null */
-        $project = $this->projectRepository->findOneBy(['fullName' => $fullName]);
-        $repositoryExists = $this->gitRepositoryStore->exists($fullName);
+        if (!Uuid::isValid($projectId)) {
+            $logger->error(sprintf('[%s] is not a valid project id', $projectId));
 
-        if (null === $project && !$repositoryExists) {
-            $logger->error(sprintf(
-                '[%s] neither found in the database nor in the data directory',
-                $fullName
-            ));
+            return self::FAILURE;
+        }
+
+        $project = $this->projectRepository->find(Uuid::fromString($projectId));
+        if (null === $project) {
+            $logger->error(sprintf('[%s] project not found in the database', $projectId));
 
             return self::FAILURE;
         }
 
         try {
-            if (null !== $project) {
-                $this->purgeProject($project, $logger);
-            } else {
-                $logger->warning(sprintf('[%s] project not found in the database', $fullName));
-            }
-
-            if ($repositoryExists) {
-                $this->purgeGitRepository($fullName, $logger);
-            } else {
-                $logger->warning(sprintf('[%s] no git repository in the data directory', $fullName));
-            }
+            $this->purgeReports($project, $logger);
+            $this->purgeGitRepository($project, $logger);
+            $this->purgeProject($project, $logger);
         } catch (\Exception $e) {
-            $logger->error(sprintf('[%s] purge failed : "%s"', $fullName, $e->getMessage()));
+            $logger->error(sprintf('[%s] purge failed : "%s"', $projectId, $e->getMessage()));
 
             return self::FAILURE;
         }
@@ -90,32 +83,46 @@ final class PurgeCommand extends Command
     }
 
     /**
-     * Remove the reports and the database entry of a project.
+     * Remove the reports produced by the analysis tools (gitleaks, trivy,...).
      */
-    private function purgeProject(Project $project, LoggerInterface $logger): void
+    private function purgeReports(Project $project, LoggerInterface $logger): void
     {
-        $fullName = $project->getFullName();
-
-        /* the reports are removed first as they are located by the project id */
+        $logger->info(sprintf('[%s] purging reports ...', $project->getFullName()));
         $this->reportStore->remove($project->getId());
-        $logger->info(sprintf('[%s] reports removed', $fullName));
-
-        $this->em->remove($project);
-        $this->em->flush();
-        $logger->info(sprintf('[%s] project removed from the database', $fullName));
+        $logger->info(sprintf('[%s] reports removed', $project->getFullName()));
     }
 
     /**
-     * Remove the git repository cloned in the data directory.
+     * Remove the git repository cloned in the data directory, which may already
+     * be missing.
      */
-    private function purgeGitRepository(string $fullName, LoggerInterface $logger): void
+    private function purgeGitRepository(Project $project, LoggerInterface $logger): void
     {
+        $logger->info(sprintf('[%s] purging git repository ...', $project->getFullName()));
+        $fullName = $project->getFullName();
+        if (!$this->gitRepositoryStore->exists($fullName)) {
+            $logger->warning(sprintf('[%s] no git repository in the data directory', $fullName));
+
+            return;
+        }
+
         $this->gitRepositoryStore->remove($fullName);
         $logger->info(sprintf(
             '[%s] git repository removed (%s)',
             $fullName,
             $this->gitRepositoryStore->getPath($fullName)
         ));
+    }
+
+    /**
+     * Remove the database entry of a project.
+     */
+    private function purgeProject(Project $project, LoggerInterface $logger): void
+    {
+        $logger->info(sprintf('[%s] purging project from the database ...', $project->getFullName()));
+        $this->em->remove($project);
+        $this->em->flush();
+        $logger->info(sprintf('[%s] project removed from the database', $project->getFullName()));
     }
 
     /**
